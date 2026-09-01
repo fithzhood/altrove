@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Altrove - collaudo cielo</title>
+<style>
+  body { margin:0; background:#111; color:#ccc; font:12px monospace; }
+  #sheet { display:block; margin:0 auto; max-width:100%; }
+  #log { padding:6px 10px; white-space:pre; }
+</style>
+</head>
+<body>
+<canvas id="sheet"></canvas>
+<div id="log">avvio...</div>
+<script type="module">
+import * as THREE from '../vendor/three.module.js';
+import { SkySystem, sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY } from '../js/sky.js';
+
+const log = (m) => { document.getElementById('log').textContent += '\n' + m; };
+window.__ready = false;
+window.__err = null;
+
+const TILE_W = 340, TILE_H = 215, COLS = 4, ROWS = 3;
+const sheet = document.getElementById('sheet');
+sheet.width = TILE_W * COLS; sheet.height = TILE_H * ROWS;
+const ctx = sheet.getContext('2d');
+
+const off = document.createElement('canvas');
+off.width = TILE_W; off.height = TILE_H;
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ canvas: off, antialias: false, alpha: false });
+} catch (e) { window.__err = 'WebGL non disponibile: ' + e.message; log(window.__err); throw e; }
+renderer.setPixelRatio(1);
+renderer.setSize(TILE_W, TILE_H, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+const sky = new SkySystem(renderer);
+const cam = new THREE.PerspectiveCamera(62, TILE_W / TILE_H, 1, 10000);
+cam.position.set(0, 30, 0);
+
+const CASES = [
+  { h: 2.0,  label: 'notte 02:00' },
+  { h: 5.0,  label: 'crepuscolo 05:00' },
+  { h: 6.2,  label: 'alba 06:12' },
+  { h: 7.0,  label: 'mattino 07:00' },
+  { h: 9.0,  label: 'mattina 09:00' },
+  { h: 12.5, label: 'mezzogiorno 12:30' },
+  { h: 15.0, label: 'pomeriggio 15:00' },
+  { h: 17.5, label: 'pomeriggio 17:30' },
+  { h: 18.7, label: 'ora dorata 18:42' },
+  { h: 19.5, label: 'tramonto 19:30' },
+  { h: 20.4, label: 'ora blu 20:24' },
+  { h: 21.5, label: 'notte 21:30, nuvole' }
+];
+
+const sunDir = new THREE.Vector3(), moonDir = new THREE.Vector3();
+const tmp = [0, 0, 0];
+
+function renderCase(c, i) {
+  sunDirection(c.h, 44, 172, sunDir);
+  moonDirection(c.h, 44, 172, 0.42, moonDir);
+
+  // La luna resta un sole debolissimo: 2.4e-5 e circa il rapporto vero
+  const moonUp = Math.max(0, moonDir.y);
+  const moonI = moonUp > 0 ? 2.4e-5 * (0.25 + 0.75 * moonUp) : 0;
+
+  sky.renderLUT({
+    sunDir, moonDir, camAlt: 30,
+    rayleigh: 1.05, mie: 0.0045 / 0.0045 * 1.0, mieG: 0.78,
+    sunI: SUN_INTENSITY, moonI,
+    nightSky: [0.00055, 0.00085, 0.0017],
+    lightPollution: 0
+  });
+
+  transmittanceJS(30, sunDir.x, sunDir.y, sunDir.z, 1.05, 1.0, tmp);
+  const su = sky.skyMat.uniforms;
+  su.uInvVP.value.copy(cam.projectionMatrix).multiply(cam.matrixWorldInverse).invert();
+  su.uCamPos.value.copy(cam.position);
+  su.uSunDir.value.copy(sunDir);
+  su.uMoonDir.value.copy(moonDir);
+  su.uSunColor.value.set(tmp[0] * SUN_INTENSITY, tmp[1] * SUN_INTENSITY, tmp[2] * SUN_INTENSITY);
+  su.uSunDiskI.value = 32.0;
+  su.uMoonI.value = moonI;
+  su.uTime.value = 12.0;
+  su.uStars.value = 1;
+  su.uCloudCover.value = (i === 11) ? 0.45 : (i % 3 === 0 ? 0.30 : 0.16);
+  su.uCloudDensity.value = 0.85;
+  su.uCloudHeight.value = 2400;
+  su.uCloudScroll.value.set(0.13, 0.05);
+  su.uAurora.value = 0;
+  su.uDustAmount.value = 0;
+  su.uLightning.value = 0;
+
+  renderer.setRenderTarget(null);
+  renderer.render(sky.skyScene, sky.quadCam);
+
+  const col = i % COLS, row = (i / COLS) | 0;
+  ctx.drawImage(off, col * TILE_W, row * TILE_H);
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.fillRect(col * TILE_W, row * TILE_H + TILE_H - 18, TILE_W, 18);
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px monospace';
+  const alt = (Math.asin(Math.max(-1, Math.min(1, sunDir.y))) * 180 / Math.PI).toFixed(1);
+  ctx.fillText(`${c.label}  sole ${alt} gradi`, col * TILE_W + 6, row * TILE_H + TILE_H - 5);
+}
+
+try {
+  cam.rotation.set(0, 0, 0);
+  cam.position.set(0, 30, 0);
+  cam.lookAt(0, 34, -100);
+  cam.updateMatrixWorld(true);
+  CASES.forEach(renderCase);
+  log('renderizzati ' + CASES.length + ' casi');
+  const dl = renderer.getContext().getShaderPrecisionFormat ? 'ctx ok' : '?';
+  log('WebGL: ' + renderer.getContext().getParameter(renderer.getContext().VERSION));
+  window.__ready = true;
+} catch (e) {
+  window.__err = e.message + '\n' + (e.stack || '');
+  log('ERRORE: ' + window.__err);
+}
+</script>
+</body>
+</html>

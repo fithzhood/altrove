@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-store">
+<meta name="description" content="Simulatore di luoghi esplorabili in prima persona">
+<title>Altrove</title>
+<link rel="stylesheet" href="altrove.css?v=1">
+</head>
+<body>
+
+<canvas id="view"></canvas>
+
+<!-- ------------------------------------------------ mirino e HUD -->
+<div id="crosshair" class="hidden"><span></span></div>
+
+<div id="hud" class="hidden">
+  <div id="hud-top">
+    <div id="compass">
+      <div id="compass-strip"></div>
+      <div id="compass-needle"></div>
+    </div>
+  </div>
+  <div id="hud-corner">
+    <div class="hud-row"><span id="hud-place">-</span></div>
+    <div class="hud-row dim"><span id="hud-clock">--:--</span> &middot; <span id="hud-weather">-</span></div>
+    <div class="hud-row dim"><span id="hud-coords">0, 0</span> &middot; <span id="hud-alt">0 m</span></div>
+  </div>
+  <div id="hud-perf" class="dim"></div>
+  <div id="toast"></div>
+</div>
+
+<!-- ------------------------------------------------ pannello -->
+<button id="panel-tab" title="Pannello (Tab)" aria-label="Apri pannello">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  </svg>
+</button>
+
+<aside id="panel" class="closed">
+  <header id="panel-head">
+    <div class="brand">
+      <span class="brand-name">Altrove</span>
+      <span class="brand-sub" id="brand-build">build 1</span>
+    </div>
+    <button id="panel-close" aria-label="Chiudi pannello">&times;</button>
+  </header>
+
+  <nav id="panel-nav">
+    <button class="nav-btn active" data-tab="luogo">Luogo</button>
+    <button class="nav-btn" data-tab="cielo">Cielo</button>
+    <button class="nav-btn" data-tab="camera">Camera</button>
+    <button class="nav-btn" data-tab="immagine">Immagine</button>
+  </nav>
+
+  <div id="panel-body">
+
+    <!-- ---------------- LUOGO ---------------- -->
+    <section class="tab active" data-tab="luogo">
+      <div class="group">
+        <div class="group-title">Luoghi reali</div>
+        <div class="biome-grid" id="biomes-real"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Luoghi immaginari</div>
+        <div class="biome-grid" id="biomes-fantasy"></div>
+      </div>
+      <div class="group">
+        <div class="group-title">Mondo</div>
+        <div class="ctl">
+          <label for="seed">Seme <span class="val" id="seed-val">1</span></label>
+          <div class="row">
+            <input type="number" id="seed" min="1" max="999999" step="1" value="1">
+            <button class="btn" id="reseed">Nuovo</button>
+          </div>
+        </div>
+        <div class="row">
+          <button class="btn wide" id="respawn">Spostati altrove</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- CIELO ---------------- -->
+    <section class="tab" data-tab="cielo">
+      <div class="group">
+        <div class="group-title">Meteo</div>
+        <div class="chip-grid" id="weathers"></div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Ora del giorno</div>
+        <div class="ctl">
+          <label for="hour">Ora <span class="val" id="hour-val">12:30</span></label>
+          <input type="range" id="hour" min="0" max="24" step="0.01" value="12.5">
+        </div>
+        <div class="chip-grid small" id="time-presets"></div>
+        <div class="ctl">
+          <label class="check"><input type="checkbox" id="auto-time"> Ciclo automatico</label>
+          <input type="range" id="time-speed" min="0.2" max="60" step="0.2" value="6">
+          <div class="hint"><span id="time-speed-val">6</span> minuti per giornata</div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title">Ambiente</div>
+        <div class="ctl">
+          <label for="season">Stagione</label>
+          <div class="chip-grid small" id="seasons"></div>
+        </div>
+        <div class="ctl">
+          <label for="latitude">Latitudine <span class="val" id="latitude-val">44&deg;</span></label>
+          <input type="range" id="latitude" min="-70" max="70" step="1" value="44">
+          <div class="hint">decide quanto sale il sole e quanto durano i crepuscoli</div>
+        </div>
+        <div class="ctl">
+          <label for="wind">Vento <span class="val" id="wind-val">40%</span></label>
+          <input type="range" id="wind" min="0" max="200" step="1" value="40">
+        </div>
+        <div class="ctl">
+          <label for="moon">Fase lunare <span class="val" id="moon-val">gibbosa</span></label>
+          <input type="range" id="moon" min="0" max="1" step="0.01" value="0.62">
+        </div>
+        <div class="ctl">
+          <label class="check"><input type="checkbox" id="aurora"> Aurora boreale</label>
+          <div class="hint">visibile solo di notte, alle alte latitudini</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- CAMERA ---------------- -->
+    <section class="tab" data-tab="camera">
+      <div class="group">
+        <div class="group-title">Movimento</div>
+        <div class="chip-grid small" id="movemode">
+          <button class="chip active" data-mode="cammina">A piedi</button>
+          <button class="chip" data-mode="vola">In volo</button>
+        </div>
+        <div class="ctl">
+          <label for="speed">Velocit&agrave; <span class="val" id="speed-val">1.0&times;</span></label>
+          <input type="range" id="speed" min="0.2" max="6" step="0.1" value="1">
+        </div>
+        <div class="ctl">
+          <label for="fov">Campo visivo <span class="val" id="fov-val">72&deg;</span></label>
+          <input type="range" id="fov" min="50" max="105" step="1" value="72">
+        </div>
+        <div class="ctl">
+          <label for="sens">Sensibilit&agrave; mouse <span class="val" id="sens-val">1.0</span></label>
+          <input type="range" id="sens" min="0.2" max="3" step="0.05" value="1">
+        </div>
+        <div class="ctl">
+          <label class="check"><input type="checkbox" id="headbob" checked> Oscillazione del passo</label>
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-title">Comandi</div>
+        <div class="keys">
+          <div><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> muoversi</div>
+          <div><kbd>Shift</kbd> correre &middot; <kbd>Ctrl</kbd> accovacciarsi</div>
+          <div><kbd>Spazio</kbd> saltare / salire in volo</div>
+          <div><kbd>F</kbd> volo &middot; <kbd>Tab</kbd> pannello</div>
+          <div><kbd>P</kbd> modalit&agrave; foto &middot; <kbd>H</kbd> nascondi interfaccia</div>
+          <div><kbd>C</kbd> salva immagine &middot; <kbd>Esc</kbd> liberare il mouse</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------------- IMMAGINE ---------------- -->
+    <section class="tab" data-tab="immagine">
+      <div class="group">
+        <div class="group-title">Qualit&agrave;</div>
+        <div class="chip-grid small" id="quality">
+          <button class="chip" data-q="basso">Bassa</button>
+          <button class="chip" data-q="medio">Media</button>
+          <button class="chip active" data-q="alto">Alta</button>
+          <button class="chip" data-q="ultra">Ultra</button>
+        </div>
+        <div class="hint" id="quality-hint">densit&agrave; della vegetazione, ombre, risoluzione interna</div>
+      </div>
+      <div class="group">
+        <div class="group-title">Resa</div>
+        <div class="ctl">
+          <label for="exposure">Esposizione <span class="val" id="exposure-val">0.0</span></label>
+          <input type="range" id="exposure" min="-3" max="3" step="0.05" value="0">
+        </div>
+        <div class="ctl">
+          <label class="check"><input type="checkbox" id="auto-exposure" checked> Esposizione automatica</label>
+        </div>
+        <div class="ctl">
+          <label for="bloom">Bagliore <span class="val" id="bloom-val">55%</span></label>
+          <input type="range" id="bloom" min="0" max="150" step="1" value="55">
+        </div>
+        <div class="ctl">
+          <label for="saturation">Saturazione <span class="val" id="saturation-val">100%</span></label>
+          <input type="range" id="saturation" min="0" max="180" step="1" value="100">
+        </div>
+        <div class="ctl">
+          <label for="contrast">Contrasto <span class="val" id="contrast-val">100%</span></label>
+          <input type="range" id="contrast" min="60" max="160" step="1" value="100">
+        </div>
+        <div class="ctl">
+          <label for="vignette">Vignetta <span class="val" id="vignette-val">42%</span></label>
+          <input type="range" id="vignette" min="0" max="100" step="1" value="42">
+        </div>
+        <div class="ctl">
+          <label for="grain">Grana <span class="val" id="grain-val">30</span></label>
+          <input type="range" id="grain" min="0" max="120" step="1" value="30">
+        </div>
+        <div class="ctl">
+          <label for="chromatic">Aberrazione <span class="val" id="chromatic-val">55%</span></label>
+          <input type="range" id="chromatic" min="0" max="200" step="1" value="55">
+        </div>
+      </div>
+      <div class="group">
+        <div class="group-title">Modalit&agrave; foto</div>
+        <div class="ctl">
+          <label class="check"><input type="checkbox" id="dof"> Profondit&agrave; di campo</label>
+        </div>
+        <div class="ctl">
+          <label for="focus">Fuoco <span class="val" id="focus-val">12 m</span></label>
+          <input type="range" id="focus" min="1" max="200" step="1" value="12">
+        </div>
+        <div class="ctl">
+          <label for="aperture">Apertura <span class="val" id="aperture-val">0.6</span></label>
+          <input type="range" id="aperture" min="0.1" max="3" step="0.05" value="0.6">
+        </div>
+        <div class="row">
+          <button class="btn wide" id="shot">Salva immagine</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</aside>
+
+<!-- ------------------------------------------------ caricamento -->
+<div id="loading" class="hidden">
+  <div class="load-inner">
+    <div class="load-label" id="load-label">Sto costruendo il luogo</div>
+    <div class="load-track"><div class="load-bar" id="load-bar"></div></div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------ schermata iniziale -->
+<div id="start">
+  <div class="start-inner">
+    <h1>Altrove</h1>
+    <p class="tagline">Un simulatore di luoghi. Scegline uno, e vacci.</p>
+
+    <div class="start-biomes" id="start-biomes"></div>
+
+    <div class="start-row">
+      <div class="start-field">
+        <span class="start-lab">Meteo</span>
+        <div class="chip-grid small" id="start-weathers"></div>
+      </div>
+      <div class="start-field">
+        <span class="start-lab">Ora <span class="val" id="start-hour-val">12:30</span></span>
+        <input type="range" id="start-hour" min="0" max="24" step="0.01" value="12.5">
+      </div>
+    </div>
+
+    <div class="start-cta">
+      <button id="enter" class="enter">Entra</button>
+      <div class="start-foot">
+        <span id="start-build">build 1</span>
+        <span class="sep">&middot;</span>
+        <span>WASD per muoverti, mouse per guardare, <kbd>Tab</kbd> per il pannello</span>
+      </div>
+    </div>
+    <div id="start-error" class="hidden"></div>
+  </div>
+</div>
+
+<script type="module" src="js/main.js?v=1"></script>
+</body>
+</html>
