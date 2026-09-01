@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Altrove · prova del joystick</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 22px 20px 40px;
+    background: #0e1014; color: #e6e4df;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+  }
+  h1 { font-size: 19px; margin: 0 0 4px; font-weight: 600; letter-spacing: .01em; }
+  .sub { color: #8d8a83; font-size: 13px; margin: 0 0 20px; }
+  .card {
+    background: #171a20; border: 1px solid #262a33; border-radius: 12px;
+    padding: 16px 18px; margin: 0 0 14px; max-width: 760px;
+  }
+  .attesa { color: #d9ac68; }
+  .id { font-weight: 600; word-break: break-all; }
+  .meta { color: #8d8a83; font-size: 13px; margin-top: 4px; }
+  .ok { color: #7fc47f; } .no { color: #e08a6a; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .09em;
+       color: #8d8a83; margin: 18px 0 8px; font-weight: 600; }
+  .riga { display: flex; align-items: center; gap: 10px; margin: 3px 0; font-variant-numeric: tabular-nums; }
+  .et { width: 58px; color: #8d8a83; font-size: 12px; flex: none; }
+  .barra { position: relative; height: 14px; flex: 1; background: #10131a;
+           border: 1px solid #262a33; border-radius: 3px; overflow: hidden; }
+  .barra i { position: absolute; top: 0; bottom: 0; background: #5b8cff; display: block; }
+  .barra .mezzo { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: #333a47; }
+  .val { width: 56px; text-align: right; font-size: 12px; color: #b9b6ae; flex: none; }
+  .tasti { display: flex; flex-wrap: wrap; gap: 6px; }
+  .t { min-width: 40px; text-align: center; padding: 6px 4px; border-radius: 6px;
+       background: #10131a; border: 1px solid #262a33; font-size: 12px; color: #6f6c66; }
+  .t.giu { background: #5b8cff; border-color: #5b8cff; color: #07090d; font-weight: 600; }
+  .t b { display: block; font-size: 10px; opacity: .75; font-weight: 400; }
+  .ultimo { margin-top: 14px; font-size: 14px; }
+  .ultimo b { color: #d9ac68; font-size: 17px; }
+  code { background: #10131a; padding: 1px 5px; border-radius: 4px; font-size: 13px; }
+  a { color: #d9ac68; }
+</style>
+</head>
+<body>
+
+<h1>Prova del joystick</h1>
+<p class="sub">Serve a capire come il browser vede il tuo controller. Muovi le leve e premi i tasti: qui sotto si accende quello che arriva.</p>
+
+<div class="card" id="stato">
+  <div class="attesa">In attesa del joystick…</div>
+  <div class="meta">I browser lo nascondono finché non premi un tasto: <b>premi un tasto qualsiasi sul joystick</b>.</div>
+</div>
+
+<div id="dati" style="display:none">
+  <div class="card">
+    <h2 style="margin-top:0">Assi</h2>
+    <div id="assi"></div>
+    <h2>Tasti</h2>
+    <div class="tasti" id="tasti"></div>
+    <div class="ultimo">Ultimo tasto premuto: <b id="ultimo">—</b></div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Se qualcosa non torna</h2>
+  <p style="margin:0 0 8px">Sui Logitech F310 e F710 c'è un <b>interruttore dietro, X / D</b>. In posizione <b>X</b> il browser lo riconosce come pad standard e Altrove funziona da solo; in posizione <b>D</b> assi e tasti arrivano in ordine diverso. Prova a spostarlo, scollega e ricollega, poi premi un tasto.</p>
+  <p style="margin:0">Se sopra leggi <code>mappatura: standard</code> siamo a posto. Altrimenti dimmi cosa compare qui — id, quali assi si muovono con quale leva, e i numeri dei tasti — e adatto Altrove a questo joystick.</p>
+</div>
+
+<script>
+/* Pagina volutamente senza moduli e senza dipendenze: cosi funziona anche
+ * aperta con doppio clic, che e proprio il caso in cui serve. */
+(function () {
+  var stato = document.getElementById('stato');
+  var dati = document.getElementById('dati');
+  var assiEl = document.getElementById('assi');
+  var tastiEl = document.getElementById('tasti');
+  var ultimoEl = document.getElementById('ultimo');
+  var prec = [];
+  var nAssi = -1, nTasti = -1;
+
+  function leggi() {
+    var l = navigator.getGamepads ? navigator.getGamepads() : [];
+    for (var i = 0; i < l.length; i++) if (l[i] && l[i].connected) return l[i];
+    return null;
+  }
+
+  function costruisci(p) {
+    assiEl.innerHTML = '';
+    for (var i = 0; i < p.axes.length; i++) {
+      assiEl.insertAdjacentHTML('beforeend',
+        '<div class="riga"><span class="et">asse ' + i + '</span>' +
+        '<span class="barra"><span class="mezzo"></span><i id="a' + i + '"></i></span>' +
+        '<span class="val" id="av' + i + '">0.00</span></div>');
+    }
+    tastiEl.innerHTML = '';
+    for (var j = 0; j < p.buttons.length; j++) {
+      tastiEl.insertAdjacentHTML('beforeend',
+        '<div class="t" id="b' + j + '">' + j + '<b id="bv' + j + '">0</b></div>');
+    }
+    nAssi = p.axes.length; nTasti = p.buttons.length;
+  }
+
+  function giro() {
+    requestAnimationFrame(giro);
+    var p = leggi();
+    if (!p) {
+      dati.style.display = 'none';
+      stato.innerHTML = '<div class="attesa">In attesa del joystick…</div>' +
+        '<div class="meta">I browser lo nascondono finché non premi un tasto: ' +
+        '<b>premi un tasto qualsiasi sul joystick</b>.</div>';
+      nAssi = -1;
+      return;
+    }
+    if (p.axes.length !== nAssi || p.buttons.length !== nTasti) costruisci(p);
+    dati.style.display = '';
+
+    var std = p.mapping === 'standard';
+    stato.innerHTML =
+      '<div class="id">' + p.id.replace(/[<>]/g, '') + '</div>' +
+      '<div class="meta">mappatura: <span class="' + (std ? 'ok' : 'no') + '">' +
+      (p.mapping || '(nessuna)') + '</span>' +
+      (std ? ' — Altrove lo usa cosi com’e'
+           : ' — non standard: dimmi cosa vedi qui sotto e lo adatto') +
+      ' · ' + p.axes.length + ' assi · ' + p.buttons.length + ' tasti</div>';
+
+    for (var i = 0; i < p.axes.length; i++) {
+      var v = p.axes[i] || 0;
+      var b = document.getElementById('a' + i);
+      /* La barra parte dal centro: un asse a riposo sta a zero, e si vede da
+       * che parte va invece di crescere sempre da sinistra. */
+      if (v >= 0) { b.style.left = '50%'; b.style.width = (v * 50) + '%'; }
+      else { b.style.left = (50 + v * 50) + '%'; b.style.width = (-v * 50) + '%'; }
+      document.getElementById('av' + i).textContent = v.toFixed(2);
+    }
+    for (var j = 0; j < p.buttons.length; j++) {
+      var bt = p.buttons[j];
+      var giu = typeof bt === 'number' ? bt > 0.5 : bt.pressed;
+      var val = typeof bt === 'number' ? bt : bt.value;
+      document.getElementById('b' + j).className = 't' + (giu ? ' giu' : '');
+      document.getElementById('bv' + j).textContent = val.toFixed(1);
+      if (giu && !prec[j]) ultimoEl.textContent = 'numero ' + j;
+      prec[j] = giu;
+    }
+  }
+  requestAnimationFrame(giro);
+})();
+</script>
+</body>
+</html>
