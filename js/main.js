@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=13';
-import { Fauna } from './fauna.js?v=13';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=14';
+import { Fauna } from './fauna.js?v=14';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=13';
-import { SkySystem } from './sky.js?v=13';
-import { FogSystem } from './fog.js?v=13';
-import { Engine } from './engine.js?v=13';
-import { Terrain } from './terrain.js?v=13';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=13';
-import { FirstPersonControls } from './controls.js?v=13';
-import { Scatter } from './scatter.js?v=13';
-import { Water } from './water.js?v=13';
-import { Precipitation } from './weather.js?v=13';
-import { City } from './city.js?v=13';
-import { Castle } from './castle.js?v=13';
-import { Waterfalls } from './waterfall.js?v=13';
-import { Library } from './library.js?v=13';
-import { clamp, lerp, saturate } from './noise.js?v=13';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=14';
+import { SkySystem } from './sky.js?v=14';
+import { FogSystem } from './fog.js?v=14';
+import { Engine } from './engine.js?v=14';
+import { Terrain } from './terrain.js?v=14';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=14';
+import { FirstPersonControls } from './controls.js?v=14';
+import { Scatter } from './scatter.js?v=14';
+import { Water } from './water.js?v=14';
+import { Precipitation } from './weather.js?v=14';
+import { City } from './city.js?v=14';
+import { Castle } from './castle.js?v=14';
+import { Waterfalls } from './waterfall.js?v=14';
+import { Library } from './library.js?v=14';
+import { clamp, lerp, saturate } from './noise.js?v=14';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale

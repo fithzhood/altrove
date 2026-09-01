@@ -40,7 +40,12 @@ export class Engine {
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.NoToneMapping;   // la facciamo noi, in composizione
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    /* In three r185 PCFSoftShadowMap non ha piu un percorso di shader suo: il
+     * renderer lo declassa a PCFShadowMap e stampa un avviso di deprecazione.
+     * Nessuna perdita, anzi: il PCF nuovo campiona con un disco di Vogel a
+     * cinque prelievi ruotato da rumore per pixel, ed e piu morbido del vecchio
+     * soft. shadow.radius continua a regolarne l ampiezza. */
+    this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.shadowMap.autoUpdate = true;
 
     this.geo = fsGeometry();

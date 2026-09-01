@@ -165,6 +165,11 @@ C salva immagine · Esc liberare il mouse
   legata a quanto misura un pixel in celle (`fwidth`), non fissata.
 - **`sunColor` è irradianza, non radianza.** Le nuvole vanno divise per circa
   π, o escono trenta volte più luminose del cielo.
+- **`PCFSoftShadowMap` non esiste piu** da three r185: il renderer lo declassa
+  a `PCFShadowMap` e stampa un avviso a ogni avvio. Non e una perdita — il PCF
+  nuovo campiona con un disco di Vogel a cinque prelievi ruotato da rumore per
+  pixel, ed e piu morbido del vecchio \soft\. `shadow.radius` continua a
+  regolarne l ampiezza. Va solo dichiarato `PCFShadowMap` esplicitamente.
 - **`normalBias` delle ombre si misura in metri.** A 0,65 le ombre degli alberi
   scivolavano via dal tronco e sparivano.
 - **Il viewport di three non segue `canvas.width` scritto a mano.** Va da
