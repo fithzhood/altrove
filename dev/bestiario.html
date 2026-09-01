@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Altrove - bestiario</title>
+<style>
+  body { margin:0; background:#0b0d10; color:#aab; font:12px ui-monospace, monospace; }
+  #sheet { display:block; margin:0 auto; max-width:100%; }
+  #log { padding:8px 12px; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<canvas id="sheet"></canvas>
+<div id="log">costruisco...</div>
+<script type="module">
+/* Banco di prova per i modelli degli animali: li disegna fuori dal mondo, fermi
+ * e su fondo neutro, in tre viste. Dentro la simulazione non si riesce a
+ * giudicarli, perche si spostano di dieci metri al secondo. */
+import * as THREE from '../vendor/three.module.js';
+import { CREATURES } from '../js/fauna.js?v=4';
+import { mulberry32 } from '../js/noise.js?v=4';
+
+const log = (m) => { document.getElementById('log').textContent += '\n' + m; };
+window.__ready = false;
+
+const q = new URLSearchParams(location.search);
+const ONLY = q.get('only');
+const POSE = parseFloat(q.get('pose') || '0');     // 0..1 fase del battito
+const TW = 300, TH = 230;
+
+const names = Object.keys(CREATURES).filter(n => !ONLY || n === ONLY);
+const VIEWS = [
+  { name: 'fianco', dir: [1, 0.12, 0] },
+  { name: 'alto', dir: [0.15, 1, 0.15] },
+  { name: 'tre quarti', dir: [0.75, 0.45, 0.75] }
+];
+
+const sheet = document.getElementById('sheet');
+sheet.width = TW * VIEWS.length;
+sheet.height = TH * names.length;
+const ctx = sheet.getContext('2d');
+
+const off = document.createElement('canvas');
+off.width = TW; off.height = TH;
+const renderer = new THREE.WebGLRenderer({ canvas: off, antialias: true });
+renderer.setPixelRatio(1);
+renderer.setSize(TW, TH, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x22262c);
+const key = new THREE.DirectionalLight(0xfff2e0, 2.6);
+key.position.set(0.7, 1.0, 0.55);
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x9ab8d8, 0.9);
+fill.position.set(-0.8, 0.3, -0.5);
+scene.add(fill);
+scene.add(new THREE.HemisphereLight(0x8aa8cc, 0x3a3a34, 1.1));
+
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.8, side: THREE.DoubleSide });
+const cam = new THREE.PerspectiveCamera(30, TW / TH, 0.01, 500);
+const holder = new THREE.Group();
+scene.add(holder);
+
+/* Il vertex shader vero anima le parti: qui lo rifaccio sulla CPU una volta
+ * sola, cosi si puo guardare la posa a meta battuta invece che solo a riposo. */
+function posed(geo, def, t) {
+  const g = geo.clone();
+  const pos = g.attributes.position.array;
+  const part = g.attributes.aPart.array;
+  const piv = g.attributes.aPivot.array;
+  const rot = (i, ax, ay, az, ang) => {
+    const px = piv[i], py = piv[i + 1], pz = piv[i + 2];
+    let vx = pos[i] - px, vy = pos[i + 1] - py, vz = pos[i + 2] - pz;
+    const c = Math.cos(ang), s = Math.sin(ang);
+    const d = ax * vx + ay * vy + az * vz;
+    const cx = ay * vz - az * vy, cy = az * vx - ax * vz, cz2 = ax * vy - ay * vx;
+    pos[i] = px + vx * c + cx * s + ax * d * (1 - c);
+    pos[i + 1] = py + vy * c + cy * s + ay * d * (1 - c);
+    pos[i + 2] = pz + vz * c + cz2 * s + az * d * (1 - c);
+  };
+  for (let v = 0; v < part.length; v++) {
+    const i = v * 3, p = part[v];
+    if (p > 0.5 && p < 2.5) {
+      const sgn = p < 1.5 ? 1 : -1;
+      let w = Math.sin(t);
+      w = w > 0 ? Math.pow(w, 0.62) : -Math.pow(-w, 1.55);
+      const span = Math.abs(pos[i] - piv[i]);
+      const ang = def.flap * w + def.flap * 0.40 * Math.sin(t - 1.0) * span * 1.8;
+      rot(i, 0, 0, 1, sgn * ang);
+    } else if (p > 2.5 && p < 6.5) {
+      const k = p - 3, ph = (k < 0.5 || k > 2.5) ? 0 : Math.PI;
+      rot(i, 1, 0, 0, def.flap * Math.sin(t + ph));
+    } else if (p > 8.5) {
+      const k = p - 9, ph = (k < 0.5 || k > 2.5) ? 0 : Math.PI;
+      const th = t + ph;
+      const bend = def.flap * (0.5 * Math.sin(th) - 0.8 * Math.max(0, Math.sin(th - 1.5)));
+      rot(i, 1, 0, 0, -bend);
+    } else if (p > 7.5) {
+      const dx = pos[i] - piv[i], dy = pos[i + 1] - piv[i + 1], dz = pos[i + 2] - piv[i + 2];
+      const d = Math.hypot(dx, dy, dz);
+      rot(i, 0, 1, 0, def.flap * 0.85 * Math.sin(t * 1.25 - d * 2.0));
+    }
+  }
+  g.attributes.position.needsUpdate = true;
+  g.computeBoundingSphere();
+  return g;
+}
+
+const rnd = mulberry32(11);
+let row = 0;
+for (const name of names) {
+  const def = CREATURES[name];
+  const geo0 = def.build(rnd, [0.16, 0.14, 0.10]);
+
+  // normalizzazione identica a quella di fauna.js
+  const p0 = geo0.attributes.position.array;
+  let mnx = 1e9, mxx = -1e9, mny = 1e9, mxy = -1e9, mnz = 1e9, mxz = -1e9;
+  for (let i = 0; i < p0.length; i += 3) {
+    if (p0[i] < mnx) mnx = p0[i]; if (p0[i] > mxx) mxx = p0[i];
+    if (p0[i + 1] < mny) mny = p0[i + 1]; if (p0[i + 1] > mxy) mxy = p0[i + 1];
+    if (p0[i + 2] < mnz) mnz = p0[i + 2]; if (p0[i + 2] > mxz) mxz = p0[i + 2];
+  }
+  const cur = def.axis === 'span' ? (mxx - mnx) : def.axis === 'len' ? (mxz - mnz) : (mxy - mny);
+  const k = def.size / cur;
+  const pv0 = geo0.attributes.aPivot.array;
+  for (let i = 0; i < p0.length; i++) p0[i] *= k;
+  for (let i = 0; i < pv0.length; i++) pv0[i] *= k;
+
+  const geo = posed(geo0, def, POSE * 6.28318);
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox;
+  const c = bb.getCenter(new THREE.Vector3());
+  const r = bb.getSize(new THREE.Vector3()).length() * 0.5;
+
+  const mesh = new THREE.Mesh(geo, mat);
+  holder.clear();
+  holder.add(mesh);
+
+  VIEWS.forEach((V, ci) => {
+    const d = new THREE.Vector3(...V.dir).normalize();
+    const dist = r / Math.tan(cam.fov * Math.PI / 360) * 1.35;
+    cam.position.copy(c).addScaledVector(d, dist);
+    cam.lookAt(c);
+    cam.updateProjectionMatrix();
+    renderer.render(scene, cam);
+    ctx.drawImage(off, ci * TW, row * TH);
+    ctx.fillStyle = 'rgba(0,0,0,.62)';
+    ctx.fillRect(ci * TW, row * TH + TH - 17, TW, 17);
+    ctx.fillStyle = '#fff';
+    ctx.font = '11px ui-monospace, monospace';
+    const sz = bb.getSize(new THREE.Vector3());
+    ctx.fillText(ci === 0
+      ? `${name}  ${sz.x.toFixed(2)}x${sz.y.toFixed(2)}x${sz.z.toFixed(2)} m`
+      : V.name, ci * TW + 6, row * TH + TH - 5);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    ctx.strokeRect(ci * TW + .5, row * TH + .5, TW - 1, TH - 1);
+  });
+  row++;
+}
+log('modelli: ' + names.length + '  (posa ' + POSE + ')');
+window.__ready = true;
+</script>
+</body>
+</html>

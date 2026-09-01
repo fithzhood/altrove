@@ -20,7 +20,7 @@ import * as THREE from '../vendor/three.module.js';
  * triplo dei vertici ma da lo stacco netto delle facce, che su forme cosi
  * piccole legge meglio di una superficie levigata.
  * ------------------------------------------------------------------ */
-class Builder {
+export class Builder {
   constructor() {
     this.p = []; this.n = []; this.c = []; this.f = [];
   }
@@ -71,9 +71,9 @@ function s2l(c) { return c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055
 export function lin(hex) {
   return [s2l(((hex >> 16) & 255) / 255), s2l(((hex >> 8) & 255) / 255), s2l((hex & 255) / 255)];
 }
-function mixc(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
-function scale(c, k) { return [c[0] * k, c[1] * k, c[2] * k]; }
-function jitterC(c, rnd, amt) {
+export function mixc(a, b, t) { return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]; }
+export function scale(c, k) { return [c[0] * k, c[1] * k, c[2] * k]; }
+export function jitterC(c, rnd, amt) {
   const k = 1 + (rnd() - 0.5) * amt;
   return [c[0] * k, c[1] * k * (1 + (rnd() - 0.5) * amt * 0.4), c[2] * k];
 }
@@ -83,7 +83,7 @@ function jitterC(c, rnd, amt) {
  * ------------------------------------------------------------------ */
 
 /* Tronco affusolato, eventualmente curvo. Le facce laterali sono sfaccettate. */
-function trunk(B, opts) {
+export function trunk(B, opts) {
   const {
     r0 = 0.2, r1 = 0.08, h = 5, seg = 6, rings = 3,
     curve = [0, 0], colBot, colTop, flexTop = 0.25, x0 = 0, z0 = 0,
@@ -163,14 +163,14 @@ function subdivide(verts, faces, times) {
 }
 
 const SPHERE_CACHE = {};
-function unitSphere(level) {
+export function unitSphere(level) {
   if (!SPHERE_CACHE[level]) {
     SPHERE_CACHE[level] = subdivide(ICO_V.map(v => v.slice()), ICO_F.map(f => f.slice()), level);
   }
   return SPHERE_CACHE[level];
 }
 
-function blob(B, opts) {
+export function blob(B, opts) {
   const {
     cx = 0, cy = 0, cz = 0, rx = 1, ry = 1, rz = 1,
     level = 1, rough = 0.22, rnd, colTop, colBot, flex = 1,
@@ -206,7 +206,7 @@ function blob(B, opts) {
 }
 
 /* Lama: strisce affusolate e ricurve. Serve a erba, canne, fronde, felci. */
-function blade(B, opts) {
+export function blade(B, opts) {
   const {
     x = 0, y = 0, z = 0, dir = 0, len = 0.6, wid = 0.035, seg = 4,
     bend = 0.5, lift = 0.9, colBase, colTip, flexMax = 1, twist = 0, taper = 1
@@ -1230,6 +1230,196 @@ function ruinPillar(rnd, tint) {
   return B.toGeometry();
 }
 
+
+/* Cicade: tronco tozzo e squamoso, corona di fronde rigide. Non e una palma:
+ * il fusto e corto e grosso, ed e questo a datare il paesaggio. */
+function cycad(rnd, tint) {
+  const B = new Builder();
+  const h = 2.0;
+  const bark = mixc(lin(0x40321f), lin(0x6b5638), rnd());
+  trunk(B, {
+    r0: h * 0.17, r1: h * 0.14, h: h * 0.50, seg: 9, rings: 4,
+    colBot: scale(bark, 0.48), colTop: bark, flexTop: 0.04, bulge: 0.18
+  });
+  // scaglie del fusto
+  for (let k = 0; k < 14; k++) {
+    const a = rnd() * 6.28, y = h * 0.50 * rnd();
+    const r = h * 0.155;
+    const p = [Math.cos(a) * r, y, Math.sin(a) * r];
+    B.tri(p, [p[0] * 1.16, y + h * 0.045, p[2] * 1.16], [p[0] * 1.10, y - h * 0.02, p[2] * 1.10],
+      scale(bark, 0.7), scale(bark, 1.1), scale(bark, 0.6), 0, 0, 0);
+  }
+  const top = mixc(tint, [1, 1, 1], 0.07), bot = scale(tint, 0.52);
+  const nf = 10 + Math.floor(rnd() * 5);
+  for (let k = 0; k < nf; k++) {
+    const a = (k / nf) * 6.28 + rnd() * 0.35;
+    const len = h * (0.52 + rnd() * 0.28);
+    /* La fronda deve inarcarsi e ricadere, non aprirsi a raggiera: con
+     * lift alto la corona diventa un riccio di mare. */
+    blade(B, {
+      x: 0, y: h * 0.50, z: 0, dir: a, len, wid: h * 0.042, seg: 4,
+      bend: 1.60, lift: 0.26, colBase: bot, colTip: top, flexMax: 1.0, taper: 0.85
+    });
+    for (let i = 1; i <= 3; i++) {
+      const t = i / 4;
+      const out = len * t * (0.35 + 0.65 * t) * 1.60;
+      const up = len * 0.26 * Math.sin(t * Math.PI * 0.52);
+      for (const s of [-1, 1]) {
+        blade(B, {
+          x: Math.cos(a) * out, y: h * 0.50 + up, z: Math.sin(a) * out,
+          dir: a + s * 1.35, len: len * 0.155, wid: h * 0.020, seg: 2,
+          bend: 0.55, lift: -0.20, colBase: mixc(bot, top, 0.5), colTip: top,
+          flexMax: 1.0, taper: 1.1
+        });
+      }
+    }
+  }
+  return B.toGeometry();
+}
+
+
+/* Tubo fra due punti nello spazio: serve ai coralli ramificati. */
+function tube(B, a, b, ra, rb, colA, colB, seg, flexA, flexB) {
+  seg = seg || 5;
+  let ax = b[0] - a[0], ay = b[1] - a[1], az = b[2] - a[2];
+  const len = Math.hypot(ax, ay, az) || 1;
+  ax /= len; ay /= len; az /= len;
+  // due assi perpendicolari all asse del tubo
+  let ux = 0, uy = 1, uz = 0;
+  if (Math.abs(ay) > 0.9) { ux = 1; uy = 0; }
+  let px = uy * az - uz * ay, py = uz * ax - ux * az, pz = ux * ay - uy * ax;
+  const pl = Math.hypot(px, py, pz) || 1; px /= pl; py /= pl; pz /= pl;
+  const qx = ay * pz - az * py, qy = az * px - ax * pz, qz = ax * py - ay * px;
+  for (let i = 0; i < seg; i++) {
+    const t0 = (i / seg) * 6.28318, t1 = ((i + 1) / seg) * 6.28318;
+    const P = (p, r, t) => [
+      p[0] + (Math.cos(t) * px + Math.sin(t) * qx) * r,
+      p[1] + (Math.cos(t) * py + Math.sin(t) * qy) * r,
+      p[2] + (Math.cos(t) * pz + Math.sin(t) * qz) * r
+    ];
+    const sh = 0.80 + 0.26 * (0.5 + 0.5 * Math.cos(t0 + 0.7));
+    B.quad(P(a, ra, t0), P(a, ra, t1), P(b, rb, t1), P(b, rb, t0),
+      scale(colA, sh), scale(colA, sh), scale(colB, sh), scale(colB, sh),
+      flexA || 0, flexA || 0, flexB || 0, flexB || 0);
+  }
+}
+
+/* Corallo ramificato: la ricorsione fa tutto, come in un albero vero. */
+function coral(rnd, tint) {
+  const B = new Builder();
+  /* Poco bianco nelle punte: sott acqua la luce e gia diffusa e schiarisce da
+   * se, sommando i due effetti i coralli diventano ossa sbiancate. */
+  const top = mixc(tint, [1, 1, 1], 0.16), bot = scale(tint, 0.55);
+  const grow = (p, dir, len, r, depth) => {
+    const q = [p[0] + dir[0] * len, p[1] + dir[1] * len, p[2] + dir[2] * len];
+    const t = 1 - depth / 4;
+    tube(B, p, q, r, r * 0.72, mixc(bot, top, t), mixc(bot, top, t + 0.25), 5, t * 0.4, (t + 0.25) * 0.5);
+    if (depth <= 0) return;
+    const n = 2 + Math.floor(rnd() * 2);
+    for (let i = 0; i < n; i++) {
+      const a = rnd() * 6.28, spread = 0.5 + rnd() * 0.6;
+      let d = [
+        dir[0] + Math.cos(a) * spread,
+        dir[1] * (0.55 + rnd() * 0.5) + 0.25,
+        dir[2] + Math.sin(a) * spread
+      ];
+      const l = Math.hypot(d[0], d[1], d[2]) || 1;
+      d = [d[0] / l, d[1] / l, d[2] / l];
+      grow(q, d, len * (0.62 + rnd() * 0.22), r * 0.70, depth - 1);
+    }
+  };
+  const n0 = 2 + Math.floor(rnd() * 3);
+  for (let i = 0; i < n0; i++) {
+    const a = (i / n0) * 6.28 + rnd();
+    grow([Math.cos(a) * 0.10, 0, Math.sin(a) * 0.10],
+      [Math.cos(a) * 0.28, 0.96, Math.sin(a) * 0.28], 0.32, 0.055, 3);
+  }
+  return B.toGeometry();
+}
+
+/* Corallo cerebriforme: cupola con i solchi */
+function brainCoral(rnd, tint) {
+  const B = new Builder();
+  const top = mixc(tint, [1, 1, 1], 0.12), bot = scale(tint, 0.52);
+  const S = unitSphere(2);
+  const ph = rnd() * 10;
+  const rx = 0.5 + rnd() * 0.35, ry = 0.36 + rnd() * 0.22, rz = 0.5 + rnd() * 0.35;
+  const pos = S.verts.map(v => {
+    // i solchi: una modulazione stretta lungo una direzione
+    const g = Math.sin(v[0] * 11 + ph) * Math.sin(v[2] * 7 + ph * 0.5);
+    const d = 1 + 0.10 * g;
+    return [v[0] * rx * d, Math.max(v[1] * ry * d, -ry * 0.1), v[2] * rz * d];
+  });
+  for (const f of S.faces) {
+    const P = [pos[f[0]], pos[f[1]], pos[f[2]]].map(p => [p[0], p[1] + ry * 0.35, p[2]]);
+    const cols = [f[0], f[1], f[2]].map(i => mixc(bot, top, 0.25 + (S.verts[i][1] + 1) * 0.38));
+    B.tri(P[0], P[1], P[2], cols[0], cols[1], cols[2], 0, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* Alga: nastri lunghi che ondeggiano con la corrente (usa il canale del vento) */
+function kelp(rnd, tint) {
+  const B = new Builder();
+  const top = mixc(tint, [1, 1, 1], 0.22), bot = scale(tint, 0.45);
+  const n = 3 + Math.floor(rnd() * 4);
+  for (let k = 0; k < n; k++) {
+    blade(B, {
+      x: (rnd() - 0.5) * 0.3, y: 0, z: (rnd() - 0.5) * 0.3,
+      dir: rnd() * 6.28, len: 2.4 + rnd() * 1.6, wid: 0.075 + rnd() * 0.05,
+      seg: 6, bend: 0.30, lift: 0.97, colBase: bot, colTip: top,
+      flexMax: 1.0, taper: 0.55
+    });
+  }
+  return B.toGeometry();
+}
+
+/* Anemone: corolla di tentacoli */
+function anemone(rnd, tint) {
+  const B = new Builder();
+  const top = mixc(tint, [1, 1, 1], 0.22), bot = scale(tint, 0.55);
+  blob(B, {
+    cx: 0, cy: 0.10, cz: 0, rx: 0.20, ry: 0.14, rz: 0.20, level: 1, rough: 0.15,
+    rnd, colTop: bot, colBot: scale(bot, 0.7), flex: 0
+  });
+  const n = 16 + Math.floor(rnd() * 10);
+  for (let k = 0; k < n; k++) {
+    const a = rnd() * 6.28, rr = rnd() * 0.16;
+    blade(B, {
+      x: Math.cos(a) * rr, y: 0.16, z: Math.sin(a) * rr,
+      dir: a, len: 0.28 + rnd() * 0.28, wid: 0.022, seg: 3,
+      bend: 0.55, lift: 0.85, colBase: bot, colTip: top, flexMax: 1.0, taper: 1.3
+    });
+  }
+  return B.toGeometry();
+}
+
+
+/* Vaporatore: colonna con alette di condensa. Un oggetto costruito in mezzo al
+ * nulla dice piu di mille rocce che quel deserto e abitato. */
+function vaporator(rnd, tint) {
+  const B = new Builder();
+  const h = 2.6;
+  const metal = mixc(lin(0x6e6a60), lin(0x9a948a), rnd());
+  const dark = scale(metal, 0.55);
+  trunk(B, { r0: h * 0.10, r1: h * 0.085, h: h * 0.86, seg: 8, rings: 3, colBot: dark, colTop: metal, flexTop: 0.0 });
+  // alette verticali
+  const nf = 6;
+  for (let k = 0; k < nf; k++) {
+    const a = (k / nf) * 6.28;
+    const r0 = h * 0.09, r1 = h * 0.20;
+    const y0 = h * 0.18, y1 = h * 0.78;
+    const P = (r, y) => [Math.cos(a) * r, y, Math.sin(a) * r];
+    B.quad(P(r0, y0), P(r1, y0), P(r1, y1), P(r0, y1), dark, metal, metal, dark, 0, 0, 0, 0);
+    B.quad(P(r0, y1), P(r1, y1), P(r1, y0), P(r0, y0), dark, metal, metal, dark, 0, 0, 0, 0);
+  }
+  // cupola
+  blob(B, { cx: 0, cy: h * 0.86, cz: 0, rx: h * 0.13, ry: h * 0.10, rz: h * 0.13, level: 1, rough: 0.04, rnd, colTop: mixc(metal, [1, 1, 1], 0.2), colBot: dark, flex: 0 });
+  // base
+  B.quad([-h * 0.16, 0, -h * 0.16], [h * 0.16, 0, -h * 0.16], [h * 0.16, h * 0.05, h * 0.16], [-h * 0.16, h * 0.05, h * 0.16], dark, dark, metal, metal, 0, 0, 0, 0);
+  return B.toGeometry();
+}
+
 /* ------------------------------------------------------------------ *
  * Registro
  * ------------------------------------------------------------------ */
@@ -1241,7 +1431,8 @@ export const PROPS = {
   termiteMound, deadTree, stump, log, mushroom, flower,
   // luoghi immaginari
   twistedTree, glowMushroom, giantMushroom, fairyTree, spiralRock, ajisaTree, slabRock,
-  bamboo, ruinPillar
+  bamboo, ruinPillar, cycad,
+  coral, brainCoral, kelp, anemone, vaporator
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -1258,7 +1449,8 @@ export const PROP_HEIGHT = {
   termiteMound: 2.0, deadTree: 6.0, stump: 0.7, log: 3.0, mushroom: 0.18, flower: 0.3,
   twistedTree: 8.0, glowMushroom: 0.35, giantMushroom: 5.0, fairyTree: 13.0,
   spiralRock: 5.0, ajisaTree: 9.0, slabRock: 1.4,
-  bamboo: 8.0, ruinPillar: 4.0
+  bamboo: 8.0, ruinPillar: 4.0, cycad: 2.6,
+  coral: 1.3, brainCoral: 0.9, kelp: 3.4, anemone: 0.55, vaporator: 2.8
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo

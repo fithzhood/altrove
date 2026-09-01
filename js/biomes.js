@@ -191,6 +191,7 @@ export const BIOMES = {
 
   alpino: {
     id: 'alpino',
+    waterfalls: { minDrop: 18, chance: 0.32, width: [3, 9], radius: 420 },
     label: 'Alta montagna',
     blurb: 'Creste, ghiaioni, conifere che si arrendono a quota.',
     terrain: 'peaks',
@@ -484,6 +485,7 @@ export const BIOMES = {
 
   isolecielo: {
     id: 'isolecielo',
+    waterfalls: { minDrop: 20, chance: 0.55, width: [3, 12], radius: 420, maxSteps: 70 },
     label: 'Isole nel cielo',
     blurb: 'Zolle sospese sopra un mare di nuvole. Sotto non c e niente.',
     fantasy: true,
@@ -643,6 +645,7 @@ export const BIOMES = {
 
   pandora: {
     id: 'pandora', label: 'Mondo di Pandora', fantasy: true,
+    waterfalls: { minDrop: 8.0, chance: 0.46, width: [2.5, 9], radius: 400 },
     blurb: 'Giungla che brilla al buio e rocce sospese in aria.',
     terrain: 'hills', seed: 1707, seaLevel: 0,
     waterLevel: -22, waterKind: 'emerald', startHeightOffset: 1.7,
@@ -750,6 +753,7 @@ export const BIOMES = {
 
   giungla: {
     id: 'giungla', label: 'Giungla', fantasy: false,
+    waterfalls: { minDrop: 7.5, chance: 0.45, width: [2.5, 8], radius: 380 },
     blurb: 'Verde su verde, aria che pesa, e non si vede a venti metri.',
     terrain: 'hills', seed: 2111, seaLevel: 0,
     waterLevel: -18, waterKind: 'swamp', startHeightOffset: 1.7,
@@ -822,6 +826,7 @@ export const BIOMES = {
 
   fiordi: {
     id: 'fiordi', label: 'Fiordi', fantasy: false,
+    waterfalls: { minDrop: 22, chance: 0.40, width: [3, 10], radius: 460 },
     blurb: 'Pareti che cadono dritte nell acqua nera, e nuvole basse fra le cime.',
     terrain: 'peaks', seed: 2414, seaLevel: 0,
     waterLevel: 0, waterKind: 'sea', startHeightOffset: 1.7,
@@ -924,6 +929,7 @@ export const BIOMES = {
 
   ghiaccio: {
     id: 'ghiaccio', label: 'Regno di ghiaccio', fantasy: true,
+    waterfalls: { minDrop: 20, chance: 0.20, width: [2.5, 8], radius: 400 },
     blurb: 'Guglie trasparenti, neve azzurra, e di notte il cielo si muove.',
     terrain: 'peaks', seed: 2818, seaLevel: 0,
     waterLevel: -8, waterKind: 'ice', startHeightOffset: 1.7,
@@ -1002,16 +1008,608 @@ export const BIOMES = {
       { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.0], tilt: 0.35, tint: [0x1c1917, 0x38322e], shadow: true }
     ]
   }
+,
+
+  giurassico: {
+    id: 'giurassico', label: 'Giurassico', fantasy: true,
+    waterfalls: { minDrop: 8.0, chance: 0.42, width: [2.5, 9], radius: 380 },
+    blurb: 'Felci alte come un uomo, cicadi, e qualcosa di enorme che bruca in fondo alla valle.',
+    terrain: 'hills', seed: 3121, seaLevel: 0,
+    waterLevel: -20, waterKind: 'swamp', startHeightOffset: 1.7,
+    hills: { amp: 74, freq: 0.0014, oct: 6, medAmp: 7.5, medFreq: 0.012, microAmp: 1.0 },
+    snowLine: 9999, seasonal: false,
+    skyTint: [1.06, 1.00, 0.92], sunTint: [1.05, 1.00, 0.90],
+    palette: {
+      grassLow: 0x23501c, grassHigh: 0x467026, grassDry: 0x6f8034,
+      dirt: 0x453424, rock: 0x5c584c, rockDark: 0x3e3b33,
+      sand: 0x77694a, snow: 0xe8f0e8, underwater: 0x142c14
+    },
+    sky: { turbidity: 4.0, rayleigh: 1.05, mie: 0.0105, mieG: 0.77, groundAlbedo: [0.07, 0.12, 0.05] },
+    fog: { density: 0.0056, heightFalloff: 0.0090, tint: [0.98, 1.0, 0.92] },
+    ambience: { hemiSky: 0x9ab494, hemiGround: 0x2c4418, bounce: 0.28 },
+    scatter: [
+      { type: 'conifer', density: 0.0085, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [0.9, 1.9], tilt: 0.04, tint: [0x1e3c18, 0x395c22], shadow: true },
+      { type: 'cycad', density: 0.0130, radius: 220, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.5], tilt: 0.05, tint: [0x2e6a24, 0x4f8a30], shadow: true },
+      { type: 'palm', density: 0.0040, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.4], tilt: 0.10, tint: [0x276018, 0x468428], shadow: true },
+      { type: 'fern', density: 0.070, radius: 95, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [1.3, 2.8], tilt: 0.10, tint: [0x1c4412, 0x35701c] },
+      { type: 'bush', density: 0.030, radius: 140, slope: [0, 0.65], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.8], tilt: 0.08, tint: [0x1e4c14, 0x376c20] },
+      { type: 'log', density: 0.0028, radius: 130, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [1.0, 1.8], tilt: 0.06, tint: [0x33291c, 0x4a3c28] },
+      { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.45, tint: [0x4a4840, 0x6c6a60] },
+      { type: 'boulder', density: 0.0022, radius: 280, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.0], tilt: 0.3, tint: [0x484640, 0x6a675e], shadow: true },
+      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.9, 1.6], tilt: 0.09, tint: [0x2f6a22, 0x568a32], grass: true }
+    ]
+  },
+
+  glaciale: {
+    id: 'glaciale', label: 'Era glaciale', fantasy: true,
+    blurb: 'Steppa gelata, poche conifere, e branchi che attraversano lenti.',
+    terrain: 'hills', seed: 3222, seaLevel: 0,
+    waterLevel: -22, waterKind: 'ice', startHeightOffset: 1.7,
+    hills: { amp: 58, freq: 0.0015, oct: 6, medAmp: 6.5, medFreq: 0.010, microAmp: 0.8 },
+    snowLine: -999, alwaysSnow: 0.86, seasonal: false, aurora: true,
+    skyTint: [0.92, 0.96, 1.08],
+    nightSky: [0.0018, 0.0026, 0.0050], moonBright: 1.5,
+    palette: {
+      grassLow: 0x6a6a56, grassHigh: 0x7e7c66, grassDry: 0x8e8a70,
+      dirt: 0x4c4840, rock: 0x565a5e, rockDark: 0x3c4044,
+      sand: 0x86847a, snow: 0xeef4fc, ice: 0xb4d4e6, underwater: 0x2a4454
+    },
+    sky: { turbidity: 1.8, rayleigh: 1.42, mie: 0.0030, mieG: 0.77, groundAlbedo: [0.60, 0.66, 0.74] },
+    fog: { density: 0.0044, heightFalloff: 0.0060, tint: [0.86, 0.93, 1.02] },
+    ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x7c8894, bounce: 0.78 },
+    scatter: [
+      { type: 'conifer', density: 0.0030, radius: 320, slope: [0, 0.5], height: [-99, 999], moisture: [0.35, 1], scale: [0.55, 1.10], tilt: 0.07, tint: [0x24361c, 0x374c22], shadow: true },
+      { type: 'deadTree', density: 0.0016, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.14, tint: [0x53493c, 0x6e6252], shadow: true },
+      { type: 'iceRock', density: 0.0045, radius: 240, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.30, tint: [0x9cc4d8, 0xd8ecf6], shadow: true },
+      { type: 'rock', density: 0.012, radius: 190, slope: [0.08, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.5, tint: [0x4c5054, 0x70757a] },
+      { type: 'boulder', density: 0.0018, radius: 300, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.8], tilt: 0.3, tint: [0x4a4e52, 0x6e7378], shadow: true },
+      { type: 'dryBush', density: 0.012, radius: 160, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.1], tilt: 0.12, tint: [0x6a6450, 0x8a8268] },
+      { type: 'grassTuft', density: 0.85, radius: 40, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.5, 0.95], tilt: 0.14, tint: [0x7c7658, 0x9a9070], grass: true }
+    ]
+  }
+,
+
+  barriera: {
+    id: 'barriera', label: 'Barriera corallina', fantasy: false,
+    blurb: 'Sotto la superficie. Coralli, banchi di pesci, la luce a reticolo sul fondo.',
+    terrain: 'reef', seed: 3323, seaLevel: 0,
+    waterLevel: 0, waterKind: 'tropical', underwater: true, startHeightOffset: 1.7,
+    reef: { freq: 0.0022, amp: 14, base: -26, reefFreq: 0.0045, reefAmp: 22, medAmp: 1.6, microAmp: 0.35, maxH: -2.2 },
+    snowLine: 9999, seasonal: false, caustics: 0.95, underwaterFog: 0.010,
+    palette: {
+      grassLow: 0xa89060, grassHigh: 0xc4ae7c, grassDry: 0xd0bc90,
+      dirt: 0x8a7a52, rock: 0x6e7a70, rockDark: 0x4c564e,
+      sand: 0xd8c894, sandLight: 0xeadcb0, snow: 0xffffff, underwater: 0x2f6a6a
+    },
+    sky: { turbidity: 2.6, rayleigh: 1.0, mie: 0.0055, mieG: 0.80, groundAlbedo: [0.30, 0.34, 0.30] },
+    fog: { density: 0.0030, heightFalloff: 0.0050, tint: [0.94, 0.99, 1.0] },
+    ambience: { hemiSky: 0x8ecce0, hemiGround: 0x4a6a60, bounce: 0.55 },
+    scatter: [
+      { type: 'coral', density: 0.055, radius: 130, slope: [0, 0.7], height: [-99, -2.5], moisture: [0, 1], scale: [0.7, 2.4], tilt: 0.25, tint: [0xe0507a, 0xf0a050], underwater: true },
+      { type: 'brainCoral', density: 0.020, radius: 120, slope: [0, 0.5], height: [-99, -2.5], moisture: [0, 1], scale: [0.7, 2.0], tilt: 0.20, tint: [0xd8a850, 0xa0d0c0], underwater: true },
+      { type: 'kelp', density: 0.030, radius: 110, slope: [0, 0.5], height: [-99, -4], moisture: [0, 1], scale: [0.7, 1.6], tilt: 0.08, tint: [0x3a7a4a, 0x7ab060], underwater: true },
+      { type: 'anemone', density: 0.035, radius: 90, slope: [0, 0.6], height: [-99, -2.5], moisture: [0, 1], scale: [0.7, 1.8], tilt: 0.15, tint: [0xf07090, 0xffd090], underwater: true },
+      { type: 'rock', density: 0.020, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 2.0], tilt: 0.5, tint: [0x6a7268, 0x929a8a], underwater: true },
+      { type: 'boulder', density: 0.0028, radius: 220, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.4], tilt: 0.3, tint: [0x66705f, 0x8e9784], shadow: true, underwater: true }
+    ]
+  },
+
+  atlantide: {
+    id: 'atlantide', label: 'Atlantide', fantasy: true,
+    blurb: 'Colonne e volte sul fondo, ricoperte di corallo. Qualcuno abitava qui.',
+    terrain: 'reef', seed: 3424, seaLevel: 0,
+    waterLevel: 0, waterKind: 'sea', underwater: true, startHeightOffset: 1.7,
+    reef: { freq: 0.0018, amp: 12, base: -34, reefFreq: 0.0032, reefAmp: 20, medAmp: 1.2, microAmp: 0.3, maxH: -3.5 },
+    snowLine: 9999, seasonal: false, caustics: 0.70, underwaterFog: 0.020,
+    skyTint: [0.80, 0.92, 1.05],
+    palette: {
+      grassLow: 0x5e6a58, grassHigh: 0x7a8470, grassDry: 0x8e9484,
+      dirt: 0x4e564a, rock: 0x74786e, rockDark: 0x4e524a,
+      sand: 0x9aa088, sandLight: 0xb4b89e, snow: 0xffffff, underwater: 0x1a3a44
+    },
+    sky: { turbidity: 3.0, rayleigh: 1.05, mie: 0.0060, mieG: 0.79, groundAlbedo: [0.22, 0.26, 0.26] },
+    fog: { density: 0.0034, heightFalloff: 0.0050, tint: [0.88, 0.95, 1.02] },
+    ambience: { hemiSky: 0x74a8c0, hemiGround: 0x3e4e48, bounce: 0.44 },
+    scatter: [
+      { type: 'ruinPillar', density: 0.020, radius: 170, slope: [0, 0.35], height: [-99, -4], moisture: [0, 1], scale: [1.2, 3.6], tilt: 0.16, tint: [0x8a9080, 0xb0b6a0], shadow: true, underwater: true },
+      { type: 'slabRock', density: 0.014, radius: 160, slope: [0, 0.7], height: [-99, -4], moisture: [0, 1], scale: [1.0, 3.2], tilt: 0.14, tint: [0x7e8478, 0xa2a898], shadow: true, underwater: true },
+      { type: 'coral', density: 0.020, radius: 110, slope: [0, 0.7], height: [-99, -4], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.25, tint: [0xc06070, 0xe0a060], underwater: true },
+      { type: 'brainCoral', density: 0.012, radius: 110, slope: [0, 0.5], height: [-99, -4], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.2, tint: [0xa89060, 0x90b0a8], underwater: true },
+      { type: 'kelp', density: 0.026, radius: 100, slope: [0, 0.5], height: [-99, -6], moisture: [0, 1], scale: [0.8, 1.8], tilt: 0.08, tint: [0x2e5a3a, 0x5e8a4a], underwater: true },
+      { type: 'rock', density: 0.016, radius: 140, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.5, tint: [0x646a5e, 0x8a907e], underwater: true }
+    ]
+  },
+
+  terracava: {
+    id: 'terracava', label: 'La Terra cava', fantasy: true,
+    waterfalls: { minDrop: 7.5, chance: 0.44, width: [2.5, 8], radius: 380 },
+    blurb: 'Dentro il pianeta. La terra si alza ai lati invece di scendere, e il sole sta appeso al centro.',
+    terrain: 'hills', seed: 3525, seaLevel: 0,
+    waterLevel: -24, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 50, freq: 0.0016, oct: 6, medAmp: 6.0, medFreq: 0.012, microAmp: 0.9 },
+    snowLine: 9999, seasonal: false,
+    /* Curvatura negativa: il mondo si piega verso l alto e l orizzonte, invece
+     * di cadere, sale. E il segno opposto del pianetino. */
+    curve: -1 / (2 * 600), noShadows: true,
+    fixedSun: [78, 190],
+    skyTint: [1.10, 0.94, 0.72], sunTint: [1.12, 0.98, 0.76],
+    nightSky: [0.0090, 0.0072, 0.0044], ambientBoost: 1.5, farFade: 2600,
+    palette: {
+      grassLow: 0x3a6a22, grassHigh: 0x6d9038, grassDry: 0x94a04a,
+      dirt: 0x5a4630, rock: 0x77706a, rockDark: 0x54504a,
+      sand: 0x9a8f70, snow: 0xeef3fa, underwater: 0x1e3a1c
+    },
+    sky: { turbidity: 5.5, rayleigh: 0.65, mie: 0.020, mieG: 0.74, groundAlbedo: [0.16, 0.22, 0.10] },
+    fog: { density: 0.0075, heightFalloff: 0.0035, tint: [1.06, 0.96, 0.78] },
+    ambience: { hemiSky: 0xd8b878, hemiGround: 0x40521e, bounce: 0.45 },
+    scatter: [
+      { type: 'conifer', density: 0.0060, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.4], tilt: 0.04, tint: [0x24461c, 0x40682a], shadow: true },
+      { type: 'broadleaf', density: 0.0075, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.4], tilt: 0.05, tint: [0x3a7a24, 0x63a034], shadow: true },
+      { type: 'cycad', density: 0.0060, radius: 200, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.4], tilt: 0.05, tint: [0x2e6a24, 0x4f8a30], shadow: true },
+      { type: 'fern', density: 0.045, radius: 90, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.9, 2.0], tilt: 0.10, tint: [0x1e4a14, 0x376c20] },
+      { type: 'bush', density: 0.020, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.5], tilt: 0.07, tint: [0x2a5a1c, 0x477a28] },
+      { type: 'rock', density: 0.010, radius: 160, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0x6a645c, 0x8e8880] },
+      { type: 'grassTuft', density: 2.4, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x50942c, 0x86b444], grass: true }
+    ]
+  },
+
+  agartha: {
+    id: 'agartha', label: 'Agartha', fantasy: true,
+    waterfalls: { minDrop: 16, chance: 0.34, width: [3, 11], radius: 400 },
+    blurb: 'Il regno di dentro: cristalli alti come torri e una luce che viene da sopra la testa.',
+    terrain: 'peaks', seed: 3626, seaLevel: 0,
+    waterLevel: 8, waterKind: 'emerald', startHeightOffset: 1.7,
+    peaks: { amp: 260, freq: 0.0011, oct: 6, medAmp: 16, medFreq: 0.0060, microAmp: 1.1, valleyFloor: -6, sharp: 0.50, massifFreq: 0.00042, floorK: 22 },
+    snowLine: 9999, seasonal: false,
+    curve: -1 / (2 * 900), noShadows: true,
+    fixedSun: [72, 200],
+    skyTint: [1.22, 1.02, 0.70], sunTint: [1.18, 1.02, 0.74],
+    nightSky: [0.0110, 0.0086, 0.0050], ambientBoost: 1.6, farFade: 2600,
+    motes: { amount: 0.50, color: [1.0, 0.86, 0.45] },
+    palette: {
+      grassLow: 0x2f6a4e, grassHigh: 0x559a66, grassDry: 0x86a35a,
+      dirt: 0x6a5638, rock: 0x8a7a58, rockDark: 0x5e5440,
+      sand: 0xa8946a, snow: 0xf4ecd8, scree: 0x9a8c6a, underwater: 0x1a4a3a
+    },
+    sky: { turbidity: 4.5, rayleigh: 0.72, mie: 0.016, mieG: 0.76, groundAlbedo: [0.18, 0.22, 0.12] },
+    fog: { density: 0.0060, heightFalloff: 0.0040, tint: [1.10, 1.00, 0.76] },
+    ambience: { hemiSky: 0xe8c078, hemiGround: 0x3e5a34, bounce: 0.48 },
+    scatter: [
+      { type: 'crystal', density: 0.0075, radius: 320, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.0], tilt: 0.16, tint: [0xf0c060, 0xfff0b0], shadow: true, emissive: 0.10 },
+      { type: 'fairyTree', density: 0.0032, radius: 300, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.3], tilt: 0.05, tint: [0x60c890, 0xc8f0b0], shadow: true, emissive: 0.05 },
+      { type: 'ajisaTree', density: 0.0038, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.2], tilt: 0.05, tint: [0x2f8a60, 0x66c090], shadow: true },
+      { type: 'spiralRock', density: 0.0024, radius: 300, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.6], tilt: 0.07, tint: [0x9a8458, 0xc8b078], shadow: true },
+      { type: 'fern', density: 0.035, radius: 85, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.6], tilt: 0.10, tint: [0x2a6a44, 0x4a9060] },
+      { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.45, tint: [0x7e7050, 0xa89670] },
+      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x3f9c68, 0x78c890], grass: true }
+    ]
+  },
+
+  titano: {
+    id: 'titano', label: 'Titano', fantasy: true,
+    blurb: 'Dune di idrocarburi sotto una foschia arancione, laghi di metano, e Saturno che riempie il cielo.',
+    terrain: 'dunes', seed: 3727, seaLevel: 0,
+    waterLevel: 7, waterKind: 'methane', startHeightOffset: 1.7,
+    dunes: { mesaAmp: 44, mesaFreq: 0.00080, duneAmp: 13, duneFreqX: 0.0018, duneFreqZ: 0.0110, microAmp: 0.30 },
+    snowLine: 9999, seasonal: false,
+    skyTint: [1.45, 0.92, 0.40], sunTint: [1.30, 0.94, 0.50], sunBoost: 0.35, sunAngle: 0.0040,
+    nightSky: [0.0035, 0.0022, 0.0009], ambientBoost: 1.35,
+    planet: { dir: [0.42, 0.36, -0.83], size: 0.20, color: [0.62, 0.54, 0.36], ring: true },
+    palette: {
+      grassLow: 0x4a3a26, grassHigh: 0x5e4a2e, grassDry: 0x6e5834,
+      dirt: 0x3e3020, rock: 0x554634, rockDark: 0x372c20,
+      sand: 0x6a5636, sandLight: 0x846c46, snow: 0xc8b48c, underwater: 0x1c1610
+    },
+    sky: { turbidity: 8.0, rayleigh: 0.55, mie: 0.045, mieG: 0.66, groundAlbedo: [0.16, 0.11, 0.05] },
+    fog: { density: 0.0110, heightFalloff: 0.0030, tint: [1.35, 0.94, 0.46] },
+    ambience: { hemiSky: 0xc08840, hemiGround: 0x3e3020, bounce: 0.40 },
+    scatter: [
+      { type: 'rock', density: 0.020, radius: 180, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.4, 1.4], tilt: 0.5, tint: [0x3e3224, 0x685440] },
+      { type: 'boulder', density: 0.0026, radius: 280, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.7], tilt: 0.3, tint: [0x3a2e22, 0x60503c], shadow: true },
+      { type: 'slabRock', density: 0.0020, radius: 240, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.0], tilt: 0.2, tint: [0x40342a, 0x6a5644], shadow: true }
+    ]
+  },
+
+  montefato: {
+    id: 'montefato', label: 'Monte Fato', fantasy: true,
+    blurb: 'Un cono solo, in mezzo a una piana di cenere, con la bocca che brucia.',
+    terrain: 'cone', seed: 3828, seaLevel: 0,
+    waterLevel: -22, waterKind: 'lava', startHeightOffset: 1.7,
+    cone: { radius: 1150, height: 520, pow: 1.7, craterR: 150, craterDepth: 110, craterGlow: true, flutes: 15, fluteAmp: 9, plainAmp: 16, microAmp: 1.0 },
+    snowLine: 9999, seasonal: false, emberGlow: true,
+    skyTint: [1.50, 0.58, 0.34], sunTint: [1.35, 0.66, 0.40],
+    nightSky: [0.0090, 0.0030, 0.0016], ambientBoost: 1.0,
+    palette: {
+      grassLow: 0x2c2824, grassHigh: 0x38332e, grassDry: 0x463f38,
+      dirt: 0x262220, rock: 0x1e1b19, rockDark: 0x121010,
+      sand: 0x363029, snow: 0xa49e96, underwater: 0xff4a08
+    },
+    sky: { turbidity: 8.0, rayleigh: 0.70, mie: 0.030, mieG: 0.80, groundAlbedo: [0.04, 0.03, 0.03] },
+    fog: { density: 0.0105, heightFalloff: 0.0050, tint: [1.35, 0.64, 0.42] },
+    ambience: { hemiSky: 0x8c3c28, hemiGround: 0x2e1408, bounce: 0.18 },
+    motes: { amount: 0.55, color: [1.0, 0.38, 0.08] },
+    scatter: [
+      { type: 'rock', density: 0.038, radius: 200, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 2.0], tilt: 0.6, tint: [0x1a1715, 0x322c28] },
+      { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.1], tilt: 0.35, tint: [0x1b1816, 0x36302c], shadow: true },
+      { type: 'lavaRock', density: 0.0030, radius: 170, slope: [0, 0.7], height: [-99, 60], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.4, tint: [0xff4a08, 0xffb43c], emissive: 0.70 },
+      { type: 'deadTree', density: 0.0016, radius: 260, slope: [0, 0.5], height: [-99, 200], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.2, tint: [0x181514, 0x2c2622], shadow: true },
+      { type: 'ruinPillar', density: 0.0010, radius: 220, slope: [0, 0.35], height: [-99, 200], moisture: [0, 1], scale: [0.8, 1.6], tilt: 0.16, tint: [0x241f1c, 0x3c342e], shadow: true }
+    ]
+  },
+
+  tatooine: {
+    id: 'tatooine', label: 'Tatooine', fantasy: true,
+    blurb: 'Sabbia, canyon e due soli che tramontano insieme.',
+    terrain: 'dunes', seed: 3929, seaLevel: 0,
+    waterLevel: null, startHeightOffset: 1.7,
+    dunes: { mesaAmp: 82, mesaFreq: 0.00062, duneAmp: 15, duneFreqX: 0.0016, duneFreqZ: 0.0100, microAmp: 0.32 },
+    snowLine: 9999, seasonal: false, extraSuns: 1,
+    skyTint: [1.12, 1.00, 0.84], sunTint: [1.10, 1.00, 0.86],
+    palette: {
+      grassLow: 0x9a8452, grassHigh: 0xae9760, grassDry: 0xbca768,
+      dirt: 0xa87c48, rock: 0xa07850, rockDark: 0x74553a,
+      sand: 0xdcc08c, sandLight: 0xeed8ac, snow: 0xffffff, underwater: 0x6b5a3a
+    },
+    sky: { turbidity: 3.8, rayleigh: 0.90, mie: 0.0085, mieG: 0.81, groundAlbedo: [0.38, 0.32, 0.20] },
+    fog: { density: 0.0026, heightFalloff: 0.0038, tint: [1.02, 0.97, 0.86] },
+    ambience: { hemiSky: 0xb0c0d8, hemiGround: 0x8a6c40, bounce: 0.60 },
+    scatter: [
+      { type: 'vaporator', density: 0.00070, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [0.9, 1.4], tilt: 0.02, tint: [0x8a8478, 0xb0aa9c], shadow: true },
+      { type: 'dryBush', density: 0.010, radius: 190, slope: [0, 0.5], height: [-99, 999], moisture: [0, 0.75], scale: [0.5, 1.2], tilt: 0.10, tint: [0x8a7a48, 0xa89a60] },
+      { type: 'rock', density: 0.016, radius: 190, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.45, 1.6], tilt: 0.5, tint: [0x8e6a44, 0xb89070] },
+      { type: 'boulder', density: 0.0022, radius: 300, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.1], tilt: 0.3, tint: [0x8a6642, 0xb08a66], shadow: true },
+      { type: 'slabRock', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.0], tilt: 0.18, tint: [0x94704a, 0xbc966e], shadow: true }
+    ]
+  },
+
+  oort: {
+    id: 'oort', label: 'Nube di Oort', fantasy: true,
+    blurb: 'Un sasso di ghiaccio ai margini del sistema. Il Sole e solo la stella piu luminosa.',
+    terrain: 'planetoid', seed: 4030, seaLevel: 0,
+    waterLevel: null, startHeightOffset: 1.7,
+    planetoid: { freq: 0.017, amp: 3.4, microAmp: 0.5 },
+    curve: 1 / (2 * 95), noShadows: true,
+    snowLine: 9999, seasonal: false, space: true,
+    skyTint: [0.72, 0.80, 1.0], sunBoost: 0.40, sunAngle: 0.0011,
+    nightSky: [0.00055, 0.00070, 0.00130], moonBright: 0, ambientBoost: 0.75, farFade: 700,
+    palette: {
+      /* Un nucleo cometario e nero come il carbone: l albedo vera e sotto il
+       * cinque per cento. Con il ghiaccio bianco e il sole pieno l esposizione
+       * automatica impazziva. */
+      grassLow: 0x2e3640, grassHigh: 0x424c58, grassDry: 0x4e5865,
+      dirt: 0x242a32, rock: 0x343c46, rockDark: 0x1e242b,
+      sand: 0x3a434e, snow: 0xb8c8d8, ice: 0x8098ac, underwater: 0x1a2028
+    },
+    sky: { turbidity: 1.0, rayleigh: 0.008, mie: 0.0001, mieG: 0.70, groundAlbedo: [0.05, 0.06, 0.07] },
+    fog: { density: 0.00010, heightFalloff: 0.001, tint: [0.72, 0.80, 1.0] },
+    ambience: { hemiSky: 0x3a4658, hemiGround: 0x242a32, bounce: 0.35 },
+    scatter: [
+      { type: 'iceRock', density: 0.016, radius: 130, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.5, 2.0], tilt: 0.4, tint: [0x54687e, 0x9ab4c8] },
+      { type: 'crystal', density: 0.0060, radius: 130, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.6, 2.2], tilt: 0.3, tint: [0x88b8d8, 0xd8f0ff], emissive: 0.04 },
+      { type: 'slabRock', density: 0.0055, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [1.0, 4.5], tilt: 0.5, tint: [0x323a44, 0x606c7a], yOffset: [12, 70] },
+      { type: 'rock', density: 0.020, radius: 120, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.4, 1.3], tilt: 0.55, tint: [0x2c343e, 0x556170] }
+    ]
+  },
+
+  sequoie: {
+    id: 'sequoie', label: 'Foresta di sequoie', fantasy: false,
+    waterfalls: { minDrop: 7.0, chance: 0.40, width: [2, 6], radius: 340 },
+    blurb: 'Colonne rosse alte trenta metri. La luce arriva a fasci, molto in alto.',
+    terrain: 'hills', seed: 4131, seaLevel: 0,
+    waterLevel: -26, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 58, freq: 0.0017, oct: 6, medAmp: 6.5, medFreq: 0.012, microAmp: 0.9 },
+    snowLine: 260, seasonal: true,
+    palette: {
+      grassLow: 0x2c4a1e, grassHigh: 0x4a6428, grassDry: 0x6e7440,
+      dirt: 0x5e3a24, rock: 0x635e54, rockDark: 0x453f38,
+      sand: 0x7a6a4c, snow: 0xe9eff7, underwater: 0x1c2a16
+    },
+    sky: { turbidity: 3.2, rayleigh: 1.10, mie: 0.0075, mieG: 0.78, groundAlbedo: [0.07, 0.10, 0.05] },
+    fog: { density: 0.0062, heightFalloff: 0.0105, tint: [1.0, 0.96, 0.88] },
+    ambience: { hemiSky: 0x8aa8b8, hemiGround: 0x2e4018, bounce: 0.22 },
+    scatter: [
+      { type: 'conifer', density: 0.0038, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [2.6, 4.3], tilt: 0.015, tint: [0x1e3a18, 0x35561f], shadow: true },
+      { type: 'conifer', density: 0.0060, radius: 280, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.5, 1.1], tilt: 0.05, tint: [0x24421a, 0x3d5e24], shadow: true },
+      { type: 'fern', density: 0.075, radius: 90, slope: [0, 0.6], height: [-99, 999], moisture: [0.25, 1], scale: [1.0, 2.2], tilt: 0.10, tint: [0x1e4414, 0x35661e] },
+      { type: 'log', density: 0.0032, radius: 140, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [1.4, 2.6], tilt: 0.05, tint: [0x4a2c1c, 0x6a4630] },
+      { type: 'stump', density: 0.0016, radius: 120, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [1.6, 3.0], tilt: 0.04, tint: [0x5a3320, 0x74472e] },
+      { type: 'mushroom', density: 0.018, radius: 60, slope: [0, 0.45], height: [-99, 999], moisture: [0.45, 1], scale: [0.8, 1.6], tilt: 0.12, tint: [0xa06840, 0xd8c8a0] },
+      { type: 'rock', density: 0.009, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.5], tilt: 0.45, tint: [0x585349, 0x7a7468] },
+      { type: 'grassTuft', density: 1.5, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.15, 1], scale: [0.7, 1.25], tilt: 0.10, tint: [0x3a6a22, 0x5f8a32], grass: true }
+    ]
+  },
+
+  lavanda: {
+    id: 'lavanda', label: 'Campi di lavanda', fantasy: false,
+    blurb: 'Filari viola fino alla collina, e il ronzio di quello che ci vive dentro.',
+    terrain: 'hills', seed: 4232, seaLevel: 0,
+    waterLevel: -28, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 30, freq: 0.0020, oct: 5, medAmp: 4.0, medFreq: 0.013, microAmp: 0.6 },
+    snowLine: 9999, seasonal: true,
+    sunTint: [1.06, 1.00, 0.92],
+    palette: {
+      grassLow: 0x7a7a48, grassHigh: 0x9a9455, grassDry: 0xb0a660,
+      dirt: 0x8a6a44, rock: 0x8e8878, rockDark: 0x6a6558,
+      sand: 0xa89870, snow: 0xeef3fa, underwater: 0x40441f
+    },
+    sky: { turbidity: 2.6, rayleigh: 1.05, mie: 0.0050, mieG: 0.79, groundAlbedo: [0.24, 0.22, 0.16] },
+    fog: { density: 0.0030, heightFalloff: 0.0060, tint: [1.0, 0.98, 1.0] },
+    ambience: { hemiSky: 0x9cb8e0, hemiGround: 0x6a6440, bounce: 0.48 },
+    scatter: [
+      { type: 'tallGrass', density: 3.4, radius: 46, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.45, 0.85], tilt: 0.04, tint: [0x6a5a9a, 0xa88fd0], grass: true, rows: { period: 2.4, width: 0.16, angle: 0.5 } },
+      { type: 'broadleaf', density: 0.0016, radius: 300, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [0.6, 0.95], tilt: 0.04, tint: [0x6a7a44, 0x93a05c], shadow: true },
+      { type: 'bush', density: 0.006, radius: 140, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.06, tint: [0x5a6a38, 0x7d8a4a] },
+      { type: 'flower', density: 0.030, radius: 60, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.3], tilt: 0.12, tint: [0xf0e070, 0xf8f0f8] },
+      { type: 'rock', density: 0.005, radius: 150, slope: [0.1, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.3], tilt: 0.45, tint: [0x7e786a, 0xa29a8a] },
+      { type: 'grassTuft', density: 1.1, radius: 36, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.0], tilt: 0.08, tint: [0x86844a, 0xa8a45e], grass: true }
+    ]
+  },
+
+  mareaperto: {
+    id: 'mareaperto', label: 'Mare aperto', fantasy: false,
+    blurb: 'Niente terra in nessuna direzione. Solo onde lunghe e il cielo.',
+    terrain: 'flat', seed: 4333, seaLevel: 0,
+    waterLevel: 0, waterKind: 'sea', openSea: true, startHeightOffset: 1.7,
+    flat: { amp: 5.0, freq: 0.0006, microAmp: 0.1, base: -70 },
+    snowLine: 9999, seasonal: false, farFade: 3600, caustics: 0,
+    palette: {
+      grassLow: 0x30414a, grassHigh: 0x415460, grassDry: 0x51636e,
+      dirt: 0x2a3840, rock: 0x3e4c56, rockDark: 0x2a343c,
+      sand: 0x8a8878, snow: 0xffffff, underwater: 0x08222c
+    },
+    sky: { turbidity: 2.2, rayleigh: 1.15, mie: 0.0045, mieG: 0.80, groundAlbedo: [0.05, 0.08, 0.10] },
+    fog: { density: 0.0026, heightFalloff: 0.0035, tint: [0.94, 0.98, 1.04] },
+    ambience: { hemiSky: 0x8ab4dc, hemiGround: 0x2a3a44, bounce: 0.30 },
+    scatter: []
+  }
+,
+
+  cascate: {
+    id: 'cascate', label: 'Le cascate', fantasy: false,
+    waterfalls: { minDrop: 10, chance: 0.72, width: [3, 14], radius: 460, maxSteps: 60 },
+    blurb: 'Gradoni di roccia, e acqua che scende da tutte le parti.',
+    terrain: 'peaks', seed: 4434, seaLevel: 0,
+    waterLevel: 12, waterKind: 'lake', startHeightOffset: 1.7,
+    peaks: { amp: 290, freq: 0.0016, oct: 7, medAmp: 26, medFreq: 0.0080, microAmp: 1.3, valleyFloor: 0, sharp: 0.45, massifFreq: 0.00060, floorK: 16 },
+    snowLine: 320, snowBand: 60, seasonal: true,
+    palette: {
+      grassLow: 0x2e5620, grassHigh: 0x53702e, grassDry: 0x76783e,
+      dirt: 0x4a4030, rock: 0x5e5c54, rockDark: 0x3f3e38,
+      sand: 0x7a7466, snow: 0xeef4fc, scree: 0x86827a, underwater: 0x18382e
+    },
+    sky: { turbidity: 2.6, rayleigh: 1.15, mie: 0.0055, mieG: 0.79, groundAlbedo: [0.10, 0.14, 0.09] },
+    fog: { density: 0.0055, heightFalloff: 0.0085, tint: [0.94, 0.99, 1.02] },
+    ambience: { hemiSky: 0x8fb4d4, hemiGround: 0x36461f, bounce: 0.32 },
+    scatter: [
+      { type: 'conifer', density: 0.0090, radius: 320, slope: [0, 0.62], height: [4, 330], moisture: [0.25, 1], scale: [0.6, 1.35], tilt: 0.05, tint: [0x22401a, 0x3c6024], shadow: true },
+      { type: 'broadleaf', density: 0.0042, radius: 280, slope: [0, 0.5], height: [4, 220], moisture: [0.4, 1], scale: [0.7, 1.2], tilt: 0.05, tint: [0x2f6a22, 0x568c30], shadow: true },
+      { type: 'fern', density: 0.055, radius: 90, slope: [0, 0.62], height: [3, 260], moisture: [0.35, 1], scale: [0.8, 1.7], tilt: 0.10, tint: [0x1e4a16, 0x376e22] },
+      { type: 'bush', density: 0.016, radius: 150, slope: [0, 0.62], height: [3, 300], moisture: [0.25, 1], scale: [0.6, 1.4], tilt: 0.07, tint: [0x2a5218, 0x477026] },
+      { type: 'rock', density: 0.024, radius: 190, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.9], tilt: 0.5, tint: [0x55534c, 0x7a7770] },
+      { type: 'boulder', density: 0.0034, radius: 300, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.2], tilt: 0.3, tint: [0x52504a, 0x777369], shadow: true },
+      { type: 'log', density: 0.0022, radius: 130, slope: [0, 0.4], height: [4, 250], moisture: [0.3, 1], scale: [0.9, 1.7], tilt: 0.06, tint: [0x3a2e20, 0x54432e] },
+      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.62], height: [3, 320], moisture: [0.2, 1], scale: [0.7, 1.2], tilt: 0.09, tint: [0x3f7a26, 0x6f9a38], grass: true }
+    ]
+  }
+,
+
+  biblioteca: {
+    id: 'biblioteca', label: 'La Biblioteca', fantasy: true,
+    library: true,
+    blurb: 'Gallerie esagonali di scaffali, tutte uguali, in ogni direzione. Non se ne esce.',
+    terrain: 'flat', seed: 4535, seaLevel: 0,
+    waterLevel: null, startHeightOffset: 1.72,
+    flat: { amp: 0.0, freq: 0.001, microAmp: 0.0 },
+    snowLine: 9999, seasonal: false, noShadows: true,
+    skyTint: [0.30, 0.24, 0.16], sunBoost: 0.02,
+    nightSky: [0.0038, 0.0028, 0.0018], ambientBoost: 0.85, farFade: 220,
+    palette: {
+      grassLow: 0x6a6055, grassHigh: 0x7a7065, grassDry: 0x8a8074,
+      dirt: 0x4a4238, rock: 0x6a6055, rockDark: 0x4e4740,
+      sand: 0x7a7065, snow: 0xffffff, underwater: 0x2a2620
+    },
+    sky: { turbidity: 9.0, rayleigh: 0.20, mie: 0.030, mieG: 0.70, groundAlbedo: [0.10, 0.08, 0.06] },
+    fog: { density: 0.0210, heightFalloff: 0.0010, tint: [1.0, 0.84, 0.60] },
+    ambience: { hemiSky: 0x6a5a44, hemiGround: 0x38312a, bounce: 0.55 },
+    motes: { amount: 0.22, color: [1.0, 0.88, 0.66] },
+    scatter: []
+  }
 };
 
 export const BIOME_ORDER = [
   // reali
   'foresta', 'deserto', 'citta', 'alpino', 'costa', 'artico', 'savana', 'vulcanico', 'palude',
-  'canyonrosso', 'giungla', 'bambu', 'salar', 'fiordi', 'geyser',
+  'canyonrosso', 'giungla', 'bambu', 'sequoie', 'lavanda', 'salar', 'fiordi', 'geyser',
+  'barriera', 'mareaperto', 'cascate',
   // immaginari
   'boscostregato', 'boscofatato', 'isolecielo', 'smeraldo', 'collegio', 'pianetino',
-  'pandora', 'marte', 'luna', 'desolata', 'neon', 'ghiaccio', 'contea', 'ombra'
+  'pandora', 'marte', 'luna', 'titano', 'oort', 'desolata', 'neon', 'ghiaccio',
+  'contea', 'ombra', 'montefato', 'tatooine', 'giurassico', 'glaciale',
+  'atlantide', 'terracava', 'agartha', 'biblioteca'
 ];
+
+
+/* ------------------------------------------------------------------ *
+ * FAUNA
+ * Tenuta separata dalle ricette dei luoghi: si aggiunge e si toglie senza
+ * toccare il resto. Un posto dove niente si muove sembra un plastico.
+ *
+ * count = quanti individui vivi attorno al giocatore; radius = entro quale
+ * distanza restano (usciti, ricompaiono dall altra parte).
+ * ------------------------------------------------------------------ */
+
+const UCCELLO = [0x2a2622, 0x5c5248];
+const GABBIANO = [0xd4d6d2, 0xf2f2ee];
+const CORVO = [0x121418, 0x2c3038];
+const RAPACE = [0x382c20, 0x6e5c44];
+const CERVO = [0x7c5730, 0xb08a5a];
+const ANTILOPE = [0xb8834a, 0xe0b47a];
+const PESCE = [0x35657c, 0x8fb8cc];
+
+export const FAUNA = {
+  foresta: [
+    { type: 'bird', count: 24, radius: 300, y: [28, 70], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'deer', count: 9, radius: 220, scale: [0.85, 1.15], tint: CERVO, speed: [1.1, 2.0], shadow: true },
+    { type: 'butterfly', count: 60, radius: 42, y: [0.5, 2.4], scale: [0.8, 1.4], tint: [0xe8a83a, 0xf2d86a] }
+  ],
+  deserto: [
+    { type: 'raptor', count: 6, radius: 340, y: [60, 130], scale: [0.9, 1.3], tint: RAPACE }
+  ],
+  citta: [
+    { type: 'bird', count: 26, radius: 260, y: [22, 55], scale: [0.8, 1.1], tint: [0x4a4e56, 0x8a8e96] }
+  ],
+  alpino: [
+    { type: 'raptor', count: 7, radius: 360, y: [70, 160], scale: [1.0, 1.4], tint: RAPACE },
+    { type: 'deer', count: 7, radius: 220, scale: [0.8, 1.05], tint: CERVO, speed: [1.0, 1.8], shadow: true }
+  ],
+  costa: [
+    { type: 'bird', count: 28, radius: 300, y: [14, 45], scale: [0.9, 1.3], tint: GABBIANO },
+    { type: 'fish', count: 70, radius: 90, scale: [0.7, 1.5], tint: [0x4a8a90, 0xd8d060] },
+    { type: 'butterfly', count: 26, radius: 40, y: [0.5, 2.2], scale: [0.9, 1.5], tint: [0x40b0d0, 0xf0f0a0] }
+  ],
+  artico: [
+    { type: 'bird', count: 10, radius: 300, y: [25, 60], scale: [0.9, 1.2], tint: GABBIANO }
+  ],
+  savana: [
+    { type: 'bird', count: 18, radius: 320, y: [35, 90], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'antelope', count: 16, radius: 280, scale: [0.85, 1.15], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'butterfly', count: 26, radius: 40, y: [0.4, 1.8], scale: [0.8, 1.2], tint: [0xe0c050, 0xf0e090] }
+  ],
+  palude: [
+    { type: 'bird', count: 14, radius: 260, y: [16, 45], scale: [0.9, 1.4], tint: [0x54503e, 0x8a8464] },
+    { type: 'fish', count: 34, radius: 70, scale: [0.6, 1.1], tint: [0x3e5230, 0x7a8a4a] },
+    { type: 'butterfly', count: 46, radius: 40, y: [0.3, 1.6], scale: [0.8, 1.3], tint: [0x8ac04a, 0xd8e070] }
+  ],
+  canyonrosso: [
+    { type: 'raptor', count: 7, radius: 380, y: [80, 170], scale: [1.0, 1.4], tint: RAPACE }
+  ],
+  giungla: [
+    { type: 'bird', count: 34, radius: 240, y: [18, 48], scale: [0.8, 1.2], tint: [0x2a8a3a, 0xe06a2a] },
+    { type: 'butterfly', count: 90, radius: 42, y: [0.4, 3.0], scale: [0.9, 1.7], tint: [0x30a0e0, 0xf0d040] },
+    { type: 'fish', count: 22, radius: 60, scale: [0.6, 1.0], tint: [0x3a6a48, 0x9ab060] }
+  ],
+  bambu: [
+    { type: 'bird', count: 22, radius: 250, y: [20, 50], scale: [0.8, 1.15], tint: [0x4a5a30, 0x9aa860] },
+    { type: 'butterfly', count: 55, radius: 40, y: [0.4, 2.6], scale: [0.8, 1.4], tint: [0xf0f0f0, 0xe8c060] }
+  ],
+  salar: [
+    { type: 'bird', count: 14, radius: 340, y: [20, 70], scale: [0.9, 1.4], tint: [0xe8b0c0, 0xf8e0e8] }
+  ],
+  fiordi: [
+    { type: 'bird', count: 30, radius: 320, y: [20, 80], scale: [0.9, 1.3], tint: GABBIANO },
+    { type: 'fish', count: 50, radius: 80, scale: [0.7, 1.3], tint: [0x2e5a6e, 0x8aa8b8] }
+  ],
+  geyser: [
+    { type: 'bird', count: 16, radius: 280, y: [26, 60], scale: [0.9, 1.2], tint: UCCELLO },
+    { type: 'deer', count: 7, radius: 220, scale: [0.9, 1.2], tint: CERVO, speed: [1.1, 2.0], shadow: true }
+  ],
+  boscostregato: [
+    { type: 'bird', count: 14, radius: 240, y: [18, 44], scale: [0.9, 1.3], tint: CORVO },
+    { type: 'butterfly', count: 26, radius: 36, y: [0.4, 2.0], scale: [0.8, 1.3], tint: [0x2a3a2a, 0x6a8a5a] }
+  ],
+  boscofatato: [
+    { type: 'butterfly', count: 110, radius: 44, y: [0.4, 3.4], scale: [0.9, 1.8], tint: [0x60f0c0, 0xd0a0ff], emissive: 0.30 },
+    { type: 'jelly', count: 9, radius: 180, y: [10, 34], scale: [0.8, 1.8], tint: [0x70d8ff, 0xd8b0ff], emissive: 0.22 },
+    { type: 'bird', count: 14, radius: 240, y: [22, 55], scale: [0.8, 1.2], tint: [0x9ad0f0, 0xf0d8ff] }
+  ],
+  isolecielo: [
+    { type: 'bird', count: 40, radius: 360, y: [20, 90], scale: [0.9, 1.4], tint: GABBIANO },
+    { type: 'jelly', count: 7, radius: 220, y: [26, 60], scale: [1.0, 2.2], tint: [0xd8e8f0, 0xffffff] }
+  ],
+  smeraldo: [
+    { type: 'bird', count: 20, radius: 300, y: [28, 70], scale: [0.9, 1.3], tint: [0x2a7a6a, 0x8ad0b0] },
+    { type: 'butterfly', count: 40, radius: 40, y: [0.4, 2.2], scale: [0.9, 1.5], tint: [0x40e0b0, 0xf0f0a0] }
+  ],
+  collegio: [
+    { type: 'bird', count: 24, radius: 300, y: [26, 75], scale: [0.9, 1.3], tint: CORVO },
+    { type: 'deer', count: 9, radius: 230, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 2.0], shadow: true },
+    { type: 'fish', count: 26, radius: 70, scale: [0.6, 1.1], tint: [0x2e4a3a, 0x7a8a5a] }
+  ],
+  pianetino: [
+    { type: 'butterfly', count: 40, radius: 42, y: [0.4, 2.4], scale: [0.9, 1.6], tint: [0xf0d040, 0xf8f0c0] },
+    { type: 'bird', count: 8, radius: 120, y: [14, 30], scale: [0.9, 1.2], tint: UCCELLO }
+  ],
+  pandora: [
+    { type: 'jelly', count: 16, radius: 240, y: [12, 46], scale: [0.9, 2.2], tint: [0x40d0ff, 0xc060ff], emissive: 0.26 },
+    { type: 'butterfly', count: 100, radius: 46, y: [0.5, 3.6], scale: [1.0, 2.0], tint: [0x50f0d0, 0xff70d0], emissive: 0.30 },
+    { type: 'bird', count: 26, radius: 300, y: [26, 80], scale: [1.0, 1.6], tint: [0x2060a0, 0xe0a040] },
+    { type: 'fish', count: 26, radius: 70, scale: [0.7, 1.3], tint: [0x30a0a0, 0xc0f0e0] }
+  ],
+  desolata: [
+    { type: 'raptor', count: 6, radius: 340, y: [55, 120], scale: [0.9, 1.3], tint: CORVO }
+  ],
+  neon: [
+    { type: 'bird', count: 18, radius: 240, y: [30, 90], scale: [0.8, 1.1], tint: [0x2a2e36, 0x60646c] }
+  ],
+  ghiaccio: [
+    { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO }
+  ],
+  contea: [
+    { type: 'bird', count: 30, radius: 300, y: [22, 60], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'deer', count: 11, radius: 230, scale: [0.8, 1.1], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'butterfly', count: 90, radius: 44, y: [0.4, 2.2], scale: [0.9, 1.5], tint: [0xf0d850, 0xf8f8f0] }
+  ],
+  ombra: [
+    { type: 'raptor', count: 7, radius: 320, y: [50, 120], scale: [0.9, 1.4], tint: CORVO }
+  ],
+  giurassico: [
+    { type: 'sauropod', count: 5, radius: 420, scale: [0.85, 1.25], tint: [0x4e5a44, 0x8a9068], speed: [0.5, 1.0], shadow: true },
+    { type: 'biped', count: 4, radius: 340, scale: [0.85, 1.20], tint: [0x6a4a2c, 0xa8804a], speed: [1.6, 3.2], shadow: true },
+    { type: 'pterosaur', count: 11, radius: 380, y: [40, 110], scale: [1.6, 3.0], tint: [0x5c5044, 0x9a8a70] },
+    { type: 'bird', count: 12, radius: 260, y: [16, 40], scale: [0.9, 1.3], tint: [0x2a5a34, 0x7a9a48] },
+    { type: 'butterfly', count: 45, radius: 42, y: [0.4, 3.0], scale: [1.1, 2.0], tint: [0x50c060, 0xe8d060] }
+  ],
+  glaciale: [
+    { type: 'mammoth', count: 7, radius: 340, scale: [0.85, 1.20], tint: [0x5c4028, 0x8e6a44], speed: [0.7, 1.4], shadow: true },
+    { type: 'deer', count: 9, radius: 280, scale: [0.9, 1.2], tint: [0x6e6250, 0x9c8f76], speed: [1.2, 2.4], shadow: true },
+    { type: 'bird', count: 9, radius: 300, y: [30, 80], scale: [0.9, 1.3], tint: [0x3a3e44, 0x7c8288] }
+  ],
+  barriera: [
+    { type: 'fish', count: 130, radius: 90, scale: [0.6, 1.8], tint: [0xf0a030, 0x40b0d0] },
+    { type: 'bigFish', count: 6, radius: 150, scale: [0.8, 1.6], tint: [0x40607a, 0x9ab0c0] },
+    { type: 'jelly', count: 7, radius: 120, y: [6, 20], scale: [0.5, 1.1], tint: [0xd8b0f0, 0xf0e0ff], emissive: 0.10 }
+  ],
+  atlantide: [
+    { type: 'fish', count: 80, radius: 90, scale: [0.6, 1.5], tint: [0x8aa060, 0x50a0b0] },
+    { type: 'bigFish', count: 5, radius: 160, scale: [0.9, 1.8], tint: [0x3a4e5c, 0x8090a0] },
+    { type: 'jelly', count: 9, radius: 130, y: [8, 24], scale: [0.6, 1.4], tint: [0x90d8f0, 0xe0f8ff], emissive: 0.14 }
+  ],
+  terracava: [
+    { type: 'bird', count: 24, radius: 280, y: [24, 60], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'deer', count: 10, radius: 240, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 2.0], shadow: true },
+    { type: 'butterfly', count: 70, radius: 42, y: [0.4, 2.6], scale: [0.9, 1.6], tint: [0xf0c050, 0xf8e8a0] }
+  ],
+  agartha: [
+    { type: 'butterfly', count: 95, radius: 44, y: [0.5, 3.2], scale: [1.0, 1.9], tint: [0xffd070, 0xfff0c0], emissive: 0.26 },
+    { type: 'jelly', count: 11, radius: 200, y: [14, 40], scale: [0.8, 1.8], tint: [0xffd88a, 0xfff4d0], emissive: 0.22 },
+    { type: 'bird', count: 16, radius: 260, y: [26, 65], scale: [0.9, 1.3], tint: [0xd8b070, 0xf8e8c0] }
+  ],
+  montefato: [
+    { type: 'raptor', count: 6, radius: 340, y: [70, 160], scale: [1.0, 1.5], tint: CORVO }
+  ],
+  tatooine: [
+    { type: 'raptor', count: 5, radius: 340, y: [70, 150], scale: [0.9, 1.3], tint: RAPACE }
+  ],
+  sequoie: [
+    { type: 'bird', count: 26, radius: 260, y: [26, 70], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'deer', count: 8, radius: 230, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'butterfly', count: 40, radius: 40, y: [0.4, 2.4], scale: [0.9, 1.5], tint: [0xe8a83a, 0xf2d86a] }
+  ],
+  lavanda: [
+    { type: 'butterfly', count: 140, radius: 44, y: [0.3, 1.8], scale: [0.9, 1.6], tint: [0xf0e070, 0xd8a0e8] },
+    { type: 'bird', count: 20, radius: 280, y: [20, 55], scale: [0.9, 1.3], tint: UCCELLO }
+  ],
+  cascate: [
+    { type: 'bird', count: 26, radius: 300, y: [24, 70], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'deer', count: 8, radius: 230, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'butterfly', count: 55, radius: 42, y: [0.4, 2.4], scale: [0.9, 1.5], tint: [0x60c0e0, 0xf0e8a0] }
+  ],
+  mareaperto: [
+    { type: 'bird', count: 34, radius: 340, y: [6, 40], scale: [1.0, 1.5], tint: GABBIANO },
+    { type: 'fish', count: 40, radius: 80, scale: [0.7, 1.4], tint: [0x2e6a80, 0x9ac0d0] },
+    { type: 'bigFish', count: 5, radius: 180, scale: [1.0, 2.2], tint: [0x24404e, 0x7a8e9c] }
+  ]
+};
 
 export function getBiome(id) {
   return BIOMES[id] || BIOMES.foresta;

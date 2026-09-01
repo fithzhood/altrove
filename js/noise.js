@@ -180,7 +180,11 @@ export const saturate = (v) => (v < 0 ? 0 : v > 1 ? 1 : v);
 
 /* Rumore per gli shader. Value noise su hash intero: costa poco e per il
  * dettaglio ravvicinato (grana della roccia, screziature dell erba) basta. */
+/* La guardia serve perche piu moduli iniettano questo blocco nello stesso
+ * shader: senza, GLSL si lamenta di funzioni ridefinite. */
 export const GLSL_NOISE = /* glsl */`
+#ifndef ALT_NOISE_INCLUDED
+#define ALT_NOISE_INCLUDED
 float alt_hash11(float p){ p = fract(p*0.1031); p *= p+33.33; p *= p+p; return fract(p); }
 float alt_hash12(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
 float alt_hash13(vec3 p3){ p3=fract(p3*0.1031); p3+=dot(p3,p3.zyx+31.32); return fract((p3.x+p3.y)*p3.z); }
@@ -210,4 +214,5 @@ float alt_fbm3(vec3 p, int oct){
   for(int i=0;i<8;i++){ if(i>=oct) break; s+=a*alt_noise3(p); n+=a; p*=2.02; a*=0.5; }
   return s/max(n,1e-5);
 }
+#endif
 `;

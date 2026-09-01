@@ -3,20 +3,31 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, getBiome, getWeather, getSeason } from './biomes.js?v=1';
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=1';
-import { SkySystem } from './sky.js?v=1';
-import { FogSystem } from './fog.js?v=1';
-import { Engine } from './engine.js?v=1';
-import { Terrain } from './terrain.js?v=1';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=1';
-import { FirstPersonControls } from './controls.js?v=1';
-import { Scatter } from './scatter.js?v=1';
-import { Water } from './water.js?v=1';
-import { Precipitation } from './weather.js?v=1';
-import { City } from './city.js?v=1';
-import { Castle } from './castle.js?v=1';
-import { clamp, lerp, saturate } from './noise.js?v=1';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=13';
+import { Fauna } from './fauna.js?v=13';
+
+/* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
+const WATER_DEEP = {
+  sea: [0.010, 0.055, 0.085], lake: [0.014, 0.045, 0.055], swamp: [0.012, 0.024, 0.011],
+  ice: [0.30, 0.44, 0.52], lava: [0.045, 0.008, 0.003], cloudsea: [0.42, 0.46, 0.52],
+  emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
+  reef: [0.020, 0.10, 0.14]
+};
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=13';
+import { SkySystem } from './sky.js?v=13';
+import { FogSystem } from './fog.js?v=13';
+import { Engine } from './engine.js?v=13';
+import { Terrain } from './terrain.js?v=13';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=13';
+import { FirstPersonControls } from './controls.js?v=13';
+import { Scatter } from './scatter.js?v=13';
+import { Water } from './water.js?v=13';
+import { Precipitation } from './weather.js?v=13';
+import { City } from './city.js?v=13';
+import { Castle } from './castle.js?v=13';
+import { Waterfalls } from './waterfall.js?v=13';
+import { Library } from './library.js?v=13';
+import { clamp, lerp, saturate } from './noise.js?v=13';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -59,6 +70,7 @@ const state = {
   hudHidden: false,
   snowCover: 0,
   wetness: 0,
+  under: false,
   time: 0
 };
 
@@ -73,7 +85,7 @@ const QUALITY = {
  * Avvio del motore
  * ------------------------------------------------------------------ */
 const canvas = $('view');
-let engine, sky, fog, scene, camera, controls, atmo, terrain, world, scatter, water, precip, city, castle;
+let engine, sky, fog, scene, camera, controls, atmo, terrain, world, scatter, water, precip, city, castle, fauna, falls, library;
 let wxState, wxTarget;
 
 function fatal(msg) {
@@ -118,6 +130,9 @@ function buildWorld(opts = {}) {
   if (water) { scene.remove(water.group); water.dispose(); water = null; }
   if (city) { scene.remove(city.group); city.dispose(); city = null; }
   if (castle) { scene.remove(castle.group); castle.dispose(); castle = null; }
+  if (fauna) { scene.remove(fauna.group); fauna.dispose(); fauna = null; }
+  if (falls) { scene.remove(falls.group); falls.dispose(); falls = null; }
+  if (library) { scene.remove(library.group); library.dispose(); library = null; }
 
   world = new World(biome, state.seed);
   controls.setWorld(world);
@@ -128,6 +143,13 @@ function buildWorld(opts = {}) {
 
   scatter = new Scatter(world, fog, biome, { quality: q.scatter, season: state.seasonId });
   scene.add(scatter.group);
+
+  const faunaList = FAUNA[biome.id] || [];
+  if (faunaList.length) {
+    fauna = new Fauna(world, fog, { fauna: faunaList, seed: biome.seed },
+      { quality: Math.min(1.3, 0.55 + q.scatter * 0.55) });
+    scene.add(fauna.group);
+  }
 
   if (biome.city) {
     city = new City(world, fog, {
@@ -140,6 +162,14 @@ function buildWorld(opts = {}) {
     castle = new Castle(world, fog);
     scene.add(castle.group);
   }
+  if (biome.waterfalls) {
+    falls = new Waterfalls(world, fog, biome.waterfalls);
+    scene.add(falls.group);
+  }
+  if (biome.library) {
+    library = new Library(world, fog, { radius: 130 });
+    scene.add(library.group);
+  }
   terrain.uniforms.uCity.value = biome.city ? 1 : 0;
 
   if (biome.waterLevel !== null && biome.waterLevel !== undefined) {
@@ -150,8 +180,17 @@ function buildWorld(opts = {}) {
     scene.add(water.group);
   }
 
+  if (biome.underwater || biome.openSea) {
+    state.fly = true; controls.fly = true;
+    controls.flySpeed = biome.underwater ? 7.5 : 14;
+    document.querySelectorAll('#movemode .chip').forEach(c =>
+      c.classList.toggle('active', c.dataset.mode === 'vola'));
+  } else {
+    controls.flySpeed = 16;
+  }
   const spawn = world.findSpawn();
   controls.teleport(spawn.x, spawn.z, 0.25);
+  if (biome.underwater) controls.pos.y = spawn.h;
   camera.position.copy(controls.pos);
 
   atmo.setQuality(state.quality);
@@ -537,7 +576,8 @@ function stepLoading() {
   }
   // seconda fase: vegetazione e, se serve, edifici
   const pending = scatter.update(controls.pos.x, controls.pos.z, 26)
-    || (city ? city.update(controls.pos.x, controls.pos.z, 6) : false);
+    || (city ? city.update(controls.pos.x, controls.pos.z, 6) : false)
+    || (library ? library.update(controls.pos.x, controls.pos.z, 8) : false);
   loadJob.scatterSteps = (loadJob.scatterSteps || 0) + 1;
   $('load-bar').style.width = Math.round(58 + 42 * clamp(loadJob.scatterSteps / 24, 0, 1)) + '%';
   if (!pending) {
@@ -712,13 +752,55 @@ function frame(now) {
   // curvatura del mondo: zero ovunque tranne sul pianetino
   fog.set({ curve: biome.curve || 0 });
 
+  /* Immersione. Sotto il pelo dell acqua cambia tutto: la nebbia diventa
+   * l acqua stessa e si chiude in pochi metri, il colore vira, la pioggia non
+   * si vede piu e al suo posto scende il nevischio marino. */
+  const wl = biome.waterLevel;
+  const hasW = wl !== null && wl !== undefined;
+  const under = hasW && camera.position.y < wl - 0.12;
+  if (under !== state.under) {
+    state.under = under;
+    if (under) toast('Sott\u2019acqua');
+  }
+  const deep = biome.water && biome.water.deep !== undefined
+    ? hexToLinearArr(biome.water.deep)
+    : (WATER_DEEP[biome.waterKind] || [0.02, 0.08, 0.11]);
+  fog.set({
+    waterY: hasW ? wl : -1e9,
+    caustics: hasW ? (biome.caustics !== undefined ? biome.caustics : 0.55) : 0,
+    underwater: under ? 1 : 0,
+    deepColor: deep,
+    time: state.time
+  });
+  if (under) {
+    fog.set({ density: 0.055 + (biome.underwaterFog || 0), falloff: 0.0, max: 1.0, start: 0.6 });
+    engine.settings.saturation = (parseFloat($('saturation').value) / 100) * 0.86;
+    engine.settings.chromatic = (parseFloat($('chromatic').value) / 100) * 1.5;
+  } else {
+    engine.settings.saturation = parseFloat($('saturation').value) / 100;
+    engine.settings.chromatic = parseFloat($('chromatic').value) / 100;
+  }
+
   if (terrain) terrain.update(controls.pos.x, controls.pos.z, loadJob ? 4 : 2);
   if (scatter && !loadJob) scatter.update(controls.pos.x, controls.pos.z, 3);
   if (water) {
     water.update(camera, state.time, atmo.sunDir, atmo.sunColor, sky.lut.texture,
       state.wind * (0.4 + wxState.wind), dt);
   }
-  precip.update(camera, state.time, wxState, atmo, dt);
+  if (state.under) {
+    precip.setMotes(0.55, [0.85, 0.92, 0.95]);
+    precip.update(camera, state.time, { ...wxState, rain: 0, snow: 0, dust: 0 }, atmo, dt);
+  } else {
+    precip.setMotes(biome.motes ? biome.motes.amount : 0, biome.motes ? biome.motes.color : null);
+    precip.update(camera, state.time, wxState, atmo, dt);
+  }
+  if (fauna) {
+    fauna.update(camera, dt, state.time, biome.waterLevel);
+    fauna.setSnow(state.snowCover * 0.7);
+    fauna.setWetness(state.wetness);
+  }
+  if (falls) falls.update(controls.pos.x, controls.pos.z, state.time, atmo.sunColor, atmo.ambientColor);
+  if (library && !loadJob) { library.update(controls.pos.x, controls.pos.z, 2); library.setTime(state.time); }
   if (castle) castle.update(atmo.nightness, state.time, state.wetness, state.snowCover);
   if (city) {
     if (!loadJob) city.update(controls.pos.x, controls.pos.z, 2);
@@ -742,7 +824,8 @@ function frame(now) {
     fpsAcc = 0; fpsCount = 0; perfTimer = 0;
     if (!state.hudHidden && !state.photo) {
       $('hud-perf').innerHTML = fpsShown + ' fps<br>' + (terrain ? terrain.stats.chunks : 0) + ' chunk<br>' +
-        (scatter ? (scatter.stats.instances / 1000).toFixed(1) + 'k piante' : '');
+        (scatter ? (scatter.stats.instances / 1000).toFixed(1) + 'k piante' : '') +
+        (fauna && fauna.stats.agents ? '<br>' + fauna.stats.agents + ' animali' : '');
     }
   }
 
@@ -766,7 +849,7 @@ resize();
 setWeather(state.weatherId);
 requestAnimationFrame(frame);
 
-window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, precip, atmo, THREE };
+window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, precip, atmo, THREE };
 
 /* Agganci per lo strumento di collaudo in dev/shots.js */
 window.__rebuild = rebuildWithLoading;

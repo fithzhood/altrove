@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=1';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=1';
+} from './sky.js?v=13';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=13';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
@@ -125,7 +125,14 @@ export class Atmosphere {
     const wx = st.weather;
     const camAlt = Math.max(1, camera.position.y - (biome.waterLevel || 0));
 
-    sunDirection(st.hour, st.latitude, st.dayOfYear, this.sunDir);
+    if (biome.fixedSun) {
+      /* Certi luoghi non hanno un giorno: il sole della Terra cava sta appeso
+       * al centro e non tramonta mai. */
+      const al = biome.fixedSun[0] * Math.PI / 180, az = biome.fixedSun[1] * Math.PI / 180;
+      this.sunDir.set(Math.sin(az) * Math.cos(al), Math.sin(al), -Math.cos(az) * Math.cos(al)).normalize();
+    } else {
+      sunDirection(st.hour, st.latitude, st.dayOfYear, this.sunDir);
+    }
     moonDirection(st.hour, st.latitude, st.dayOfYear, st.moonPhase, this.moonDir);
 
     const sky = biome.sky;
@@ -268,8 +275,10 @@ export class Atmosphere {
 
     /* Soli compagni: ruotati attorno al principale, uno piu alto e uno piu
      * basso, cosi sorgono e tramontano insieme ma sfalsati. */
+    su.uSunAngle.value = biome.sunAngle || 0.0047;
     const pl = biome.planet;
     su.uPlanetOn.value = pl ? 1 : 0;
+    su.uPlanetRing.value = (pl && pl.ring) ? 1 : 0;
     if (pl) {
       su.uPlanetDir.value.set(pl.dir[0], pl.dir[1], pl.dir[2]).normalize();
       su.uPlanetSize.value = pl.size;

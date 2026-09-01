@@ -12,7 +12,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_SKY_LUT } from './sky.js?v=1';
+import { GLSL_SKY_LUT } from './sky.js?v=13';
+import { GLSL_NOISE } from './noise.js?v=13';
 
 export class FogSystem {
   constructor() {
@@ -32,7 +33,14 @@ export class FogSystem {
       altSunColor: { value: new THREE.Vector3(1, 1, 1) },
       altFarFade: { value: 3000.0 },
       /* Curvatura del mondo: vale 0 ovunque tranne sul pianetino. */
-      altCurve: { value: 0.0 }
+      altCurve: { value: 0.0 },
+      /* Acqua: la quota del pelo serve alle caustiche, che si vedono anche
+       * dall alto in acqua bassa, non solo immersi. */
+      altWaterY: { value: -1e9 },
+      altCaustics: { value: 0.0 },
+      altUnderwater: { value: 0.0 },
+      altDeepColor: { value: new THREE.Color(0.02, 0.10, 0.14) },
+      altTime: { value: 0.0 }
     };
     this.materials = new Set();
   }
@@ -73,8 +81,20 @@ export class FogSystem {
           uniform sampler2D altSkyLut;
           uniform float altFogDensity, altFogFalloff, altFogBaseY, altFogMax, altFogStart;
           uniform float altFogOverrideMix, altFarFade;
-          uniform vec3 altFogTint, altFogOverride, altSunDir, altSunColor;
+          uniform vec3 altFogTint, altFogOverride, altSunDir, altSunColor, altDeepColor;
+          uniform float altWaterY, altCaustics, altUnderwater, altTime;
           ${GLSL_SKY_LUT}
+          ${GLSL_NOISE}
+
+          /* Caustiche: la superficie increspata concentra la luce in reticoli
+           * che scorrono. Due campi di rumore che si inseguono, la loro
+           * differenza elevata a potenza alta lascia solo le creste. */
+          float altCaustic(vec2 p, float t){
+            vec2 q = p * 0.62;
+            float a = alt_fbm2(q + vec2(t * 0.09, t * 0.065), 3);
+            float b = alt_fbm2(q * 1.63 + vec2(-t * 0.075, t * 0.11) + 5.0, 3);
+            return pow(clamp(1.0 - abs(a - b) * 2.7, 0.0, 1.0), 7.0);
+          }
 
           /* Integrale della densita esponenziale in quota lungo il segmento
            * camera -> frammento. Forma chiusa, niente marcia. */
@@ -101,6 +121,15 @@ export class FogSystem {
             float dist = length(dv);
             vec3 vd = dv / max(dist, 1e-4);
 
+            /* Sotto il pelo dell acqua: reticolo di luce sul fondo e colore
+             * che vira al blu con la profondita. */
+            float wDepth = altWaterY - vAltWorld.y;
+            if (altCaustics > 0.0 && wDepth > 0.0){
+              float c = altCaustic(vAltWorld.xz, altTime);
+              color *= 1.0 + c * altCaustics * exp(-wDepth * 0.085) * 1.6;
+              color = mix(color, color * altDeepColor * 6.0, clamp(wDepth * 0.055, 0.0, 0.75));
+            }
+
             float I = altFogIntegral(cameraPosition, vAltWorld);
             float f = 1.0 - exp(-I);
 
@@ -113,6 +142,10 @@ export class FogSystem {
 
             vec3 fogCol = alt_sampleSky(altSkyLut, vd) * altFogTint;
             fogCol = mix(fogCol, altFogOverride, altFogOverrideMix);
+            if (altUnderwater > 0.5){
+              // immersi la nebbia e l acqua stessa, e si chiude molto prima
+              fogCol = altDeepColor * (0.55 + 0.9 * max(0.0, vd.y));
+            }
             return mix(color, fogCol, f);
           }`)
         .replace('#include <fog_fragment>', `
@@ -150,6 +183,11 @@ export class FogSystem {
     if (params.sunColor) u.altSunColor.value.set(params.sunColor[0], params.sunColor[1], params.sunColor[2]);
     if (params.farFade !== undefined) u.altFarFade.value = params.farFade;
     if (params.curve !== undefined) u.altCurve.value = params.curve;
+    if (params.waterY !== undefined) u.altWaterY.value = params.waterY;
+    if (params.caustics !== undefined) u.altCaustics.value = params.caustics;
+    if (params.underwater !== undefined) u.altUnderwater.value = params.underwater;
+    if (params.deepColor) u.altDeepColor.value.setRGB(params.deepColor[0], params.deepColor[1], params.deepColor[2]);
+    if (params.time !== undefined) u.altTime.value = params.time;
   }
 }
 

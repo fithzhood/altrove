@@ -10,9 +10,20 @@ Entrata: `altrove.html`. Server di sviluppo: `python servi.py 8123`.
 
 ## Che cosa c'è dentro
 
-**29 luoghi**, 15 reali e 14 immaginari. Ogni luogo è solo un blocco di numeri
-in `js/biomes.js`: forma del terreno, tavolozza, che cosa ci cresce, quanto è
-torbida l'aria, dov'è l'acqua. Il motore non sa niente di "foresta" o "Marte".
+**44 luoghi**, fra reali e immaginari. Ogni luogo è solo un blocco di numeri in
+`js/biomes.js`: forma del terreno, tavolozza, che cosa ci cresce e chi ci vive,
+quanto è torbida l'aria, dov'è l'acqua. Il motore non sa niente di "foresta" o
+di "Marte".
+
+**Fauna**: stormi di uccelli a boids, branchi che pascolano, banchi di pesci,
+farfalle, meduse fluttuanti, e la megafauna (sauropodi, teropodi, pterosauri,
+mammut). La CPU muove gli agenti, la GPU anima le membra.
+
+**Sott'acqua**: si nuota davvero. Caustiche sul fondo, luce che vira al blu con
+la profondità, nevischio marino, e la nebbia che diventa l'acqua stessa.
+
+**Cascate**: non sono piazzate a mano — il sistema cerca i salti di quota e ci
+fa scendere l'acqua, seguendo la pendenza fino a valle.
 
 **8 condizioni meteo** (sereno, poco nuvoloso, coperto, pioggia, temporale,
 neve, nebbia, tempesta di sabbia), che si interpolano l'una nell'altra invece
@@ -122,9 +133,13 @@ salino, pozze termali.
 | `js/water.js` | superfici liquide |
 | `js/weather.js` | pioggia, neve, polvere, spore |
 | `js/city.js` | edifici, lampioni, auto, insegne al neon |
+| `js/fauna.js` | animali: sagome, andature, stormi |
+| `js/waterfall.js` | cascate trovate dal rilievo |
+| `js/library.js` | la Biblioteca esagonale infinita |
 | `js/castle.js` | il castello del collegio |
 | `js/controls.js` | camera in prima persona |
 | `dev/shots.js` | strumento di collaudo: molte vedute in un foglio solo |
+| `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro |
 | `servi.py` | server di sviluppo che vieta la cache |
 
 `vendor/three.core.js` + `vendor/three.module.js`: Three.js r185, in locale.
@@ -158,6 +173,19 @@ C salva immagine · Esc liberare il mouse
   programma compilato di un altro materiale con iniezioni diverse.
 - **Il server di sviluppo deve vietare la cache**, o si collauda codice vecchio
   credendo di collaudare quello nuovo.
+- **La taglia di un animale va misurata sull'asse giusto.** Un uccello ad ali
+  aperte è alto pochi centimetri e largo un metro: normalizzarlo sull'altezza lo
+  gonfia di tre volte, e ne esce un condor. Ogni creatura dichiara il proprio
+  asse (apertura, lunghezza, altezza).
+- **Il verso della rotta.** I modelli guardano verso -Z, quindi la rotazione che
+  li punta verso (dx, dz) è `atan2(dx, dz) + π`. Senza quel mezzo giro tutti gli
+  animali camminano all'indietro, ed è quello che facevano.
+- **Un interno vuole `DoubleSide`.** Con il culling in avanti il soffitto
+  scompare visto da sotto, e nella Biblioteca infinita si vede il cielo.
+- **Due piani complanari sfarfallano.** Il pavimento della Biblioteca sta cinque
+  centimetri sopra il terreno, o si riempie di bande.
+- **Un blocco GLSL incluso da più moduli va protetto da una guardia**
+  (`#ifndef`), altrimenti le funzioni risultano ridefinite.
 
 ---
 
@@ -167,6 +195,8 @@ C salva immagine · Esc liberare il mouse
   ombre usa il materiale di profondità di three, che non la conosce: lì le
   ombre sono spente. Servirebbe un `customDepthMaterial`.
 - Niente audio.
+- Le andature dei quadrupedi sono cicliche, non c'è appoggio del piede vero
+  (nessuna cinematica inversa): a passo lento si nota un filo di slittamento.
 - Nessuna occlusione ambientale a schermo (SSAO): sotto le chiome manca un po'
   di ombra di contatto.
 - Le nuvole sono uno strato piatto in parallasse, non volumetriche vere.

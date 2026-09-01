@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=1';
-import { buildProp, PROP_HEIGHT, lin } from './props.js?v=1';
-import { GLSL_NOISE } from './noise.js?v=1';
-import { CITY } from './world.js?v=1';
+import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=13';
+import { buildProp, PROP_HEIGHT, lin } from './props.js?v=13';
+import { GLSL_NOISE } from './noise.js?v=13';
+import { CITY } from './world.js?v=13';
 
 const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -29,7 +29,8 @@ const FOLIAGE_TYPES = new Set([
   'conifer', 'broadleaf', 'birch', 'swampTree', 'palm', 'acacia',
   'bush', 'dryBush', 'fern', 'grassTuft', 'tallGrass', 'reed', 'flower',
   'saguaro', 'barrelCactus', 'mushroom',
-  'twistedTree', 'glowMushroom', 'giantMushroom', 'fairyTree', 'ajisaTree', 'bamboo'
+  'twistedTree', 'glowMushroom', 'giantMushroom', 'fairyTree', 'ajisaTree', 'bamboo', 'cycad',
+  'coral', 'kelp', 'anemone'
 ]);
 
 export class Scatter {
@@ -83,6 +84,7 @@ export class Scatter {
     mat.onBeforeCompile = (shader) => {
       for (const k in U) shader.uniforms[k] = U[k];
       shader.uniforms.uEmissive = { value: emi };
+      shader.uniforms.uTranslucency = { value: foliage ? 1.0 : 0.0 };
 
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>
@@ -125,7 +127,7 @@ export class Scatter {
         .replace('#include <common>', `#include <common>
           in float vFlex;
           in vec3 vWorldNrm;
-          uniform float uSnow, uWetness, uEmissive;
+          uniform float uSnow, uWetness, uEmissive, uTranslucency;
           uniform vec3 uSnowColor, uSeasonTint;
           ${GLSL_NOISE}`)
         .replace('#include <color_fragment>', `#include <color_fragment>
@@ -142,7 +144,18 @@ export class Scatter {
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
           roughnessFactor = mix(roughnessFactor, 0.35, uWetness * 0.6);`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-          totalEmissiveRadiance += diffuseColor.rgb * uEmissive * 0.85;`);
+          totalEmissiveRadiance += diffuseColor.rgb * uEmissive * 0.85;
+          if (uTranslucency > 0.01){
+            /* Una foglia e sottile: parte della luce la attraversa invece di
+             * fermarsi. Senza questo termine la faccia in ombra di ogni filo
+             * d erba viene quasi nera e il prato si riempie di puntini scuri.
+             * In controluce il verde si accende, come succede davvero. */
+            vec3 V = normalize(cameraPosition - vAltWorld);
+            float back = pow(max(0.0, dot(-V, altSunDir)), 3.0);
+            float wrap = max(0.0, dot(normalize(vWorldNrm), altSunDir) * 0.5 + 0.5);
+            totalEmissiveRadiance += diffuseColor.rgb * altSunColor
+                                   * (0.032 * wrap + 0.115 * back) * uTranslucency;
+          }`);
     };
     mat.customProgramCacheKey = () => 'altrove-prop|' + key;
     this.fog.apply(mat);
@@ -241,8 +254,15 @@ export class Scatter {
         if (world.blocked && world.blocked(x, z)) continue;
         const h = world.height(x, z);
         if (h < hmin || h > hmax) continue;
-        if (h < wl + 0.12 && rule.type !== 'reed' && rule.type !== 'swampTree') continue;
+        if (!rule.underwater && h < wl + 0.12 && rule.type !== 'reed' && rule.type !== 'swampTree') continue;
 
+        /* Filari: la coltivazione non e casuale. Tenendo solo i punti
+         * vicini a una retta ogni N metri, il campo si allinea. */
+        if (rule.rows) {
+          const ca = Math.cos(rule.rows.angle), sa = Math.sin(rule.rows.angle);
+          const u = (x * ca + z * sa) / rule.rows.period;
+          if (Math.abs(u - Math.round(u)) > rule.rows.width) continue;
+        }
         if (rule.avoidRoads && world.isCity) {
           const rd = world.roadDistance(x, z);
           if (rd < 2.2) continue;

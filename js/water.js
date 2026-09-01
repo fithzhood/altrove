@@ -17,8 +17,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=1';
-import { GLSL_FOG_DECL } from './fog.js?v=1';
+import { GLSL_NOISE } from './noise.js?v=13';
+import { GLSL_FOG_DECL } from './fog.js?v=13';
 
 const DEPTH_RES = 128;
 const DEPTH_SPAN = 620;      // metri coperti dalla mappa di profondita
@@ -63,6 +63,16 @@ export const WATER_KINDS = {
     deep: [0.03, 0.22, 0.26], shallow: [0.30, 0.86, 0.80], foam: [0.95, 0.92, 0.70],
     waveAmp: 0.030, waveLen: 5, choppy: 0.30, reflect: 0.92, rough: 0.020,
     depthFade: 1.8, foamWidth: 1.4, glow: 0, speed: 0.45, opacityDeep: 1.0
+  },
+  tropical: {
+    deep: [0.010, 0.10, 0.14], shallow: [0.10, 0.62, 0.60], foam: [0.94, 0.99, 1.0],
+    waveAmp: 0.24, waveLen: 20, choppy: 0.62, reflect: 1.0, rough: 0.018,
+    depthFade: 9.0, foamWidth: 2.2, glow: 0, speed: 0.9, opacityDeep: 1.0
+  },
+  methane: {
+    deep: [0.020, 0.014, 0.010], shallow: [0.075, 0.055, 0.032], foam: [0.55, 0.45, 0.32],
+    waveAmp: 0.045, waveLen: 14, choppy: 0.30, reflect: 0.95, rough: 0.010,
+    depthFade: 3.0, foamWidth: 1.0, glow: 0, speed: 0.35, opacityDeep: 1.0
   },
   lava: {
     deep: [0.045, 0.008, 0.003], shallow: [1.0, 0.28, 0.03], foam: [1.0, 0.72, 0.20],

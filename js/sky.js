@@ -16,7 +16,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=1';
+import { GLSL_NOISE } from './noise.js?v=13';
 
 /* ------------------------------------------------------------------ *
  * Costanti fisiche condivise
@@ -417,6 +417,8 @@ export class SkySystem {
         uPlanetSize: { value: 0.09 },
         uPlanetColor: { value: new THREE.Vector3(0.25, 0.45, 0.75) },
         uPlanetOn: { value: 0 },
+        uPlanetRing: { value: 0 },
+        uSunAngle: { value: 0.0047 },
         uSun2: { value: new THREE.Vector3(0, -1, 0) },
         uSun3: { value: new THREE.Vector3(0, -1, 0) },
         uExtraSuns: { value: 0 }
@@ -432,7 +434,7 @@ export class SkySystem {
         uniform mat4 uInvVP;
         uniform vec3 uCamPos, uSunDir, uMoonDir, uSunColor, uAuroraColor, uHazeColor;
         uniform vec3 uSun2, uSun3, uPlanetDir, uPlanetColor;
-        uniform float uExtraSuns, uPlanetSize, uPlanetOn;
+        uniform float uExtraSuns, uPlanetSize, uPlanetOn, uPlanetRing, uSunAngle;
         uniform float uTime, uStars, uCloudCover, uCloudDensity, uCloudHeight;
         uniform float uAurora, uSunDiskI, uMoonI, uDustAmount, uLightning;
         uniform vec2 uCloudWind, uCloudScroll;
@@ -559,6 +561,31 @@ export class SkySystem {
           return col;
         }
 
+        /* Anelli: un anello circolare visto di taglio si proietta in un ellisse.
+         * La meta davanti passa sopra il pianeta, quella dietro ci sparisce
+         * sotto: basta questo a farli leggere come anelli e non come un alone. */
+        vec3 planetRing(vec3 d){
+          if (uPlanetOn < 0.5 || uPlanetRing < 0.5) return vec3(0.0);
+          float cd = dot(d, uPlanetDir);
+          if (cd < cos(uPlanetSize * 3.2)) return vec3(0.0);
+          vec3 up = abs(uPlanetDir.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+          vec3 tx = normalize(cross(up, uPlanetDir));
+          vec3 ty = cross(uPlanetDir, tx);
+          vec2 uvp = vec2(dot(d, tx), dot(d, ty)) / uPlanetSize;
+          float r2 = dot(uvp, uvp);
+          float tilt = 0.26;
+          float rr = length(vec2(uvp.x, uvp.y / tilt));
+          if (rr < 1.35 || rr > 2.25) return vec3(0.0);
+          // dietro al pianeta l anello e nascosto
+          if (r2 < 1.0 && uvp.y > 0.0) return vec3(0.0);
+          float band = smoothstep(1.35, 1.44, rr) * smoothstep(2.25, 2.10, rr);
+          // divisione fra gli anelli
+          band *= 1.0 - 0.75 * smoothstep(0.06, 0.0, abs(rr - 1.78));
+          band *= 0.55 + 0.45 * sin(rr * 34.0);
+          float lam = max(0.15, dot(uPlanetDir, uSunDir) * 0.5 + 0.5);
+          return uPlanetColor * vec3(1.7, 1.6, 1.4) * band * lam * 0.55;
+        }
+
         /* ---------------- nuvole ----------------
          * Strato piatto a quota fissa. Il raggio lo interseca e piu si guarda
          * verso l orizzonte piu il campionamento si allunga: la prospettiva
@@ -658,7 +685,7 @@ export class SkySystem {
 
           // disco solare con oscuramento al bordo
           float cs = dot(rd, uSunDir);
-          float sunAng = 0.0047;
+          float sunAng = uSunAngle;
           if (cs > cos(sunAng * 6.0)){
             float ang = acos(clamp(cs, -1.0, 1.0));
             float r = ang / sunAng;
@@ -690,6 +717,7 @@ export class SkySystem {
           }
 
           col += planetDisk(rd) * 1.1;
+          col += planetRing(rd) * 1.1;
 
           // nuvole
           vec4 cl = clouds(rd, uSunDir, uSunColor, sky);

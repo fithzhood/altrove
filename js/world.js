@@ -8,7 +8,7 @@
  * aprirebbero crepe nel terreno.
  */
 
-import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=1';
+import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=13';
 
 /* sRGB -> lineare. Le palette dei biomi sono scritte come colori "da schermo",
  * ma i vertex color devono arrivare allo shader gia in spazio lineare. */
@@ -178,6 +178,40 @@ export class World {
         return h;
       }
 
+      /* Cono vulcanico isolato in mezzo a una piana. Il profilo e una
+       * potenza della distanza dal centro; il cratere e una conca scavata in
+       * cima, e le scanalature radiali sono le colate. */
+      case 'cone': {
+        const p = b.cone;
+        const d = Math.hypot(x, z);
+        const t = Math.max(0, 1 - d / p.radius);
+        let h = Math.pow(t, p.pow) * p.height;
+        const ang = Math.atan2(z, x);
+        const flute = Math.sin(ang * p.flutes + nw.fbm2(x * 0.0035, z * 0.0035, 3) * 5.0);
+        h += flute * p.fluteAmp * smoothstep(p.radius, p.craterR, d);
+        if (d < p.craterR) {
+          const u = d / p.craterR;
+          h -= (1 - u * u) * p.craterDepth;
+        }
+        h += n.fbm2(x * 0.0021, z * 0.0021, 5) * p.plainAmp;
+        h += n.fbm2(x * 0.035, z * 0.035, 3) * p.microAmp;
+        return h;
+      }
+
+      /* Barriera corallina: tutto sotto il pelo dell acqua. Le creste della
+       * barriera salgono quasi in superficie ma non emergono mai, per cui il
+       * mondo si guarda solo da dentro. */
+      case 'reef': {
+        const p = b.reef;
+        let h = n.fbm2(x * p.freq, z * p.freq, 5) * p.amp + p.base;
+        let r = n.ridged2(x * p.reefFreq, z * p.reefFreq, 4, 2.03, 0.5, 0.5);
+        r = (r + 1) * 0.5;
+        h += Math.pow(r, 1.9) * p.reefAmp;
+        h += n.fbm2(x * 0.055, z * 0.055, 3) * p.medAmp;
+        h += n.fbm2(x * 0.22, z * 0.22, 2) * p.microAmp;
+        return Math.min(h, p.maxH);
+      }
+
       /* Crateri: superficie lunare o marziana. Ogni cella della griglia puo
        * ospitare un cratere, con la conca dentro e il bordo rialzato fuori. Il
        * profilo e quello vero: parabola all interno, gaussiana sul labbro. */
@@ -256,7 +290,8 @@ export class World {
       case 'flat':
       default: {
         const p = b.flat;
-        let h = n.fbm2(x * p.freq, z * p.freq, 3) * p.amp;
+        // base: serve al mare aperto, dove il fondale deve stare ben sotto
+        let h = n.fbm2(x * p.freq, z * p.freq, 3) * p.amp + (p.base || 0);
         if (this.isCity) {
           // le carreggiate sono lisce: spegni il micro-rumore sull asfalto
           const rd = this.roadDistance(x, z);
@@ -471,6 +506,11 @@ export class World {
 
     // bagliore (solo vulcanico): vicino al livello della lava
     let glow = 0;
+    if (this.kind === 'cone' && b.cone.craterGlow) {
+      const dc = Math.hypot(x, z);
+      glow = Math.max(glow, saturate(1 - dc / (b.cone.craterR * 1.25)) * 1.4);
+      glow = Math.min(1, glow);
+    }
     if (b.emberGlow && this.hasWater) {
       glow = saturate(1 - (h - this.waterLevel) / 9) * (0.35 + 0.65 * saturate(varA * 0.5 + 0.5));
       glow = Math.pow(clamp(glow, 0, 1), 1.7);
@@ -485,6 +525,27 @@ export class World {
 
   /* Punto di partenza decente: asciutto, poco ripido, vista aperta. */
   findSpawn() {
+    /* Nei mondi sommersi non esiste terra asciutta: si parte a mezz acqua,
+     * sopra un punto profondo abbastanza da nuotarci. */
+    if (this.kind === 'cone') {
+      // ai piedi del vulcano, non sul fianco
+      const r = this.b.cone.radius * 1.25;
+      const x = 0, z = r;
+      return { x, z, h: this.height(x, z) };
+    }
+    if (this.b.openSea) {
+      return { x: 0, z: 0, h: this.waterLevel + 1.4 };
+    }
+    if (this.b.underwater) {
+      for (let i = 0; i < 400; i++) {
+        const a = hash2i(i, 5, 3) * Math.PI * 2;
+        const rr = Math.sqrt(hash2i(i, 9, 5)) * 180;
+        const x = Math.cos(a) * rr, z = Math.sin(a) * rr;
+        const h = this.height(x, z);
+        if (this.waterLevel - h > 7) return { x, z, h: h + (this.waterLevel - h) * 0.55 };
+      }
+      return { x: 0, z: 0, h: this.height(0, 0) + 5 };
+    }
     // dove c e un castello si parte davanti al castello, non a caso
     if (this.b.castle) {
       const x = 16, z = 172;
@@ -502,6 +563,8 @@ export class World {
       if (this.isCity && this.roadDistance(x, z) > 0) continue; // in citta parti in strada
       const sl = this.slopeAt(x, z, 1.5);
       if (sl > 0.22) continue;
+      /* Evita di far nascere il giocatore dentro un oggetto: i punti troppo
+       * vicini a una cella di scatter fitto vengono penalizzati. */
       const score = -Math.abs(h - (this.hasWater ? this.waterLevel + 8 : 12)) - sl * 60 - rr * 0.02;
       if (!best || score > best.score) best = { x, z, h, score };
       if (i > 200 && best) break;
