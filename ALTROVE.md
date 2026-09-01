@@ -10,7 +10,13 @@ Entrata: `altrove.html`. Server di sviluppo: `python servi.py 8123`.
 
 ## Che cosa c'è dentro
 
-**44 luoghi**, fra reali e immaginari. Ogni luogo è solo un blocco di numeri in
+**50 luoghi**, in tre famiglie: quelli che esistono, quelli che **sono
+esistiti** (Carbonifero, Sahara verde, Eone Adeano, Giurassico, Era glaciale) e
+quelli che non sono mai esistiti. La divisione non è un vezzo: cambia cosa ti
+aspetti di trovare, ed è la prima cosa che si legge nella schermata iniziale.
+Il flag è `epoca: true`, accanto a `fantasy: true`.
+
+Ogni luogo è solo un blocco di numeri in
 `js/biomes.js`: forma del terreno, tavolozza, che cosa ci cresce e chi ci vive,
 quanto è torbida l'aria, dov'è l'acqua. Il motore non sa niente di "foresta" o
 di "Marte".
@@ -63,6 +69,18 @@ l'immagine:
 3. le luci della scena, calcolate in JS con **la stessa identica formula**.
 
 Se cielo e luci divergessero, l'occhio se ne accorgerebbe subito.
+
+**La diffusione multipla.** L'integrale conta solo il primo rimbalzo, e con
+quello soltanto il cielo usciva dieci volte più scuro dell'erba al sole —
+(14, 30, 49) contro (79, 108, 27) a mezzogiorno, mentre nella realtà lo zenit
+è più chiaro del prato. La luce che ha rimbalzato due, tre, dieci volte ha
+perso ogni memoria della direzione da cui veniva, quindi si aggiunge con fase
+isotropa (1/4π) moltiplicata per `ALT_MULTISCATTER`. Non è una taratura
+estetica: senza quel termine tutto ciò che non prende il sole diretto viene
+quasi nero — le facciate in ombra, il sottobosco, l'interno di una porta.
+Dopo: zenit (68, 104, 142). **La costante esiste in due copie**, una in GLSL e
+una in JS: se divergono, il cielo che si vede e le luci che illuminano la
+scena smettono di essere d'accordo.
 
 ### Il mondo è una funzione, non una mappa
 `js/world.js`: dato (x, z) restituisce quota, pendenza e di che cosa è fatta la
@@ -227,6 +245,11 @@ C salva immagine · Esc liberare il mouse
   scompare visto da sotto, e nella Biblioteca infinita si vede il cielo.
 - **Due piani complanari sfarfallano.** Il pavimento della Biblioteca sta cinque
   centimetri sopra il terreno, o si riempie di bande.
+- **Un parametro del terreno dimenticato non dà errore: dà NaN**, e NaN si
+  propaga a tutto il campo di altezze. Il risultato è un mondo invisibile con
+  il giocatore a quota NaN e la console pulita — il modo peggiore di rompersi.
+  Il costruttore di `World` ora campiona venti quote e fallisce dicendo quale
+  bioma e quale forma di terreno.
 - **Un blocco GLSL incluso da più moduli va protetto da una guardia**
   (`#ifndef`), altrimenti le funzioni risultano ridefinite.
 - **L'ordine dei vertici decide quale faccia è il davanti.** Questi materiali
@@ -265,11 +288,6 @@ C salva immagine · Esc liberare il mouse
 - Nessuna occlusione ambientale a schermo (SSAO): sotto le chiome manca un po'
   di ombra di contatto.
 - Le nuvole sono uno strato piatto in parallasse, non volumetriche vere.
-- **Lo scattering è a diffusione singola.** Manca il contributo delle
-  diffusioni multiple, che è proprio quello che schiarisce lo zenit e la
-  foschia bassa: a mezzogiorno, col sole a 63°, il cielo esce (14, 30, 49)
-  mentre l'erba al sole esce (79, 108, 27) — nella realtà il cielo è più
-  chiaro del prato, non dieci volte più scuro. Si correggerebbe con un termine
-  isotropo aggiunto all'integrale, ma va aggiunto in **tutti e tre** i clienti
-  della LUT (cielo visibile, nebbia dei materiali, luci ricalcolate in JS), o
-  l'immagine si spacca.
+- La diffusione multipla è approssimata con un termine isotropo costante
+  (`ALT_MULTISCATTER`), non con un integrale vero: è corretta nell'ordine di
+  grandezza e nell'andamento, non nel dettaglio.

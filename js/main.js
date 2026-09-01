@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=19';
-import { Fauna } from './fauna.js?v=19';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=20';
+import { Fauna } from './fauna.js?v=20';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=19';
-import { SkySystem } from './sky.js?v=19';
-import { FogSystem } from './fog.js?v=19';
-import { Engine } from './engine.js?v=19';
-import { Terrain } from './terrain.js?v=19';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=19';
-import { FirstPersonControls } from './controls.js?v=19';
-import { Scatter } from './scatter.js?v=19';
-import { Water } from './water.js?v=19';
-import { Precipitation } from './weather.js?v=19';
-import { City } from './city.js?v=19';
-import { Castle } from './castle.js?v=19';
-import { Waterfalls } from './waterfall.js?v=19';
-import { Library } from './library.js?v=19';
-import { clamp, lerp, saturate } from './noise.js?v=19';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=20';
+import { SkySystem } from './sky.js?v=20';
+import { FogSystem } from './fog.js?v=20';
+import { Engine } from './engine.js?v=20';
+import { Terrain } from './terrain.js?v=20';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=20';
+import { FirstPersonControls } from './controls.js?v=20';
+import { Scatter } from './scatter.js?v=20';
+import { Water } from './water.js?v=20';
+import { Precipitation } from './weather.js?v=20';
+import { City } from './city.js?v=20';
+import { Castle } from './castle.js?v=20';
+import { Waterfalls } from './waterfall.js?v=20';
+import { Library } from './library.js?v=20';
+import { clamp, lerp, saturate } from './noise.js?v=20';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -296,27 +296,33 @@ function refreshBiomeCards() {
   });
 }
 
+/* Tre famiglie: quello che esiste, quello che e esistito, quello che non e
+ * mai esistito. La divisione non e un vezzo — cambia cosa ti aspetti di
+ * trovare, ed e la prima cosa che si legge nella schermata iniziale. */
+const FAMIGLIE = [
+  { titolo: 'Luoghi reali',        griglia: 'biomes-real',    test: b => !b.fantasy && !b.epoca },
+  { titolo: 'Luoghi del passato',  griglia: 'biomes-past',    test: b => !!b.epoca },
+  { titolo: 'Luoghi immaginari',   griglia: 'biomes-fantasy', test: b => !!b.fantasy && !b.epoca }
+];
+
 function buildBiomeUI() {
-  const real = BIOME_ORDER.filter(id => !BIOMES[id].fantasy);
-  const fant = BIOME_ORDER.filter(id => BIOMES[id].fantasy);
-
-  const gReal = $('biomes-real'), gFant = $('biomes-fantasy');
-  gReal.innerHTML = ''; gFant.innerHTML = '';
-  real.forEach(id => gReal.appendChild(makeBiomeCard(id, pickBiome)));
-  fant.forEach(id => gFant.appendChild(makeBiomeCard(id, pickBiome)));
-  if (!fant.length) gFant.closest('.group').classList.add('hidden');
-
   const sb = $('start-biomes');
   sb.innerHTML = '';
-  if (fant.length) {
-    const t1 = document.createElement('div'); t1.className = 'sec-title'; t1.textContent = 'Luoghi reali';
-    sb.appendChild(t1);
-  }
-  real.forEach(id => sb.appendChild(makeBiomeCard(id, pickBiomeStart)));
-  if (fant.length) {
-    const t2 = document.createElement('div'); t2.className = 'sec-title'; t2.textContent = 'Luoghi immaginari';
-    sb.appendChild(t2);
-    fant.forEach(id => sb.appendChild(makeBiomeCard(id, pickBiomeStart)));
+
+  for (const F of FAMIGLIE) {
+    const ids = BIOME_ORDER.filter(id => F.test(BIOMES[id]));
+    const g = $(F.griglia);
+    if (g) {
+      g.innerHTML = '';
+      ids.forEach(id => g.appendChild(makeBiomeCard(id, pickBiome)));
+      const box = g.closest('.group');
+      if (box) box.classList.toggle('hidden', !ids.length);
+    }
+    if (!ids.length) continue;
+    const t = document.createElement('div');
+    t.className = 'sec-title'; t.textContent = F.titolo;
+    sb.appendChild(t);
+    ids.forEach(id => sb.appendChild(makeBiomeCard(id, pickBiomeStart)));
   }
   refreshBiomeCards();
 }

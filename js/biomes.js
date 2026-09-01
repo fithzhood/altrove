@@ -546,8 +546,10 @@ export const BIOMES = {
 
   smeraldo: {
     id: 'smeraldo',
-    label: 'Mondo di smeraldo',
-    blurb: 'Cielo verde, erba turchese, tre soli e guglie che si avvitano.',
+    /* Si chiama col suo nome: «Mondo di smeraldo» lo nascondeva, ed e un
+     * luogo preciso che era stato chiesto per nome. */
+    label: 'Namecc',
+    blurb: 'Cielo verde, erba turchese, tre soli, guglie che si avvitano e case tonde.',
     fantasy: true,
     terrain: 'hills',
     seed: 1404,
@@ -1106,7 +1108,7 @@ export const BIOMES = {
   },
 
   giurassico: {
-    id: 'giurassico', label: 'Giurassico', fantasy: true,
+    id: 'giurassico', label: 'Giurassico', epoca: true,
     waterfalls: { minDrop: 8.0, chance: 0.42, width: [2.5, 9], radius: 380 },
     blurb: 'Felci alte come un uomo, cicadi, e qualcosa di enorme che bruca in fondo alla valle.',
     terrain: 'hills', seed: 3121, seaLevel: 0,
@@ -1136,7 +1138,7 @@ export const BIOMES = {
   },
 
   glaciale: {
-    id: 'glaciale', label: 'Era glaciale', fantasy: true,
+    id: 'glaciale', label: 'Era glaciale', epoca: true,
     blurb: 'Steppa gelata, poche conifere, e branchi che attraversano lenti.',
     terrain: 'hills', seed: 3222, seaLevel: 0,
     waterLevel: -22, waterKind: 'ice', startHeightOffset: 1.7,
@@ -1546,6 +1548,199 @@ export const BIOMES = {
     motes: { amount: 0.22, color: [1.0, 0.88, 0.66] },
     scatter: []
   }
+,
+/* ---------------- LUOGHI DEL PASSATO ---------------- */
+
+  carbonifero: {
+    id: 'carbonifero', label: 'Carbonifero', epoca: true,
+    blurb: 'Trecento milioni di anni fa: foreste di licopodi in acqua bassa, aria densa, e libellule grandi come gabbiani.',
+    terrain: 'swamp', seed: 5101, seaLevel: 0,
+    waterLevel: 0, waterKind: 'swamp', startHeightOffset: 1.7,
+    swamp: { amp: 6.0, freq: 0.0014, oct: 5, hummockAmp: 2.2, hummockFreq: 0.028, microAmp: 0.40 },
+    snowLine: 9999, seasonal: false,
+    /* L atmosfera del Carbonifero aveva molto piu ossigeno e molta piu acqua
+     * sospesa: cielo lattiginoso, orizzonte che sfuma presto. E anche il
+     * motivo per cui gli insetti potevano diventare enormi. */
+    skyTint: [0.94, 1.02, 0.92], sunTint: [1.04, 1.0, 0.88], ambientBoost: 1.15,
+    nightSky: [0.0020, 0.0028, 0.0030],
+    palette: {
+      grassLow: 0x2e4a1e, grassHigh: 0x3e5e26, grassDry: 0x5a6a30,
+      dirt: 0x322a1c, rock: 0x46443a, rockDark: 0x2e2c26,
+      sand: 0x50492f, snow: 0xe6ecf2, underwater: 0x16240f
+    },
+    sky: { turbidity: 6.2, rayleigh: 1.30, mie: 0.020, mieG: 0.76, groundAlbedo: [0.06, 0.09, 0.04] },
+    fog: { density: 0.0140, heightFalloff: 0.030, tint: [0.86, 0.94, 0.82] },
+    ambience: { hemiSky: 0x9ab89a, hemiGround: 0x2c3a1c, bounce: 0.30 },
+    water: { deep: 0x122008, shallow: 0x2c4418, foam: 0x93a274, waveAmp: 0.05, waveScale: 2.0, reflect: 0.70 },
+    motes: { amount: 0.30, color: [0.86, 1.0, 0.72] },
+    scatter: [
+      { type: 'lycopod', density: 0.0070, radius: 340, slope: [0, 0.30], height: [-1.2, 999], moisture: [0.25, 1], scale: [0.7, 1.5], tilt: 0.05, tint: [0x3a5a22, 0x62864a], shadow: true },
+      { type: 'calamite', density: 0.020, radius: 200, slope: [0, 0.35], height: [-1.6, 999], moisture: [0.35, 1], scale: [0.7, 1.6], tilt: 0.07, tint: [0x4a7a2c, 0x86ac4a], shadow: true },
+      { type: 'fern', density: 0.11, radius: 110, slope: [0, 0.5], height: [-0.8, 999], moisture: [0.25, 1], scale: [1.5, 3.4], tilt: 0.10, tint: [0x1e4a12, 0x3a7020] },
+      { type: 'reed', density: 0.070, radius: 90, slope: [0, 0.4], height: [-2.6, 1.2], moisture: [0.4, 1], scale: [1.0, 2.2], tilt: 0.06, tint: [0x4a6a24, 0x7a9440] },
+      { type: 'deadTree', density: 0.0012, radius: 220, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [1.0, 2.2], tilt: 0.14, tint: [0x2e2a1e, 0x4a4230], shadow: true },
+      { type: 'log', density: 0.0030, radius: 130, slope: [0, 0.35], height: [-0.6, 999], moisture: [0.2, 1], scale: [1.2, 2.4], tilt: 0.05, tint: [0x2e2618, 0x463a26] },
+      { type: 'mushroom', density: 0.030, radius: 60, slope: [0, 0.5], height: [-0.4, 999], moisture: [0.35, 1], scale: [1.4, 3.2], tilt: 0.10, tint: [0xb08a50, 0xd8c088] },
+      { type: 'rock', density: 0.007, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.45, tint: [0x413f36, 0x605d52] },
+      { type: 'grassTuft', density: 1.9, radius: 40, slope: [0, 0.6], height: [-0.5, 999], moisture: [0.2, 1], scale: [1.0, 1.9], tilt: 0.09, tint: [0x2c5a1a, 0x4e7c2a], grass: true }
+    ]
+  },
+
+  saharaverde: {
+    id: 'saharaverde', label: 'Sahara verde', epoca: true,
+    blurb: 'Seimila anni fa il deserto era una prateria di laghi. Gli stessi luoghi, prima che si asciugassero.',
+    terrain: 'savanna', seed: 5203, seaLevel: 0,
+    waterLevel: -3, waterKind: 'lake', startHeightOffset: 1.7,
+    savanna: { amp: 20, freq: 0.0016, oct: 5, kopjeAmp: 58, kopjeFreq: 0.0034, kopjePow: 3.0, kopjeCut: 0.24, medAmp: 3.0, medFreq: 0.011, microAmp: 0.5 },
+    snowLine: 9999, seasonal: true,
+    sunTint: [1.08, 1.01, 0.90],
+    palette: {
+      grassLow: 0x6a8a34, grassHigh: 0x93a844, grassDry: 0xc0b256,
+      dirt: 0x7a6440, rock: 0x8a7c62, rockDark: 0x60543f,
+      sand: 0xc0a86e, snow: 0xeef2f8, underwater: 0x2e4020
+    },
+    sky: { turbidity: 3.4, rayleigh: 1.05, mie: 0.0080, mieG: 0.78, groundAlbedo: [0.20, 0.22, 0.10] },
+    fog: { density: 0.0044, heightFalloff: 0.0060, tint: [1.02, 1.0, 0.94] },
+    ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x60602c, bounce: 0.44 },
+    scatter: [
+      { type: 'acacia', density: 0.0022, radius: 380, slope: [0, 0.35], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.6], tilt: 0.05, tint: [0x4a6a26, 0x7a9440], shadow: true },
+      { type: 'palm', density: 0.0016, radius: 240, slope: [0, 0.3], height: [-99, 8], moisture: [0.45, 1], scale: [0.9, 1.5], tilt: 0.09, tint: [0x3a7a2e, 0x6aa848], shadow: true },
+      { type: 'bush', density: 0.020, radius: 160, slope: [0, 0.5], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.5], tilt: 0.06, tint: [0x5a7a2a, 0x8a9c44] },
+      { type: 'reed', density: 0.055, radius: 95, slope: [0, 0.35], height: [-6, 0.8], moisture: [0.4, 1], scale: [0.9, 1.7], tilt: 0.06, tint: [0x7a8a34, 0xa8b45a] },
+      { type: 'termiteMound', density: 0.0016, radius: 200, slope: [0, 0.3], height: [-99, 999], moisture: [0, 0.6], scale: [0.8, 1.6], tilt: 0.05, tint: [0x9a6a44, 0xc09060], shadow: true },
+      { type: 'boulder', density: 0.0018, radius: 300, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.0], tilt: 0.3, tint: [0x7a6e56, 0xa2967a], shadow: true },
+      { type: 'rock', density: 0.010, radius: 160, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.5], tilt: 0.45, tint: [0x7e7358, 0xa89c7c] },
+      { type: 'tallGrass', density: 0.55, radius: 75, slope: [0, 0.45], height: [-99, 999], moisture: [0.1, 1], scale: [0.9, 1.7], tilt: 0.10, tint: [0x8a9c3a, 0xc0be5a], grass: true },
+      { type: 'grassTuft', density: 2.4, radius: 42, slope: [0, 0.6], height: [-99, 999], moisture: [0.05, 1], scale: [0.8, 1.5], tilt: 0.08, tint: [0x7a9434, 0xb0b054], grass: true }
+    ]
+  },
+
+  adeano: {
+    id: 'adeano', label: 'Eone Adeano', epoca: true,
+    blurb: 'La Terra a quattro miliardi di anni fa: crosta appena rappresa, oceani di lava, e la Luna dieci volte piu vicina.',
+    terrain: 'peaks', seed: 5309, seaLevel: 0,
+    waterLevel: -6, waterKind: 'lava', startHeightOffset: 1.7,
+    peaks: { amp: 180, freq: 0.0013, oct: 6, medAmp: 22, medFreq: 0.0070, microAmp: 1.4, valleyFloor: -18, sharp: 0.78, massifFreq: 0.00055, floorK: 15 },
+    snowLine: 9999, seasonal: false, emberGlow: true,
+    /* La Luna appena formata stava a un decimo della distanza di oggi: in
+     * cielo era un disco enorme, e le maree erano centinaia di metri. E il
+     * dettaglio che rende il posto riconoscibile come «la Terra», e non un
+     * pianeta qualsiasi. */
+    /* L albedo della Luna e 0,12: e roccia scura, non gesso. Messa a 0,5
+     * diventa un disco bianco slavato appena l esposizione automatica sale.
+     * E 0,42 di raggio angolare erano ventiquattro gradi, mezzo cielo. */
+    planet: { dir: [0.30, 0.32, -0.89], size: 0.26, color: [0.21, 0.19, 0.18], ring: false },
+    skyTint: [1.50, 0.72, 0.42], sunTint: [1.30, 0.80, 0.52], sunBoost: 0.25,
+    nightSky: [0.0060, 0.0022, 0.0012], ambientBoost: 1.25,
+    palette: {
+      grassLow: 0x3a3230, grassHigh: 0x4a3e38, grassDry: 0x5c4a3e,
+      dirt: 0x2e2826, rock: 0x262220, rockDark: 0x161312,
+      sand: 0x463c34, snow: 0xa89a90, underwater: 0xff6218
+    },
+    sky: { turbidity: 9.5, rayleigh: 0.70, mie: 0.055, mieG: 0.70, groundAlbedo: [0.08, 0.05, 0.03] },
+    fog: { density: 0.0125, heightFalloff: 0.0035, tint: [1.40, 0.72, 0.40] },
+    ambience: { hemiSky: 0xd07038, hemiGround: 0x3a2620, bounce: 0.42 },
+    water: { deep: 0xff4a08, shallow: 0xffa030, foam: 0xffd070, waveAmp: 0.28, waveScale: 4.5, reflect: 0.30 },
+    motes: { amount: 0.55, color: [1.0, 0.62, 0.28] },
+    scatter: [
+      { type: 'lavaRock', density: 0.016, radius: 220, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.7, 2.4], tilt: 0.5, tint: [0x201c1a, 0x3e3630], shadow: true },
+      { type: 'boulder', density: 0.0030, radius: 300, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.2, 3.4], tilt: 0.35, tint: [0x1c1918, 0x38312c], shadow: true },
+      { type: 'spiralRock', density: 0.00090, radius: 320, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [1.2, 3.0], tilt: 0.10, tint: [0x241f1c, 0x463c34], shadow: true },
+      { type: 'rock', density: 0.020, radius: 160, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.8], tilt: 0.5, tint: [0x232019, 0x3e392f] }
+    ]
+  },
+
+  /* ---------------- ALTRI MONDI ---------------- */
+
+  mondonuvole: {
+    id: 'mondonuvole', label: 'Mondo di nuvole', fantasy: true,
+    blurb: 'Il vapore e terreno. Isole di cumulo sopra altre nuvole, e sotto ancora nuvole.',
+    terrain: 'islands', seed: 5407, seaLevel: 0,
+    waterLevel: -60, waterKind: 'cloudsea', startHeightOffset: 1.7,
+    islands: { maskFreq: 0.0022, cut: 0.24, edge: 0.060, base: 24, detFreq: 0.014, detAmp: 7, abyss: -300 },
+    snowLine: 9999, seasonal: false, noShadows: false,
+    skyTint: [1.02, 1.0, 1.08], ambientBoost: 1.45, farFade: 2600,
+    nightSky: [0.0022, 0.0028, 0.0050], moonBright: 1.5,
+    palette: {
+      grassLow: 0xd8dce6, grassHigh: 0xeef1f6, grassDry: 0xe4e0e8,
+      dirt: 0xb8bece, rock: 0xc8ccd8, rockDark: 0x9aa2b4,
+      sand: 0xe0e2ea, snow: 0xffffff, underwater: 0xb0b8c8
+    },
+    sky: { turbidity: 2.6, rayleigh: 1.20, mie: 0.014, mieG: 0.80, groundAlbedo: [0.62, 0.64, 0.70] },
+    fog: { density: 0.0075, heightFalloff: 0.0040, tint: [1.0, 1.0, 1.06] },
+    ambience: { hemiSky: 0xd8e4f4, hemiGround: 0xb0b8c8, bounce: 0.72 },
+    motes: { amount: 0.36, color: [1.0, 1.0, 1.0] },
+    scatter: [
+      { type: 'cloudPuff', density: 0.0035, radius: 300, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.6], tilt: 0.02, tint: [0xf0f2f6, 0xffffff], upright: true, shadow: true, evenColor: true },
+      { type: 'cloudPuff', density: 0.00055, radius: 420, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [2.5, 7.0], tilt: 0.02, tint: [0xe8ecf4, 0xffffff], upright: true, yOffset: [30, 150], evenColor: true },
+      { type: 'flower', density: 0.030, radius: 60, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.9, 1.6], tilt: 0.12, tint: [0xf0d8f8, 0xd8e8ff], emissive: 0.10 },
+      { type: 'grassTuft', density: 1.2, radius: 40, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.3], tilt: 0.10, tint: [0xdfe6f0, 0xf4f6fa], grass: true }
+    ]
+  },
+
+  macromondo: {
+    id: 'macromondo', label: 'Macromondo', fantasy: true,
+    blurb: 'Tutto e gigantesco, o forse sei tu a essere alto due centimetri. Un filo d erba e un albero.',
+    terrain: 'hills', seed: 5501, seaLevel: 0,
+    waterLevel: -26, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 40, freq: 0.0018, oct: 5, medAmp: 6.0, medFreq: 0.010, microAmp: 0.8 },
+    snowLine: 9999, seasonal: true,
+    sunTint: [1.05, 1.02, 0.94], ambientBoost: 1.10,
+    palette: {
+      grassLow: 0x3e7a24, grassHigh: 0x74a03a, grassDry: 0xa0a848,
+      dirt: 0x5e4830, rock: 0x7a766c, rockDark: 0x565248,
+      sand: 0x9c9070, snow: 0xeef3fa, underwater: 0x244020
+    },
+    sky: { turbidity: 2.6, rayleigh: 1.10, mie: 0.0050, mieG: 0.79, groundAlbedo: [0.14, 0.20, 0.08] },
+    fog: { density: 0.0030, heightFalloff: 0.0060, tint: [0.98, 1.0, 1.02] },
+    ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x46601e, bounce: 0.42 },
+    /* Niente geometrie nuove: sono gli stessi oggetti di sempre, scalati per
+     * venti o cinquanta. E questo il punto — l erba e alta otto metri e i
+     * sassolini sono massi, ma restano riconoscibilmente erba e sassolini, ed
+     * e da li che nasce la vertigine. */
+    scatter: [
+      { type: 'grassTuft', density: 0.0060, radius: 320, slope: [0, 0.5], height: [-99, 999], moisture: [0.1, 1], scale: [18, 34], tilt: 0.10, tint: [0x3e8a22, 0x7ab83c], shadow: true },
+      { type: 'tallGrass', density: 0.0022, radius: 340, slope: [0, 0.45], height: [-99, 999], moisture: [0.15, 1], scale: [10, 20], tilt: 0.09, tint: [0x4a9426, 0x8cc046], shadow: true },
+      { type: 'flower', density: 0.0016, radius: 300, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [30, 70], tilt: 0.10, tint: [0xf0d048, 0xf8f0f8], shadow: true },
+      { type: 'mushroom', density: 0.00085, radius: 300, slope: [0, 0.4], height: [-99, 999], moisture: [0.25, 1], scale: [60, 140], tilt: 0.08, tint: [0xc86050, 0xe8b088], shadow: true },
+      { type: 'rock', density: 0.0035, radius: 300, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [12, 34], tilt: 0.45, tint: [0x6e6a60, 0x968f82], shadow: true },
+      { type: 'fern', density: 0.0018, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.25, 1], scale: [12, 26], tilt: 0.10, tint: [0x1e5a14, 0x3c8020], shadow: true },
+      { type: 'grassTuft', density: 1.4, radius: 34, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.5, 1.0], tilt: 0.08, tint: [0x4c8a2c, 0x7aa844], grass: true }
+    ]
+  },
+
+  inferno: {
+    id: 'inferno', label: 'Inferno', fantasy: true,
+    blurb: 'Gironi di roccia nera che scendono verso un lago di fuoco. Il cielo non e cielo: e un soffitto.',
+    terrain: 'peaks', seed: 5623, seaLevel: 0,
+    waterLevel: -12, waterKind: 'lava', startHeightOffset: 1.7,
+    peaks: { amp: 230, freq: 0.0011, oct: 6, medAmp: 20, medFreq: 0.0060, microAmp: 1.2, valleyFloor: -22, sharp: 0.84, massifFreq: 0.00048, floorK: 18 },
+    snowLine: 9999, seasonal: false, emberGlow: true,
+    /* Meno diffusione e piu assorbimento: con la diffusione multipla attiva
+     * un cielo cosi torbido diventava bianco in alto, che e l opposto di un
+     * soffitto. */
+    skyTint: [1.35, 0.34, 0.20], sunTint: [1.40, 0.58, 0.34], sunBoost: 0.10, sunAngle: 0.0060,
+    nightSky: [0.0090, 0.0020, 0.0010], ambientBoost: 1.30, farFade: 900,
+    palette: {
+      grassLow: 0x2e2422, grassHigh: 0x3c2e2a, grassDry: 0x4a3630,
+      dirt: 0x241c1a, rock: 0x1c1614, rockDark: 0x0f0b0a,
+      sand: 0x3a2c28, snow: 0x8a6a5a, underwater: 0xff4a08
+    },
+    sky: { turbidity: 11.0, rayleigh: 0.26, mie: 0.052, mieG: 0.62, groundAlbedo: [0.05, 0.015, 0.008] },
+    fog: { density: 0.0170, heightFalloff: 0.0028, tint: [1.55, 0.48, 0.26] },
+    ambience: { hemiSky: 0xd04824, hemiGround: 0x2a1614, bounce: 0.36 },
+    water: { deep: 0xff3a04, shallow: 0xff9020, foam: 0xffc860, waveAmp: 0.22, waveScale: 5.0, reflect: 0.26 },
+    motes: { amount: 0.70, color: [1.0, 0.48, 0.18] },
+    scatter: [
+      { type: 'darkSpire', density: 0.0022, radius: 700, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.1], tilt: 0.02, tint: [0x141010, 0x2e2422], upright: true, sink: 1.0, emissive: 0.34, emissiveMask: true, cluster: { period: 620, radius: 34, jitter: 0.55 }, jitter: 0.6, shadow: true },
+      { type: 'watchTower', density: 0.0014, radius: 420, slope: [0, 0.42], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.5], tilt: 0.02, tint: [0x181212, 0x362a26], faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.5, cluster: { period: 440, radius: 30, jitter: 0.6 }, jitter: 0.7, shadow: true },
+      { type: 'ruinPillar', density: 0.0035, radius: 260, slope: [0, 0.45], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.4], tilt: 0.18, tint: [0x1e1816, 0x3a2e2a], shadow: true },
+      { type: 'deadTree', density: 0.0022, radius: 260, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.5], tilt: 0.22, tint: [0x120e0c, 0x281f1c], shadow: true },
+      { type: 'lavaRock', density: 0.018, radius: 200, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 2.2], tilt: 0.5, tint: [0x1a1514, 0x342a26] },
+      { type: 'spiralRock', density: 0.0012, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [1.0, 2.6], tilt: 0.12, tint: [0x1c1614, 0x3a2c28], shadow: true },
+      { type: 'rock', density: 0.016, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.5, tint: [0x191413, 0x322a26] }
+    ]
+  }
 };
 
 export const BIOME_ORDER = [
@@ -1553,11 +1748,14 @@ export const BIOME_ORDER = [
   'foresta', 'deserto', 'citta', 'alpino', 'costa', 'artico', 'savana', 'vulcanico', 'palude',
   'canyonrosso', 'giungla', 'bambu', 'sequoie', 'lavanda', 'salar', 'fiordi', 'geyser',
   'barriera', 'mareaperto', 'cascate',
+  // passati
+  'carbonifero', 'saharaverde', 'adeano', 'giurassico', 'glaciale',
   // immaginari
   'boscostregato', 'boscofatato', 'isolecielo', 'smeraldo', 'collegio', 'pianetino',
   'pandora', 'marte', 'luna', 'titano', 'oort', 'desolata', 'neon', 'ghiaccio',
-  'contea', 'ombra', 'montefato', 'tatooine', 'giurassico', 'glaciale',
-  'atlantide', 'terracava', 'agartha', 'biblioteca'
+  'contea', 'ombra', 'montefato', 'tatooine',
+  'atlantide', 'terracava', 'agartha', 'biblioteca',
+  'mondonuvole', 'macromondo', 'inferno'
 ];
 
 
@@ -1675,6 +1873,32 @@ export const FAUNA = {
   ],
   ghiaccio: [
     { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO }
+  ],
+  carbonifero: [
+    /* Meganeura: settanta centimetri di apertura alare. Era possibile perche
+       l aria aveva molto piu ossigeno, ed e la cosa piu memorabile del
+       periodo — piu delle piante. */
+    { type: 'butterfly', count: 40, radius: 90, y: [1.0, 9.0], scale: [7, 11], tint: [0x3a6a8a, 0x8ac0d0] },
+    { type: 'butterfly', count: 70, radius: 46, y: [0.4, 3.0], scale: [1.4, 2.6], tint: [0x6a8a3a, 0xc0d070] },
+    { type: 'fish', count: 40, radius: 80, scale: [0.7, 1.6], tint: [0x3a4a28, 0x8a9450] }
+  ],
+  saharaverde: [
+    { type: 'bird', count: 22, radius: 320, y: [30, 80], scale: [0.9, 1.3], tint: UCCELLO },
+    { type: 'antelope', count: 22, radius: 300, scale: [0.85, 1.2], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'deer', count: 8, radius: 240, scale: [0.9, 1.2], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'butterfly', count: 40, radius: 44, y: [0.4, 2.0], scale: [0.9, 1.4], tint: [0xe0c050, 0xf4e890] }
+  ],
+  mondonuvole: [
+    { type: 'bird', count: 40, radius: 340, y: [10, 90], scale: [0.9, 1.6], tint: GABBIANO },
+    { type: 'jelly', count: 16, radius: 120, y: [6, 46], scale: [1.0, 2.6], tint: [0xd8e0f0, 0xffffff] }
+  ],
+  macromondo: [
+    /* Alla scala di un insetto una farfalla e grande come un aliante. */
+    { type: 'butterfly', count: 26, radius: 200, y: [3, 40], scale: [40, 90], tint: [0xe08030, 0xf8d060] },
+    { type: 'bird', count: 8, radius: 380, y: [90, 220], scale: [6, 12], tint: UCCELLO }
+  ],
+  inferno: [
+    { type: 'raptor', count: 12, radius: 340, y: [40, 130], scale: [1.0, 1.8], tint: [0x1a1210, 0x4a2a1e] }
   ],
   contea: [
     /* I panciotti cambiano colore da uno all altro: e cio che fa sembrare

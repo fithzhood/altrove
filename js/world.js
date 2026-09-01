@@ -8,7 +8,7 @@
  * aprirebbero crepe nel terreno.
  */
 
-import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=19';
+import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=20';
 
 /* sRGB -> lineare. Le palette dei biomi sono scritte come colori "da schermo",
  * ma i vertex color devono arrivare allo shader gia in spazio lineare. */
@@ -50,6 +50,22 @@ export class World {
     this.waterLevel = biome.waterLevel;
     this.hasWater = biome.waterLevel !== null && biome.waterLevel !== undefined;
     this.isCity = !!biome.city;
+
+    /* Un parametro del terreno dimenticato non produce un errore: produce
+     * NaN, e NaN si propaga in silenzio a tutto il campo di altezze. Il
+     * risultato e un mondo invisibile con il giocatore a quota NaN e la
+     * console pulita, che e il modo peggiore di rompersi. Venti campioni al
+     * momento della costruzione costano niente e trasformano un mistero in
+     * un messaggio che dice quale bioma e quale forma di terreno. */
+    for (let i = 0; i < 20; i++) {
+      const a = i * 2.399;
+      const h = this.height(Math.cos(a) * i * 37, Math.sin(a) * i * 41);
+      if (!Number.isFinite(h)) {
+        throw new Error(
+          'quota non finita nel bioma «' + (biome.id || '?') + '» (terreno «' +
+          this.kind + '»): manca un parametro in biome.' + this.kind + '?');
+      }
+    }
   }
 
   /* ---------------- distanza dalla strada (solo citta) ---------------- */
@@ -162,8 +178,11 @@ export class World {
         const cut = p.kopjeCut ?? 0.18;
         let k = n.fbm2(x * p.kopjeFreq + 55.5, z * p.kopjeFreq - 12.2, 4);
         k = Math.max(0, k - cut) / (1 - cut);
-        h += Math.pow(k, p.kopjePow) * p.kopjeAmp;
-        h += n.fbm2(x * p.medFreq, z * p.medFreq, 3) * p.medAmp;
+        /* Valori di riserva: un parametro dimenticato dava Math.pow(k, undefined)
+         * = NaN, e da li NaN in tutto il campo di altezze — terreno invisibile,
+         * quota del giocatore NaN, e nessun errore in console. */
+        h += Math.pow(k, p.kopjePow ?? 3.0) * (p.kopjeAmp ?? 0);
+        h += n.fbm2(x * (p.medFreq ?? 0.01), z * (p.medFreq ?? 0.01), 3) * (p.medAmp ?? 0);
         h += n.fbm2(x * 0.07, z * 0.07, 2) * p.microAmp;
         return h;
       }

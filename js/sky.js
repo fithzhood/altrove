@@ -16,7 +16,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=19';
+import { GLSL_NOISE } from './noise.js?v=20';
 
 /* ------------------------------------------------------------------ *
  * Costanti fisiche condivise
@@ -90,6 +90,19 @@ float alt_raySphereFar(vec3 o, vec3 d, float r){
   return -b + sqrt(disc);
 }
 
+/* Quanta luce arriva dopo essere rimbalzata piu di una volta. L integrale
+ * qui sotto conta solo il PRIMO rimbalzo, ed e per questo che il cielo
+ * usciva dieci volte piu scuro del prato: nella realta lo zenit e piu chiaro
+ * dell erba al sole, non un decimo. La luce che ha rimbalzato due, tre, dieci
+ * volte ha perso ogni memoria della direzione da cui veniva, quindi la si
+ * aggiunge con fase isotropa (1/4pi) invece che con quella di Rayleigh.
+ *
+ * Non e una taratura estetica: e il termine che manca, e senza di lui tutto
+ * cio che non prende il sole diretto viene quasi nero — le facciate in ombra,
+ * il sottobosco, l interno di una porta. */
+#define ALT_MULTISCATTER 5.0
+#define ALT_ISO_PHASE 0.0795774715
+
 vec3 alt_atmosphere(float camAlt, vec3 rd, vec3 sunDir,
                     float rayleighMul, float mieMul, float mieG, float sunI){
   const int N = 24;
@@ -146,7 +159,9 @@ vec3 alt_atmosphere(float camAlt, vec3 rd, vec3 sunDir,
     }
     t += segLen;
   }
-  return (sumR * BETA_R * rayleighMul * phaseR + sumM * BETA_M * mieMul * phaseM) * sunI;
+  vec3 singola = sumR * BETA_R * rayleighMul * phaseR + sumM * BETA_M * mieMul * phaseM;
+  vec3 multipla = (sumR * BETA_R * rayleighMul + sumM * BETA_M * mieMul) * ALT_ISO_PHASE;
+  return (singola + multipla * ALT_MULTISCATTER) * sunI;
 }
 
 // Quanto sole arriva a terra dopo l attraversamento dell atmosfera
@@ -180,6 +195,12 @@ function raySphereFarJS(oy, dx, dy, dz, r) {
 }
 
 const _out3 = [0, 0, 0];
+
+/* Le stesse due costanti della versione GLSL. Se divergono, le luci della
+ * scena e il cielo che si vede smettono di essere d accordo, e l occhio se ne
+ * accorge subito anche senza saper dire perche. */
+const MULTISCATTER = 5.0;
+const ISO_PHASE = 0.0795774715;
 
 export function atmosphereJS(camAlt, dx, dy, dz, sx, sy, sz, rayleighMul, mieMul, mieG, sunI, out) {
   out = out || _out3;
@@ -249,9 +270,10 @@ export function atmosphereJS(camAlt, dx, dy, dz, sx, sy, sz, rayleighMul, mieMul
     t += segLen;
   }
 
-  out[0] = (sR0 * BETA_R[0] * rayleighMul * phaseR + sM0 * BETA_M * mieMul * phaseM) * sunI;
-  out[1] = (sR1 * BETA_R[1] * rayleighMul * phaseR + sM1 * BETA_M * mieMul * phaseM) * sunI;
-  out[2] = (sR2 * BETA_R[2] * rayleighMul * phaseR + sM2 * BETA_M * mieMul * phaseM) * sunI;
+  const K = ISO_PHASE * MULTISCATTER;
+  out[0] = (sR0 * BETA_R[0] * rayleighMul * (phaseR + K) + sM0 * BETA_M * mieMul * (phaseM + K)) * sunI;
+  out[1] = (sR1 * BETA_R[1] * rayleighMul * (phaseR + K) + sM1 * BETA_M * mieMul * (phaseM + K)) * sunI;
+  out[2] = (sR2 * BETA_R[2] * rayleighMul * (phaseR + K) + sM2 * BETA_M * mieMul * (phaseM + K)) * sunI;
   return out;
 }
 

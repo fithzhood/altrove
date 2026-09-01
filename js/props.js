@@ -2337,6 +2337,144 @@ function statueRuin(rnd, tint) {
   return B.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * Il passato, e qualche mondo che non c e mai stato
+ * ------------------------------------------------------------------ */
+
+/* LICOPODE (Lepidodendron). L albero del Carbonifero non e un albero: e una
+ * felce cresciuta trenta metri. Il fusto e nudo e coperto di cicatrici a
+ * rombo dove sono cadute le foglie, e si biforca solo in cima, in una corona
+ * a Y che non somiglia a nessuna chioma moderna. E la silhouette a dire
+ * «trecento milioni di anni fa», non il colore. */
+function lycopod(rnd, tint) {
+  const B = new Builder();
+  const h = 20 * (0.8 + rnd() * 0.5);
+  const corteccia = mixc(lin(0x6a5a3e), tint, 0.20);
+  const cortecciaScura = scale(corteccia, 0.58);
+  const fronda = mixc(tint, lin(0x4a7a2a), 0.55);
+  const frondaChiara = mixc(fronda, lin(0xa8c85a), 0.45);
+
+  /* trunk() restituisce { top, ring }, non un array: usarlo come array da
+   * undefined, e da li NaN in tutta la corona. */
+  const cima = trunk(B, {
+    r0: h * 0.045, r1: h * 0.020, h: h * 0.74, seg: 9, rings: 5,
+    colBot: cortecciaScura, colTop: corteccia, flexTop: 0.05,
+    curve: [(rnd() - 0.5) * h * 0.05, (rnd() - 0.5) * h * 0.05]
+  });
+
+  /* Le cicatrici a rombo: file sfalsate di losanghe scure sul fusto. Da
+   * lontano non si distinguono una per una, ma danno al tronco una tessitura
+   * che nessun albero di oggi ha. */
+  for (let k = 0; k < 26; k++) {
+    const t = 0.06 + (k / 26) * 0.66;
+    const y = h * 0.74 * t;
+    const r = (h * 0.045 + (h * 0.020 - h * 0.045) * t) * 1.02;
+    const a = k * 2.399 + (k % 2) * 0.3;
+    const cx = Math.cos(a) * r, cz = Math.sin(a) * r;
+    const s = h * 0.011;
+    const nx = Math.cos(a), nz = Math.sin(a);
+    const tx = -nz, tz = nx;
+    const c = scale(cortecciaScura, 0.8);
+    B.quad([cx, y + s, cz], [cx + tx * s, y, cz + tz * s],
+           [cx, y - s, cz], [cx - tx * s, y, cz - tz * s], c, c, c, c, 0, 0, 0, 0);
+  }
+
+  /* Corona: biforcazioni ripetute. Ogni ramo si divide in due, e ogni volta
+   * l angolo si stringe — e il modo in cui cresce davvero una licopodiale. */
+  const rami = [{ p: [cima.top[0], h * 0.74, cima.top[2]], d: [0, 1, 0], len: h * 0.13, r: h * 0.016 }];
+  for (let liv = 0; liv < 4; liv++) {
+    const nuovi = [];
+    for (const R of rami) {
+      const q = [R.p[0] + R.d[0] * R.len, R.p[1] + R.d[1] * R.len, R.p[2] + R.d[2] * R.len];
+      tube(B, R.p, q, R.r, R.r * 0.72, cortecciaScura, corteccia, 6, 0, 0);
+      if (liv < 3) {
+        const a = rnd() * Math.PI * 2;
+        const ap = 0.58 - liv * 0.10;
+        for (const s of [-1, 1]) {
+          const dx = R.d[0] + Math.cos(a) * ap * s;
+          const dz = R.d[2] + Math.sin(a) * ap * s;
+          const dy = R.d[1] * (1 - ap * 0.30);
+          const l = Math.hypot(dx, dy, dz) || 1;
+          nuovi.push({ p: q, d: [dx / l, dy / l, dz / l], len: R.len * 0.72, r: R.r * 0.66 });
+        }
+      } else {
+        // ciuffi di foglie strette in punta
+        for (let f = 0; f < 9; f++) {
+          blade(B, {
+            x: q[0], y: q[1], z: q[2], dir: (f / 9) * 6.283 + rnd(),
+            len: h * 0.055 * (0.7 + rnd() * 0.6), wid: h * 0.0030,
+            seg: 3, bend: 0.9, lift: 0.55, colBase: fronda, colTip: frondaChiara,
+            flexMax: 1, taper: 1.2
+          });
+        }
+      }
+    }
+    if (!nuovi.length) break;
+    rami.length = 0; rami.push(...nuovi);
+  }
+  return B.toGeometry();
+}
+
+/* CALAMITE: l equiseto gigante. Fusto a canne, segnato da nodi netti, e a
+ * ogni nodo una raggiera di aghi. Sta nell acqua bassa, in boschetti fitti. */
+function calamite(rnd, tint) {
+  const B = new Builder();
+  const h = 7.0 * (0.75 + rnd() * 0.5);
+  const stelo = mixc(tint, lin(0x6a8a3a), 0.5);
+  const steloScuro = scale(stelo, 0.62);
+  const ago = mixc(tint, lin(0x8ab04a), 0.6);
+  const nodi = 7;
+  for (let k = 0; k < nodi; k++) {
+    const y0 = h * (k / nodi), y1 = h * ((k + 1) / nodi);
+    const r0 = h * 0.030 * (1 - k / nodi * 0.55);
+    const r1 = h * 0.030 * (1 - (k + 1) / nodi * 0.55);
+    trunk(B, { r0, r1, h: y1 - y0, seg: 8, rings: 1, colBot: stelo, colTop: stelo,
+               flexTop: 0, x0: 0, z0: 0 });
+    // alza il segmento appena costruito
+    const n = B.p.length;
+    for (let i = n - 8 * 6 * 3; i < n; i += 3) B.p[i + 1] += y0;
+    // nodo
+    ringO(B, [0, y1, 0], [0, 1, 0], r1 * 0.9, r1 * 1.35, steloScuro, steloScuro, 0, 8);
+    // raggiera di aghi
+    if (k > 0) {
+      const na = 16;
+      for (let i = 0; i < na; i++) {
+        blade(B, {
+          x: 0, y: y1, z: 0, dir: (i / na) * 6.283 + k * 0.4,
+          len: h * 0.24 * (1 - k / nodi * 0.35), wid: h * 0.0055,
+          seg: 3, bend: 1.30, lift: 0.30, colBase: steloScuro, colTip: ago,
+          flexMax: 1, taper: 1.1
+        });
+      }
+    }
+  }
+  return B.toGeometry();
+}
+
+/* NUVOLA SOLIDA. In un mondo fatto di nuvole il vapore e terreno: serve una
+ * massa che legga come cumulo — gobbe tonde in cima, base piatta — e non come
+ * una palla bianca. La base piatta e tutto: e quella che dice «nuvola». */
+function cloudPuff(rnd, tint) {
+  const B = new Builder();
+  const bianco = mixc(tint, lin(0xf4f2ee), 0.75);
+  const ombra = mixc(bianco, lin(0x8ea0be), 0.45);
+  const R = 3.4;
+  const n = 5 + Math.floor(rnd() * 4);
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + rnd() * 0.6;
+    const d = i === 0 ? 0 : R * (0.35 + rnd() * 0.55);
+    const rr = R * (i === 0 ? 0.72 : 0.34 + rnd() * 0.30);
+    blob(B, {
+      cx: Math.cos(a) * d, cy: rr * (0.55 + rnd() * 0.35), cz: Math.sin(a) * d * 0.8,
+      rx: rr * 1.15, ry: rr * 0.92, rz: rr * 1.10,
+      level: 2, rough: 0.16, rnd, colTop: bianco, colBot: ombra, flex: 0
+    });
+  }
+  // base piatta: un disco d ombra che chiude il fondo
+  discO(B, [0, 0.06, 0], [0, -1, 0], R * 0.95, ombra, scale(ombra, 0.8), 0, 18);
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -2351,7 +2489,9 @@ export const PROPS = {
   hobbitHole, fence, gardenPatch, haystack, signpost,
   // firme dei luoghi immaginari
   domeHut, mushroomHouse, standingStone, archRuin, watchTower,
-  darkSpire, lamppost, lander, windmill, statueRuin
+  darkSpire, lamppost, lander, windmill, statueRuin,
+  // passato e mondi nuovi
+  lycopod, calamite, cloudPuff
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -2373,7 +2513,8 @@ export const PROP_HEIGHT = {
   hobbitHole: 11.0, fence: 3.0, gardenPatch: 3.2, haystack: 2.6, signpost: 2.2,
   domeHut: 6.4, mushroomHouse: 6.8, standingStone: 3.3, archRuin: 5.4,
   watchTower: 12.0, darkSpire: 38.0, lamppost: 4.2, lander: 5.5,
-  windmill: 8.5, statueRuin: 5.0
+  windmill: 8.5, statueRuin: 5.0,
+  lycopod: 22.0, calamite: 7.5, cloudPuff: 9.0
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
@@ -2381,7 +2522,7 @@ export const PROP_HEIGHT = {
 /* Misurati sulla larghezza, non sull altezza: un tumulo e largo dieci metri
  * e alto tre, e normalizzarlo in altezza lo gonfierebbe a dismisura. */
 const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz',
-                    domeHut: 'xz' };
+                    domeHut: 'xz', cloudPuff: 'xz' };
 
 export function buildProp(type, rnd, tint) {
   const fn = PROPS[type];

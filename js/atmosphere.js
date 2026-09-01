@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=19';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=19';
+} from './sky.js?v=20';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=20';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
