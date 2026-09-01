@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=20';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=20';
+} from './sky.js?v=21';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=21';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
@@ -259,7 +259,12 @@ export class Atmosphere {
     su.uSunDir.value.copy(this.sunDir);
     su.uMoonDir.value.copy(this.moonDir);
     su.uSunColor.value.copy(this.sunColor);
-    su.uSunDiskI.value = 26 * (0.25 + 0.75 * wx.sunMul);
+    /* Certi luoghi non hanno un sole da vedere: nel cielo del buco nero la
+     * luce arriva dal disco di accrescimento, e disegnare anche un disco
+     * solare sopra il buco nero sarebbe un controsenso. `sunDisk: 0` lo
+     * spegne lasciando l illuminazione al suo posto. */
+    const dsk = biome.sunDisk === undefined ? 1 : biome.sunDisk;
+    su.uSunDiskI.value = 26 * (0.25 + 0.75 * wx.sunMul) * dsk;
     su.uMoonI.value = moonI;
     su.uTime.value = st.time;
     su.uCloudCover.value = wx.cloudCover;
@@ -277,6 +282,18 @@ export class Atmosphere {
      * basso, cosi sorgono e tramontano insieme ma sfalsati. */
     su.uSunAngle.value = biome.sunAngle || 0.0047;
     const pl = biome.planet;
+    /* Buco nero: e un corpo celeste come gli altri, solo che invece di
+     * riflettere la luce se la mangia. */
+    const bh = biome.blackHole;
+    su.uBhOn.value = bh ? 1 : 0;
+    if (bh) {
+      su.uBhDir.value.set(bh.dir[0], bh.dir[1], bh.dir[2]).normalize();
+      su.uBhSize.value = bh.size;
+      su.uBhTilt.value = bh.tilt !== undefined ? bh.tilt : 0.22;
+      su.uBhTemp.value = bh.temp !== undefined ? bh.temp : 1;
+      su.uBhSpin.value = st.time * 0.035;
+    }
+
     su.uPlanetOn.value = pl ? 1 : 0;
     su.uPlanetRing.value = (pl && pl.ring) ? 1 : 0;
     if (pl) {
@@ -322,6 +339,13 @@ export class Atmosphere {
     _v3.copy(camera.position).addScaledVector(this.sunDir, 5000);
     _v3.project(camera);
     const inFront = this.sunDir.dot(fwd) > 0;
-    this.sunScreen.set(_v3.x * 0.5 + 0.5, _v3.y * 0.5 + 0.5, (inFront && sl.visible) ? 1 : 0);
+    /* Il bagliore va disegnato dove c e un sole da vedere. Nel cielo del buco
+     * nero il «sole» e solo il modo con cui si illumina la scena — sta dentro
+     * il buco nero — e disegnargli attorno i raggi lo trasformava in una
+     * stella di Natale. Lo stesso interruttore che spegne il disco spegne il
+     * bagliore. */
+    const glare = (biome.sunDisk === undefined ? 1 : biome.sunDisk) > 0.001;
+    this.sunScreen.set(_v3.x * 0.5 + 0.5, _v3.y * 0.5 + 0.5,
+                       (inFront && sl.visible && glare) ? 1 : 0);
   }
 }

@@ -16,7 +16,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=20';
+import { GLSL_NOISE } from './noise.js?v=21';
 
 /* ------------------------------------------------------------------ *
  * Costanti fisiche condivise
@@ -440,6 +440,9 @@ export class SkySystem {
         uPlanetColor: { value: new THREE.Vector3(0.25, 0.45, 0.75) },
         uPlanetOn: { value: 0 },
         uPlanetRing: { value: 0 },
+        uBhDir: { value: new THREE.Vector3(0, 0.4, -1).normalize() },
+        uBhOn: { value: 0 }, uBhSize: { value: 0.035 },
+        uBhTilt: { value: 0.22 }, uBhTemp: { value: 1 }, uBhSpin: { value: 0 },
         uSunAngle: { value: 0.0047 },
         uSun2: { value: new THREE.Vector3(0, -1, 0) },
         uSun3: { value: new THREE.Vector3(0, -1, 0) },
@@ -455,7 +458,8 @@ export class SkySystem {
         uniform sampler2D uLut;
         uniform mat4 uInvVP;
         uniform vec3 uCamPos, uSunDir, uMoonDir, uSunColor, uAuroraColor, uHazeColor;
-        uniform vec3 uSun2, uSun3, uPlanetDir, uPlanetColor;
+        uniform vec3 uSun2, uSun3, uPlanetDir, uPlanetColor, uBhDir;
+        uniform float uBhOn, uBhSize, uBhTilt, uBhTemp, uBhSpin;
         uniform float uExtraSuns, uPlanetSize, uPlanetOn, uPlanetRing, uSunAngle;
         uniform float uTime, uStars, uCloudCover, uCloudDensity, uCloudHeight;
         uniform float uAurora, uSunDiskI, uMoonI, uDustAmount, uLightning;
@@ -558,6 +562,92 @@ export class SkySystem {
           float halo = exp(-(sqrt(r2) - 1.0) * 1.6) * 0.10;
           if (r2 > 1.0) col += vec3(0.72, 0.80, 1.0) * halo * clamp(uMoonI * 40000.0, 0.0, 1.0);
           return col;
+        }
+
+/* ------------------------------------------------------------------
+         * Un buco nero che divora una stella.
+         *
+         * Non si integrano le geodetiche: si mette in scena quello che la
+         * lente PRODUCE, che e la cosa che l occhio riconosce. Quattro pezzi,
+         * in ordine di quanto contano:
+         *
+         *  1. l ombra — un disco nero netto — e l anello di fotoni sul bordo;
+         *  2. il disco di accrescimento, che visto di taglio si proietta in un
+         *     ellisse schiacciato, con la meta davanti che passa sotto l ombra;
+         *  3. l arco alto: la faccia LONTANA del disco, che dovrebbe sparire
+         *     dietro l ombra e invece la lente solleva sopra. E questa la
+         *     firma dell immagine — senza, e una ciambella al neon;
+         *  4. l effetto Doppler: il lato che viene verso di noi e alcune volte
+         *     piu luminoso dell altro. E il motivo per cui l anello non e
+         *     simmetrico, e ometterlo si nota anche senza sapere perche.
+         * ------------------------------------------------------------------ */
+        vec3 blackHole(vec3 d){
+          if (uBhOn < 0.5) return vec3(0.0);
+          if (dot(d, uBhDir) < cos(uBhSize * 30.0)) return vec3(0.0);
+          vec3 up = abs(uBhDir.y) > 0.95 ? vec3(1.0, 0.0, 0.0) : vec3(0.0, 1.0, 0.0);
+          vec3 tx = normalize(cross(up, uBhDir));
+          vec3 ty = cross(uBhDir, tx);
+          vec2 p = vec2(dot(d, tx), dot(d, ty)) / uBhSize;
+          float r = length(p);
+          vec3 col = vec3(0.0);
+          float sinT = max(0.10, uBhTilt);
+
+          // --- disco di accrescimento
+          vec2 q = vec2(p.x, p.y / sinT);
+          float rq = length(q);
+          const float RIN = 2.3, ROUT = 7.4;
+          if (rq > RIN && rq < ROUT){
+            float t = (rq - RIN) / (ROUT - RIN);
+            vec3 c = mix(vec3(1.0, 0.96, 0.92), vec3(1.0, 0.38, 0.08), pow(t, 0.65));
+            float bordo = smoothstep(0.0, 0.09, t) * smoothstep(1.0, 0.80, t);
+            float ang = atan(q.y, q.x);
+            // i filamenti girano piu in fretta all interno, come deve essere
+            float sw = alt_fbm2(vec2(ang * 2.4 + uBhSpin * 6.0 / max(rq, 0.8), rq * 1.5), 4);
+            float dens = bordo * (0.45 + 0.95 * sw);
+            float dop = 1.0 + 2.8 * (p.x / max(rq, 0.001));
+            dens *= max(0.04, dop);
+            // la meta lontana sparisce dietro l ombra
+            float nascosto = step(0.0, p.y) * step(r, 1.0);
+            col += c * dens * (1.0 - nascosto);
+          }
+
+          // --- l arco sollevato dalla lente, sopra e sotto l ombra
+          for (int k = 0; k < 2; k++){
+            float sgn = k == 0 ? 1.0 : -1.0;
+            float lift = 1.42 * sgn;
+            float dd = abs(length(vec2(p.x / 2.5, (p.y - lift) / 0.36)) - 1.0);
+            float arco = exp(-dd * dd * 7.0) * step(1.03, r);
+            float dop = 1.0 + 2.2 * (p.x / max(r, 0.001));
+            col += vec3(1.0, 0.70, 0.36) * arco * max(0.04, dop) * (k == 0 ? 0.75 : 0.45);
+          }
+
+          // --- la stella divorata, e il filamento di gas che la porta al disco
+          vec2 ps = vec2(-14.5, 6.2);
+          {
+            vec2 dir = normalize(-ps);
+            float L = length(ps);
+            float along = dot(p - ps, dir) / L;
+            float perp = dot(p - ps, vec2(-dir.y, dir.x));
+            // il flusso non va dritto: cade a spirale
+            float curva = 3.4 * sin(3.14159 * clamp(along, 0.0, 1.0));
+            float w = mix(0.30, 1.7, clamp(along, 0.0, 1.0));
+            float dst = (perp - curva) / w;
+            float flusso = exp(-dst * dst) *
+                           smoothstep(0.0, 0.16, along) * smoothstep(1.02, 0.72, along);
+            col += vec3(1.0, 0.58, 0.24) * flusso * 0.85;
+            // la stella, stirata dalla marea nella direzione del buco
+            vec2 e = p - ps;
+            vec2 es = vec2(dot(e, dir) / 2.6, dot(e, vec2(-dir.y, dir.x)) / 1.0);
+            float sd = dot(es, es);
+            col += vec3(0.86, 0.92, 1.0) * exp(-sd * 1.1) * 6.0;
+            col += vec3(0.70, 0.82, 1.0) * exp(-sd * 0.10) * 0.20;
+          }
+
+          // --- ombra e anello di fotoni
+          col *= step(1.0, r);
+          float foto = exp(-pow(abs(r - 1.02) * 24.0, 2.0));
+          col += vec3(1.0, 0.88, 0.66) * foto * 2.2;
+          return col * uBhTemp;
         }
 
         /* Un pianeta appeso in cielo: sfera illuminata dal sole vero, con le
@@ -699,6 +789,9 @@ export class SkySystem {
             col += (starField(rd) + milkyWay(rd)) * night * uStars * above * 0.055;
             col += aurora(rd) * night;
           }
+
+          // buco nero: sta davanti a tutto, anche alle stelle
+          if (uBhOn > 0.5) col += blackHole(rd);
 
           // luna
           float moonMask;

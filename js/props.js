@@ -2475,6 +2475,317 @@ function cloudPuff(rnd, tint) {
   return B.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * L antichita costruita
+ *
+ * Qui il punto non e inventare: e ricordarsi com erano *prima*. Le piramidi
+ * non erano gradoni di pietra gialla, erano lisce e bianche; il Partenone era
+ * dipinto; un tempio romano aveva il tetto di coppi rossi. Il luogo comune
+ * visivo e quasi sempre la rovina, non l originale.
+ * ------------------------------------------------------------------ */
+
+/* PIRAMIDE, come era finita. Rivestimento di calcare di Tura levigato — da
+ * lontano un solido bianco quasi accecante — e il cuspide dorato in punta.
+ *
+ * Il dettaglio che quasi nessuno mette: le quattro facce non sono piane. Sono
+ * leggermente incavate lungo la mediana, di circa mezzo grado; si vede solo
+ * dall alto e con la luce radente, ed e la ragione per cui la Grande Piramide
+ * sembra avere otto facce invece di quattro. */
+function pyramid(rnd, tint) {
+  const B = new Builder();
+  const h = 146, b = 115;                 // Cheope: 146 m di altezza, 230 di base
+  const incavo = b * 0.009;               // mezzo grado di rientranza sulla mediana
+  const calcare = mixc(tint, lin(0xf0ead8), 0.80);
+  const calcareOmbra = scale(calcare, 0.80);
+  const zoccolo = mixc(calcare, lin(0xcfc4a8), 0.55);
+
+  // basamento
+  box(B, [0, 1.4, 0], b * 1.045, 1.4, b * 1.045, scale(zoccolo, 0.78), zoccolo);
+
+  const T = [0, h, 0];
+  const ang = [
+    [[-b, 2.8, b], [b, 2.8, b]],          // faccia +Z
+    [[b, 2.8, b], [b, 2.8, -b]],          // +X
+    [[b, 2.8, -b], [-b, 2.8, -b]],        // -Z
+    [[-b, 2.8, -b], [-b, 2.8, b]]         // -X
+  ];
+  for (let i = 0; i < 4; i++) {
+    const A = ang[i][0], C = ang[i][1];
+    // mediana tirata verso il centro
+    const mx = (A[0] + C[0]) / 2, mz = (A[2] + C[2]) / 2;
+    const l = Math.hypot(mx, mz) || 1;
+    const M = [mx - mx / l * incavo, 2.8, mz - mz / l * incavo];
+    /* Ogni faccia in tre fasce orizzontali, cosi il colore puo schiarire
+     * verso l alto: una superficie di quindicimila metri quadri di tinta
+     * unica legge come cartone. */
+    const nf = 3;
+    for (let k = 0; k < nf; k++) {
+      const t0 = k / nf, t1 = (k + 1) / nf;
+      const P = (Q, t) => [Q[0] + (T[0] - Q[0]) * t, Q[1] + (T[1] - Q[1]) * t, Q[2] + (T[2] - Q[2]) * t];
+      const c0 = mixc(calcareOmbra, calcare, t0 * 0.9 + 0.1);
+      const c1 = mixc(calcareOmbra, calcare, t1 * 0.9 + 0.1);
+      // meta sinistra e meta destra, separate dalla mediana incavata
+      for (const [X, Y] of [[A, M], [M, C]]) {
+        const x0 = P(X, t0), y0 = P(Y, t0), x1 = P(X, t1), y1 = P(Y, t1);
+        B.quad(x0, y0, y1, x1, c0, c0, c1, c1, 0, 0, 0, 0);
+      }
+    }
+  }
+  // cuspide dorata
+  const oro = lin(0xe8c05a);
+  const hc = h * 0.965;
+  const bc = b * (1 - hc / h);
+  for (let i = 0; i < 4; i++) {
+    const a0 = i * Math.PI / 2 + Math.PI / 4, a1 = (i + 1) * Math.PI / 2 + Math.PI / 4;
+    const r = bc * Math.SQRT2;
+    B.tri([Math.cos(a0) * r, hc, Math.sin(a0) * r],
+          [Math.cos(a1) * r, hc, Math.sin(a1) * r], T, scale(oro, 0.7), scale(oro, 0.7), oro, 0, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* SFINGE. Scolpita in un affioramento di roccia, quindi squadrata e massiccia:
+ * il corpo e un blocco, le zampe due prismi che escono avanti, la testa e piu
+ * piccola del corpo (lo e anche l originale, e non e un errore di scala).
+ * Guarda verso -Z, come tutto il resto. */
+function sphinx(rnd, tint) {
+  const B = new Builder();
+  const pietra = mixc(tint, lin(0xd8bf94), 0.75);
+  const ombra = scale(pietra, 0.66);
+  const chiaro = mixc(pietra, lin(0xf0e4c8), 0.45);
+
+  /* Settantatre metri di lunghezza per venti di altezza: e lunga tre volte e
+   * mezzo quanto e alta, e sbagliare questo rapporto la trasforma in uno
+   * sfinge-cane seduto. La testa e piccola rispetto al corpo — lo e anche
+   * nell originale, e non e un errore di scala. */
+  // corpo, dal petto alla groppa
+  box(B, [0, 5.0, 7], 5.4, 5.0, 15, ombra, pietra);
+  // dorso arrotondato, appena piu largo del corpo cosi lo chiude
+  blob(B, { cx: 0, cy: 9.4, cz: 8, rx: 5.7, ry: 2.3, rz: 14, level: 1, rough: 0.05, rnd,
+            colTop: chiaro, colBot: pietra, flex: 0 });
+  // zampe anteriori distese
+  for (const s of [-1, 1]) {
+    box(B, [s * 3.5, 2.5, -20], 1.9, 2.5, 12.5, ombra, pietra);
+    box(B, [s * 3.5, 1.1, -33], 2.2, 1.1, 2.0, ombra, chiaro);
+  }
+  // petto
+  box(B, [0, 5.2, -9.5], 4.6, 5.2, 2.8, ombra, pietra);
+
+  // testa
+  const yT = 15.2, zT = -10.6;
+  box(B, [0, yT, zT], 2.7, 3.2, 2.6, pietra, chiaro);
+  /* Il nemes: e la sagoma a dire «sfinge» a duecento metri, molto piu della
+   * faccia — due ali di stoffa che scendono dalle tempie sulle spalle. */
+  const nem = mixc(pietra, lin(0xc8a878), 0.4);
+  for (const s of [-1, 1]) {
+    const A = [s * 2.7, yT + 3.0, zT + 2.4], Bp = [s * 2.7, yT + 3.0, zT - 2.4];
+    const C = [s * 5.6, yT - 4.4, zT - 1.9], D = [s * 5.6, yT - 4.4, zT + 1.9];
+    if (s > 0) B.quad(A, Bp, C, D, chiaro, chiaro, nem, nem, 0, 0, 0, 0);
+    else B.quad(D, C, Bp, A, nem, nem, chiaro, chiaro, 0, 0, 0, 0);
+    if (s > 0) B.quad(D, C, Bp, A, nem, nem, chiaro, chiaro, 0, 0, 0, 0);
+    else B.quad(A, Bp, C, D, chiaro, chiaro, nem, nem, 0, 0, 0, 0);
+  }
+  // calotta sopra la fronte
+  box(B, [0, yT + 2.9, zT - 0.2], 2.9, 1.0, 2.8, nem, chiaro);
+  // ureo
+  box(B, [0, yT + 2.0, zT - 2.8], 0.34, 0.9, 0.32, scale(nem, 0.8), chiaro);
+  // barba cerimoniale, spezzata (lo e davvero)
+  box(B, [0, yT - 2.9, zT - 2.1], 0.9, 1.6, 0.85, ombra, pietra);
+  // stele fra le zampe
+  box(B, [0, 2.6, -29], 1.6, 2.6, 0.4, ombra, chiaro);
+  return B.toGeometry();
+}
+
+/* TEMPIO ROMANO. Podio alto, scalinata su un lato solo (e la differenza dal
+ * tempio greco, che ha i gradini su tutti e quattro), colonne, trabeazione,
+ * frontone, e i coppi rossi. Il fronte guarda verso -Z. */
+function romanTemple(rnd, tint) {
+  const B = new Builder();
+  const marmo = mixc(tint, lin(0xe4dcc8), 0.75);
+  const marmoOmbra = scale(marmo, 0.74);
+  const coppo = lin(0xa8482e);
+  const coppoScuro = scale(coppo, 0.68);
+  const W = 8.4, D = 12.5, hPod = 2.4;
+
+  // podio
+  box(B, [0, hPod / 2, 0], W, hPod / 2, D, marmoOmbra, marmo);
+  // scalinata davanti
+  for (let i = 0; i < 6; i++) {
+    const y = hPod * (i + 1) / 7;
+    box(B, [0, y / 2, -D - 0.35 - i * 0.42], W * 0.62, y / 2, 0.42,
+        scale(marmo, 0.82), marmo);
+  }
+
+  const hCol = 6.2, rCol = 0.44;
+  const colonna = (cx, cz) => {
+    // base
+    prism(B, { cx, cz, y0: hPod, y1: hPod + 0.22, r0: rCol * 1.32, r1: rCol * 1.22, seg: 10, colBot: marmoOmbra, colTop: marmo });
+    // fusto scanalato: dodici lati, che a distanza leggono come scanalature
+    prism(B, { cx, cz, y0: hPod + 0.22, y1: hPod + hCol - 0.42, r0: rCol, r1: rCol * 0.86, seg: 12, colBot: marmo, colTop: marmo });
+    // capitello
+    prism(B, { cx, cz, y0: hPod + hCol - 0.42, y1: hPod + hCol - 0.12, r0: rCol * 0.90, r1: rCol * 1.30, seg: 10, colBot: marmo, colTop: marmo });
+    box(B, [cx, hPod + hCol - 0.06, cz], rCol * 1.45, 0.10, rCol * 1.45, marmo, mixc(marmo, [1, 1, 1], 0.2));
+  };
+  const nx = 6, nz = 9;
+  for (let i = 0; i < nx; i++) {
+    const cx = -W * 0.80 + (i / (nx - 1)) * W * 1.60;
+    colonna(cx, -D * 0.86);
+    colonna(cx, D * 0.86);
+  }
+  for (let j = 1; j < nz - 1; j++) {
+    const cz = -D * 0.86 + (j / (nz - 1)) * D * 1.72;
+    colonna(-W * 0.80, cz);
+    colonna(W * 0.80, cz);
+  }
+  // cella
+  box(B, [0, hPod + hCol * 0.5, D * 0.10], W * 0.56, hCol * 0.5, D * 0.56, marmoOmbra, marmo);
+  // porta
+  face(B, [0, hPod + 1.5, -D * 0.46 - 0.02], [-1.1, 0, 0], [0, 1.5, 0], lin(0x2a2018), lin(0x4a3a28));
+
+  // trabeazione
+  const yTr = hPod + hCol;
+  box(B, [0, yTr + 0.55, 0], W * 0.92, 0.55, D * 0.96, marmo, mixc(marmo, [1, 1, 1], 0.15));
+  // frontoni (davanti e dietro)
+  const yF = yTr + 1.10, hF = 2.3;
+  for (const sz of [-1, 1]) {
+    const z = sz * D * 0.96;
+    const A = [-W * 0.92, yF, z], C = [W * 0.92, yF, z], Tp = [0, yF + hF, z];
+    if (sz < 0) B.tri(A, C, Tp, marmoOmbra, marmoOmbra, marmo, 0, 0, 0);
+    else B.tri(C, A, Tp, marmoOmbra, marmoOmbra, marmo, 0, 0, 0);
+  }
+  // tetto a due falde, di coppi
+  for (const s of [-1, 1]) {
+    B.quad([0, yF + hF, -D * 0.96], [0, yF + hF, D * 0.96],
+           [s * W * 0.99, yF - 0.12, D * 0.96], [s * W * 0.99, yF - 0.12, -D * 0.96],
+           coppo, coppo, coppoScuro, coppoScuro, 0, 0, 0, 0);
+    // file di coppi
+    for (let k = 1; k < 7; k++) {
+      const t = k / 7;
+      const x = s * W * 0.99 * t, y = yF + hF - (hF + 0.12) * t;
+      B.quad([x, y + 0.05, -D * 0.96], [x, y + 0.05, D * 0.96],
+             [x, y - 0.02, D * 0.96], [x, y - 0.02, -D * 0.96],
+             coppoScuro, coppoScuro, coppoScuro, coppoScuro, 0, 0, 0, 0);
+    }
+  }
+  return B.toGeometry();
+}
+
+/* INSULA: il condominio romano. Quattro piani, bottega al pianterreno con
+ * l arco, finestrelle piccole e irregolari, intonaco che cade a chiazze. E
+ * questo, non i templi, che riempiva davvero una citta romana. */
+function insula(rnd, tint) {
+  const B = new Builder();
+  const W = 6.5, D = 5.4;
+  const piani = 3 + Math.floor(rnd() * 2);
+  const hP = 3.1;
+  const H = piani * hP;
+  const intonaco = mixc(tint, lin(0xd8c0a0), 0.6);
+  const mattone = mixc(lin(0x9a5a44), tint, 0.20);
+  const scuro = scale(intonaco, 0.70);
+
+  // pianterreno in mattoni, piani alti intonacati
+  box(B, [0, hP / 2, 0], W, hP / 2, D, scale(mattone, 0.8), mattone);
+  box(B, [0, hP + (H - hP) / 2, 0], W * 0.985, (H - hP) / 2, D * 0.985, intonaco, mixc(intonaco, [1, 1, 1], 0.12));
+
+  // archi delle botteghe sul fronte (-Z)
+  const vano = lin(0x241c14);
+  for (let i = 0; i < 2; i++) {
+    const cx = (i - 0.5) * W * 0.95;
+    face(B, [cx, 1.15, -D - 0.02], [-0.85, 0, 0], [0, 1.15, 0], vano, scale(vano, 1.5));
+    // arco a tutto sesto
+    for (let k = 0; k < 8; k++) {
+      const a0 = Math.PI * (k / 8), a1 = Math.PI * ((k + 1) / 8);
+      const r = 0.85;
+      B.tri([cx + Math.cos(a0) * r, 2.30 + Math.sin(a0) * r, -D - 0.02],
+            [cx + Math.cos(a1) * r, 2.30 + Math.sin(a1) * r, -D - 0.02],
+            [cx, 2.30, -D - 0.02], vano, vano, scale(vano, 1.6), 0, 0, 0);
+    }
+  }
+  // finestre: file irregolari, e su tutti e quattro i lati
+  const luce = lin(0x3a2e22);
+  for (let p = 1; p < piani; p++) {
+    const y = hP * p + hP * 0.55;
+    for (let i = 0; i < 3; i++) {
+      const cx = (i - 1) * W * 0.58 + (rnd() - 0.5) * 0.3;
+      face(B, [cx, y, -D - 0.03], [-0.42, 0, 0], [0, 0.58, 0], luce, scale(luce, 1.4));
+      face(B, [cx, y, D + 0.03], [0.42, 0, 0], [0, 0.58, 0], luce, scale(luce, 1.4));
+    }
+    for (let i = 0; i < 2; i++) {
+      const cz = (i - 0.5) * D * 0.9;
+      face(B, [-W - 0.03, y, cz], [0, 0, 0.42], [0, 0.58, 0], luce, scale(luce, 1.4));
+      face(B, [W + 0.03, y, cz], [0, 0, -0.42], [0, 0.58, 0], luce, scale(luce, 1.4));
+    }
+  }
+  // cornicione e tetto piano di coppi
+  box(B, [0, H + 0.18, 0], W * 1.06, 0.18, D * 1.06, scuro, intonaco);
+  box(B, [0, H + 0.55, 0], W * 0.96, 0.20, D * 0.96, lin(0x8a4030), lin(0xa8543a));
+  return B.toGeometry();
+}
+
+/* TRILITE. Due piedritti e un architrave: l unita di Stonehenge. La pietra e
+ * sarsen, grigio-bruna, e i blocchi sono sbozzati a mano — nessuna faccia e
+ * davvero piana, ed e quello a farli sembrare pietra invece che cemento. */
+function trilithon(rnd, tint) {
+  const B = new Builder();
+  const sarsen = mixc(tint, lin(0x8a8578), 0.75);
+  const scuro = scale(sarsen, 0.62);
+  const h = 6.4 * (0.9 + rnd() * 0.2);
+  const sep = 1.55;
+  const jag = (i) => 0.88 + 0.24 * ((i * 5 + 2) % 4) / 3;
+  for (const s of [-1, 1]) {
+    prism(B, {
+      cx: s * sep, y0: 0, y1: h, r0: 1.05, r1: 0.90, seg: 5,
+      colBot: scuro, colTop: sarsen, twist: (rnd() - 0.5) * 0.3,
+      lean: [(rnd() - 0.5) * 0.22, (rnd() - 0.5) * 0.22], jag
+    });
+    // tenone: il perno che tiene l architrave
+    prism(B, { cx: s * sep, y0: h, y1: h + 0.22, r0: 0.20, r1: 0.17, seg: 6, colBot: sarsen, colTop: sarsen });
+  }
+  // architrave
+  const hl = 0.85;
+  box(B, [0, h + hl / 2 + 0.10, 0], sep + 1.15, hl / 2, 0.78, scuro, sarsen);
+  // sbozzatura: qualche scheggia sugli spigoli
+  for (let k = 0; k < 6; k++) {
+    const s = k % 2 ? 1 : -1;
+    const y = h + 0.10 + rnd() * hl;
+    B.tri([s * (sep + 1.15), y, -0.78 + rnd() * 1.5],
+          [s * (sep + 0.95), y + 0.22, -0.4],
+          [s * (sep + 1.15), y - 0.2, 0.2], scuro, sarsen, scuro, 0, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* STATUA INTERA, su plinto. Serve alle citta vive (Roma) come statueRuin
+ * serve a quelle morte. Non ha faccia: a dieci metri non si vede, e provarci
+ * la farebbe sembrare un pupazzo. */
+function statue(rnd, tint) {
+  const B = new Builder();
+  const marmo = mixc(tint, lin(0xdad4c4), 0.78);
+  const ombra = scale(marmo, 0.66);
+  const H = 1.0;
+  // plinto
+  box(B, [0, 0.55, 0], 0.72, 0.55, 0.66, ombra, marmo);
+  box(B, [0, 1.16, 0], 0.62, 0.08, 0.56, marmo, mixc(marmo, [1, 1, 1], 0.2));
+  const y0 = 1.24;
+  // gambe: una portante e una rilassata, come in ogni statua classica
+  for (const s of [-1, 1]) {
+    const av = s < 0 ? 0.10 : -0.06;
+    tube(B, [s * 0.16, y0, av], [s * 0.19, y0 + 0.92, av * 0.4], 0.15, 0.13, ombra, marmo, 7, 0, 0);
+  }
+  // panneggio: un tronco di cono, che e come si legge una toga da lontano
+  prism(B, { y0: y0 + 0.55, y1: y0 + 1.62, r0: 0.30, r1: 0.26, seg: 9, colBot: ombra, colTop: marmo });
+  // torace e spalle
+  blob(B, { cx: 0, cy: y0 + 1.72, cz: 0, rx: 0.30, ry: 0.24, rz: 0.20, level: 1, rough: 0.06, rnd,
+            colTop: marmo, colBot: ombra, flex: 0 });
+  // braccio destro alzato, sinistro lungo il fianco
+  tube(B, [0.26, y0 + 1.78, 0], [0.58, y0 + 2.16, -0.12], 0.085, 0.070, marmo, marmo, 6, 0, 0);
+  tube(B, [-0.26, y0 + 1.76, 0], [-0.30, y0 + 1.10, 0.05], 0.085, 0.070, marmo, ombra, 6, 0, 0);
+  // testa
+  blob(B, { cx: 0, cy: y0 + 2.06, cz: -0.02, rx: 0.135, ry: 0.155, rz: 0.135, level: 1, rough: 0.05, rnd,
+            colTop: mixc(marmo, [1, 1, 1], 0.12), colBot: ombra, flex: 0 });
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -2491,7 +2802,9 @@ export const PROPS = {
   domeHut, mushroomHouse, standingStone, archRuin, watchTower,
   darkSpire, lamppost, lander, windmill, statueRuin,
   // passato e mondi nuovi
-  lycopod, calamite, cloudPuff
+  lycopod, calamite, cloudPuff,
+  // antichita costruita
+  pyramid, sphinx, romanTemple, insula, trilithon, statue
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -2514,7 +2827,9 @@ export const PROP_HEIGHT = {
   domeHut: 6.4, mushroomHouse: 6.8, standingStone: 3.3, archRuin: 5.4,
   watchTower: 12.0, darkSpire: 38.0, lamppost: 4.2, lander: 5.5,
   windmill: 8.5, statueRuin: 5.0,
-  lycopod: 22.0, calamite: 7.5, cloudPuff: 9.0
+  lycopod: 22.0, calamite: 7.5, cloudPuff: 9.0,
+  pyramid: 146.0, sphinx: 73.0, romanTemple: 12.5, insula: 13.0,
+  trilithon: 7.4, statue: 3.6
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
@@ -2522,7 +2837,10 @@ export const PROP_HEIGHT = {
 /* Misurati sulla larghezza, non sull altezza: un tumulo e largo dieci metri
  * e alto tre, e normalizzarlo in altezza lo gonfierebbe a dismisura. */
 const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz',
-                    domeHut: 'xz', cloudPuff: 'xz' };
+                    domeHut: 'xz', cloudPuff: 'xz',
+                    /* Misurate sulla lunghezza: la Sfinge e lunga settantatre metri
+                     * e alta venti, e normalizzarla in altezza la triplicherebbe. */
+                    sphinx: 'xz' };
 
 export function buildProp(type, rnd, tint) {
   const fn = PROPS[type];

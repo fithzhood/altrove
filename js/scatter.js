@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=20';
-import { buildProp, PROP_HEIGHT, lin } from './props.js?v=20';
-import { GLSL_NOISE } from './noise.js?v=20';
-import { CITY } from './world.js?v=20';
+import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=21';
+import { buildProp, PROP_HEIGHT, lin } from './props.js?v=21';
+import { GLSL_NOISE } from './noise.js?v=21';
+import { CITY } from './world.js?v=21';
 
 const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -267,15 +267,48 @@ export class Scatter {
          * insieme. Ogni cella larga «period» ospita un paese, il cui centro e
          * spostato a caso ma resta dentro la cella, cosi il paese non viene
          * mai tagliato in due dal confine. Verso il bordo si dirada. */
+        let cenX = 0, cenZ = 0, inCentro = false;
+        let slotX = null, slotZ = null, slotScale = 1;
         if (rule.cluster) {
           const K = rule.cluster;
           const kx = Math.floor(x / K.period), kz = Math.floor(z / K.period);
           const vx = (kx + 0.5 + (hash2i(kx, kz, 811) - 0.5) * (K.jitter || 0.5)) * K.period;
           const vz = (kz + 0.5 + (hash2i(kx, kz, 823) - 0.5) * (K.jitter || 0.5)) * K.period;
           const dd = Math.hypot(x - vx, z - vz);
-          if (dd > K.radius) continue;
-          const w = 1 - dd / K.radius;
-          if (hash2i(gx, gz, R.ri * 131 + 53) > 0.45 + 0.55 * w) continue;
+          cenX = vx; cenZ = vz; inCentro = true;
+          if (K.slots) {
+            /* Postazioni dichiarate. Un sito come Giza non e un grappolo
+             * casuale: le tre piramidi stanno in punti precisi, con taglie
+             * precise, allineate fra loro. Si tiene il candidato la cui CELLA
+             * contiene la postazione — cosi ne esce esattamente uno per
+             * postazione e non un mucchio — e lo si aggancia al punto esatto.
+             *
+             * Senza il controllo sulla cella, ogni candidato entro il raggio
+             * verrebbe agganciato allo stesso punto e si otterrebbero dieci
+             * piramidi sovrapposte. */
+            let sc2 = -1, sd = 1e9;
+            for (let q = 0; q < K.slots.length; q++) {
+              const sx = vx + K.slots[q][0], sz = vz + K.slots[q][1];
+              const d2 = Math.hypot(x - sx, z - sz);
+              if (d2 < sd) { sd = d2; sc2 = q; }
+            }
+            if (sc2 < 0) continue;
+            const sx = vx + K.slots[sc2][0], sz = vz + K.slots[sc2][1];
+            const ci = Math.floor((sx - ox) / step), cj = Math.floor((sz - oz) / step);
+            if (ci !== i || cj !== j) continue;
+            slotX = sx; slotZ = sz;
+            slotScale = K.slots[sc2][2] !== undefined ? K.slots[sc2][2] : 1;
+          } else if (K.ring) {
+            /* Un cerchio di pietre non e un grappolo: e un anello. Tenendo solo
+             * i punti a una data distanza dal centro si ottiene la
+             * disposizione, non l ammasso — ed e tutta la differenza fra
+             * Stonehenge e un mucchio di sassi. */
+            if (Math.abs(dd - K.ring) > (K.ringWidth || 4)) continue;
+          } else {
+            if (dd > K.radius) continue;
+            const w = 1 - dd / K.radius;
+            if (hash2i(gx, gz, R.ri * 131 + 53) > 0.45 + 0.55 * w) continue;
+          }
         }
 
         if (world.blocked && world.blocked(x, z)) continue;
@@ -315,13 +348,22 @@ export class Scatter {
         if (p > 0.30 + 0.70 * fit) continue;
 
         const v = nVar === 1 ? 0 : Math.floor(hash2i(gx, gz, R.ri * 131 + 19) * nVar) % nVar;
-        const sc = lerp(sc0, sc1, hash2i(gx, gz, R.ri * 131 + 23));
+        const sc = lerp(sc0, sc1, hash2i(gx, gz, R.ri * 131 + 23)) * slotScale;
         /* Una casa scavata nella collina non guarda a caso: guarda a valle.
          * (nx, nz) e gia il verso della discesa, perche nx = (h - h(x+e))/e e
          * positivo quando il terreno scende verso +x. Il mezzo giro in piu c e
          * perche i modelli hanno la facciata verso -Z. */
         let rot;
-        if (rule.yawFromRows && rule.rows) {
+        if (rule.fixedYaw !== undefined) {
+          /* Le piramidi di Giza sono allineate ai punti cardinali con un
+           * errore di pochi minuti d arco: un orientamento casuale le
+           * trasformerebbe in tre tende da circo. */
+          rot = rule.fixedYaw + (hash2i(gx, gz, R.ri * 131 + 29) - 0.5) * (rule.faceJitter || 0);
+        } else if (rule.faceCenter && inCentro) {
+          // guarda il centro dell anello
+          rot = Math.atan2(cenX - x, cenZ - z) + Math.PI
+              + (hash2i(gx, gz, R.ri * 131 + 29) - 0.5) * (rule.faceJitter || 0.2);
+        } else if (rule.yawFromRows && rule.rows) {
           /* Una staccionata deve correre LUNGO il filare, non attraversarlo.
            * Il filare e la retta a (x·cosA + z·sinA) costante, quindi la sua
            * direzione e (-sinA, cosA); la rotazione che porta il lato lungo
@@ -351,13 +393,20 @@ export class Scatter {
         if (rule.yOffset) {
           yExtra = rule.yOffset[0] + hash2i(gx, gz, R.ri * 131 + 47) * (rule.yOffset[1] - rule.yOffset[0]);
         }
+        /* Aggancio alla postazione: si fa qui, dopo i filtri, perche pendenza
+         * e quota vanno valutate dove il candidato e nato. Lo scostamento e di
+         * pochi metri e non cambia il verdetto. */
+        const px = slotX !== null ? slotX : x;
+        const pz = slotZ !== null ? slotZ : z;
+        const ph = slotX !== null ? world.height(px, pz) : h;
+
         const cj = hash2i(gx, gz, R.ri * 131 + 41);
         const cj2 = hash2i(gx, gz, R.ri * 131 + 43);
         /* Affondamento dichiarato: un tumulo appoggiato sul pendio lascia uno
          * spiraglio a monte. Sprofondarlo di mezzo metro fa sparire il
          * problema senza dover spianare il terreno. */
         const sink = rule.sink ? rule.sink * sc : 0;
-        out[v].push(x, h - buried * sc - sink + yExtra, z, rot, ax, az, sc,
+        out[v].push(px, ph - buried * sc - sink + yExtra, pz, rot, ax, az, sc,
           ...(rule.evenColor
             ? [1, 1, 1]
             : [0.84 + cj * 0.32, 0.86 + cj2 * 0.28, 0.84 + (1 - cj) * 0.30]));

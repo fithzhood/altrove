@@ -10,9 +10,9 @@ Entrata: `altrove.html`. Server di sviluppo: `python servi.py 8123`.
 
 ## Che cosa c'è dentro
 
-**50 luoghi**, in tre famiglie: quelli che esistono, quelli che **sono
-esistiti** (Carbonifero, Sahara verde, Eone Adeano, Giurassico, Era glaciale) e
-quelli che non sono mai esistiti. La divisione non è un vezzo: cambia cosa ti
+**54 luoghi**, in tre famiglie: quelli che esistono, quelli che **sono
+esistiti** (Carbonifero, Sahara verde, Eone Adeano, Giza, Stonehenge, Antica
+Roma, Giurassico, Era glaciale) e quelli che non sono mai esistiti. La divisione non è un vezzo: cambia cosa ti
 aspetti di trovare, ed è la prima cosa che si legge nella schermata iniziale.
 Il flag è `epoca: true`, accanto a `fantasy: true`.
 
@@ -164,7 +164,7 @@ di nuvole, specchio salino, pozze termali.
 | `js/biomes.js` | i 44 luoghi, gli 8 meteo, le stagioni, la fauna |
 | `js/world.js` | campo di altezze, pendenze, superfici |
 | `js/noise.js` | rumore condiviso CPU/GPU |
-| `js/sky.js` | scattering atmosferico, sole, luna, stelle, nuvole, aurora |
+| `js/sky.js` | scattering atmosferico, sole, luna, stelle, nuvole, aurora, buco nero |
 | `js/atmosphere.js` | lega ora + meteo + bioma a luci, nebbia, cielo |
 | `js/fog.js` | prospettiva aerea iniettata in ogni materiale |
 | `js/engine.js` | renderer e post-produzione |
@@ -245,6 +245,10 @@ C salva immagine · Esc liberare il mouse
   scompare visto da sotto, e nella Biblioteca infinita si vede il cielo.
 - **Due piani complanari sfarfallano.** Il pavimento della Biblioteca sta cinque
   centimetri sopra il terreno, o si riempie di bande.
+- **Il bagliore del sole va dove c'è un sole da vedere.** Nel cielo del buco
+  nero il «sole» esiste solo per illuminare la scena e sta dentro il buco nero:
+  la post-produzione ci disegnava attorno i raggi, e ne usciva una stella di
+  Natale. `sunDisk: 0` spegne disco e bagliore insieme.
 - **Un parametro del terreno dimenticato non dà errore: dà NaN**, e NaN si
   propaga a tutto il campo di altezze. Il risultato è un mondo invisibile con
   il giocatore a quota NaN e la console pulita — il modo peggiore di rompersi.
@@ -288,6 +292,10 @@ C salva immagine · Esc liberare il mouse
 - Nessuna occlusione ambientale a schermo (SSAO): sotto le chiome manca un po'
   di ombra di contatto.
 - Le nuvole sono uno strato piatto in parallasse, non volumetriche vere.
+- Il buco nero non integra le geodetiche: mette in scena quello che la lente
+  *produce* (ombra, anello di fotoni, ellisse schiacciato, arco sollevato,
+  asimmetria Doppler). Un vero ray-tracing relativistico sarebbe un altro
+  progetto.
 - La diffusione multipla è approssimata con un termine isotropo costante
   (`ALT_MULTISCATTER`), non con un integrale vero: è corretta nell'ordine di
   grandezza e nell'andamento, non nel dettaglio.

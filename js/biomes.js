@@ -1741,6 +1741,183 @@ export const BIOMES = {
       { type: 'rock', density: 0.016, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.5, tint: [0x191413, 0x322a26] }
     ]
   }
+,
+giza: {
+    id: 'giza', label: 'Giza', epoca: true,
+    blurb: 'La piana come era finita: le piramidi lisce e bianche di calcare levigato, con la punta dorata. Non erano gradoni gialli.',
+    terrain: 'dunes', seed: 5711, seaLevel: 0,
+    waterLevel: -22, waterKind: 'lake', startHeightOffset: 1.7,
+    dunes: { mesaAmp: 26, mesaFreq: 0.00060, duneAmp: 5.0, duneFreqX: 0.0016, duneFreqZ: 0.0090, microAmp: 0.30 },
+    snowLine: 9999, seasonal: false,
+    sunTint: [1.10, 1.02, 0.88], ambientBoost: 1.05,
+    palette: {
+      grassLow: 0xb09a68, grassHigh: 0xc8b482, grassDry: 0xd8c894,
+      dirt: 0x9a8258, rock: 0xa89476, rockDark: 0x7a6a50,
+      sand: 0xd8c496, sandLight: 0xece0b8, snow: 0xffffff, underwater: 0x3a4a30
+    },
+    sky: { turbidity: 4.2, rayleigh: 0.98, mie: 0.014, mieG: 0.78, groundAlbedo: [0.34, 0.30, 0.20] },
+    /* Poca nebbia: le piramidi si guardano da ottocento metri, e con una
+     * densita da paesaggio umido il calcare bianco arriva marrone. Il deserto
+     * secco e uno dei posti dove si vede piu lontano al mondo. */
+    fog: { density: 0.0016, heightFalloff: 0.0030, tint: [1.06, 1.0, 0.92] },
+    farFade: 4200,
+    ambience: { hemiSky: 0xa8c4e8, hemiGround: 0x9a8258, bounce: 0.52 },
+    scatter: [
+      /* Le tre piramidi stanno in punti precisi l una rispetto all altra e
+       * sono allineate ai punti cardinali con un errore di pochi minuti
+       * d arco. Le postazioni qui sotto sono la pianta vera del sito: Cheope
+       * all origine, Chefren a sud-ovest, Micerino piu in la e alto meno di
+       * meta, piu le tre piramidi delle regine in fila. */
+      { type: 'pyramid', density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
+        moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xf0ead8, 0xfaf4e4],
+        fixedYaw: 0, upright: true, sink: 2.0, shadow: true,
+        cluster: { period: 2600, radius: 900, jitter: 0.4, slots: [
+          [0, 0, 1.00],            // Cheope
+          [-250, 315, 0.97],       // Chefren
+          [-455, 625, 0.44],       // Micerino
+          [95, -185, 0.20], [160, -185, 0.20], [225, -185, 0.19]   // le regine
+        ] } },
+
+      /* La Sfinge guarda a est, verso il sorgere del sole. Il modello guarda
+       * verso -Z, quindi per puntarlo a +X serve mezzo giro all indietro. */
+      { type: 'sphinx', density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
+        moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xd8bf94, 0xe8d4ac],
+        fixedYaw: -1.5708, upright: true, sink: 1.2, shadow: true,
+        cluster: { period: 2600, radius: 900, jitter: 0.4, slots: [[385, 300, 1.0]] } },
+
+      { type: 'palm', density: 0.0030, radius: 260, slope: [0, 0.3], height: [-99, -6], moisture: [0.4, 1], scale: [0.9, 1.5], tilt: 0.10, tint: [0x3a7a2e, 0x6aa848], shadow: true },
+      { type: 'reed', density: 0.045, radius: 100, slope: [0, 0.35], height: [-99, -18], moisture: [0.4, 1], scale: [0.9, 1.6], tilt: 0.06, tint: [0x7a8a34, 0xa8b45a] },
+      { type: 'dryBush', density: 0.010, radius: 180, slope: [0, 0.5], height: [-99, 999], moisture: [0, 0.5], scale: [0.7, 1.4], tilt: 0.08, tint: [0x8a7a4a, 0xb0a06a] },
+      { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0xa08c68, 0xc4b088] },
+      { type: 'slabRock', density: 0.0025, radius: 250, slope: [0, 0.7], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.2], tilt: 0.12, tint: [0xa89476, 0xcabb98], shadow: true }
+    ]
+  },
+
+  romaantica: {
+    id: 'romaantica', label: 'Antica Roma', epoca: true,
+    blurb: 'Non il Foro in rovina: la citta viva. Insulae di quattro piani lungo strade strette, templi col tetto di coppi, e i pini sopra i tetti.',
+    terrain: 'hills', seed: 5813, seaLevel: 0,
+    waterLevel: -14, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 26, freq: 0.0024, oct: 4, medAmp: 3.4, medFreq: 0.013, microAmp: 0.45 },
+    snowLine: 9999, seasonal: false,
+    sunTint: [1.08, 1.02, 0.92],
+    palette: {
+      grassLow: 0x6a7c34, grassHigh: 0x8a9648, grassDry: 0xb0a25a,
+      dirt: 0x8a7452, rock: 0x9a9080, rockDark: 0x6e6656,
+      sand: 0xb0a078, snow: 0xeef2f8, underwater: 0x2e4028
+    },
+    sky: { turbidity: 3.0, rayleigh: 1.05, mie: 0.0075, mieG: 0.79, groundAlbedo: [0.20, 0.20, 0.14] },
+    fog: { density: 0.0040, heightFalloff: 0.0060, tint: [1.02, 1.0, 0.96] },
+    ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x6a6438, bounce: 0.46 },
+    scatter: [
+      /* Le insulae si allineano lungo i filari, che sono le strade: due
+       * famiglie incrociate danno l isolato. Senza l allineamento resta un
+       * mucchio di case girate a caso, che e il modo piu sicuro per non far
+       * sembrare una citta una citta. */
+      { type: 'insula', density: 0.0075, radius: 260, slope: [0, 0.22], height: [1, 999],
+        moisture: [0, 1], scale: [0.85, 1.25], tilt: 0.008, tint: [0xd8c0a0, 0xe8d4b8],
+        rows: { angle: 0.35, period: 34, width: 0.26 }, yawFromRows: true, faceJitter: 0.05,
+        upright: true, sink: 0.4, jitter: 0.5, emissive: 0.07, emissiveMask: true, shadow: true,
+        cluster: { period: 620, radius: 210, jitter: 0.5 } },
+      { type: 'insula', density: 0.0075, radius: 260, slope: [0, 0.22], height: [1, 999],
+        moisture: [0, 1], scale: [0.85, 1.25], tilt: 0.008, tint: [0xd0b898, 0xe4cfae],
+        rows: { angle: 0.35 + 1.5708, period: 36, width: 0.24 }, yawFromRows: true, faceJitter: 0.05,
+        upright: true, sink: 0.4, jitter: 0.5, emissive: 0.07, emissiveMask: true, shadow: true,
+        cluster: { period: 620, radius: 210, jitter: 0.5 } },
+
+      { type: 'romanTemple', density: 0.0016, radius: 300, slope: [0, 0.16], height: [1, 999],
+        moisture: [0, 1], scale: [0.9, 1.5], tilt: 0, tint: [0xe4dcc8, 0xf0ead8],
+        fixedYaw: 0.35, faceJitter: 0.12, upright: true, sink: 0.5, shadow: true,
+        cluster: { period: 620, radius: 90, jitter: 0.5 }, jitter: 0.7 },
+      { type: 'statue', density: 0.0028, radius: 200, slope: [0, 0.18], height: [1, 999],
+        moisture: [0, 1], scale: [1.2, 2.2], tilt: 0.01, tint: [0xdad4c4, 0xeae4d4],
+        upright: true, shadow: true, cluster: { period: 620, radius: 130, jitter: 0.5 }, jitter: 0.8 },
+      { type: 'ruinPillar', density: 0.0035, radius: 220, slope: [0, 0.2], height: [1, 999],
+        moisture: [0, 1], scale: [1.0, 1.9], tilt: 0.02, tint: [0xd8d0bc, 0xeae2ce],
+        upright: true, shadow: true, cluster: { period: 620, radius: 120, jitter: 0.5 } },
+
+      { type: 'conifer', density: 0.0032, radius: 300, slope: [0, 0.4], height: [-99, 999], moisture: [0.15, 1], scale: [1.1, 1.9], tilt: 0.04, tint: [0x2e5624, 0x4a7a32], shadow: true },
+      { type: 'bush', density: 0.016, radius: 150, slope: [0, 0.5], height: [-99, 999], moisture: [0.15, 1], scale: [0.7, 1.4], tilt: 0.06, tint: [0x4a6a26, 0x76903c] },
+      { type: 'rock', density: 0.008, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.4], tilt: 0.45, tint: [0x8a8272, 0xb0a894] },
+      { type: 'grassTuft', density: 2.0, radius: 40, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.3], tilt: 0.08, tint: [0x6e8a30, 0x9aa848], grass: true }
+    ]
+  },
+
+  stonehenge: {
+    id: 'stonehenge', label: 'Stonehenge', epoca: true,
+    blurb: 'La piana di Salisbury quattromila anni fa, col cerchio ancora intero: i triliti in piedi e gli architravi al loro posto.',
+    terrain: 'hills', seed: 5903, seaLevel: 0,
+    waterLevel: -30, waterKind: 'lake', startHeightOffset: 1.7,
+    hills: { amp: 22, freq: 0.0013, oct: 4, medAmp: 2.6, medFreq: 0.009, microAmp: 0.40 },
+    snowLine: 9999, seasonal: true,
+    sunTint: [1.02, 1.0, 0.96],
+    palette: {
+      grassLow: 0x5a7a2e, grassHigh: 0x86a044, grassDry: 0xa8a45a,
+      dirt: 0x6a5a3e, rock: 0x8a8578, rockDark: 0x605c50,
+      sand: 0x9a9070, snow: 0xeef3fa, underwater: 0x2a4020
+    },
+    sky: { turbidity: 3.6, rayleigh: 1.18, mie: 0.011, mieG: 0.77, groundAlbedo: [0.16, 0.20, 0.10] },
+    fog: { density: 0.0060, heightFalloff: 0.0090, tint: [0.98, 1.0, 1.02] },
+    ambience: { hemiSky: 0x9cb8d8, hemiGround: 0x54601e, bounce: 0.40 },
+    scatter: [
+      /* Il cerchio di sarsen: trenta piedritti su un anello di sedici metri e
+       * mezzo di raggio, e dentro il ferro di cavallo dei triliti. E la
+       * disposizione a fare Stonehenge — un grappolo darebbe un mucchio di
+       * sassi, che e esattamente cio che Stonehenge non e. */
+      { type: 'trilithon', density: 0.024, radius: 320, slope: [0, 0.20], height: [-99, 999],
+        moisture: [0, 1], scale: [0.95, 1.12], tilt: 0.015, tint: [0x8a8578, 0xa8a294],
+        faceCenter: true, faceJitter: 0.10, upright: true, sink: 0.3, jitter: 0.35, shadow: true,
+        cluster: { period: 620, radius: 40, ring: 16.5, ringWidth: 2.6, jitter: 0.5 } },
+      { type: 'trilithon', density: 0.020, radius: 320, slope: [0, 0.20], height: [-99, 999],
+        moisture: [0, 1], scale: [1.20, 1.42], tilt: 0.015, tint: [0x847f72, 0xa09a8c],
+        faceCenter: true, faceJitter: 0.06, upright: true, sink: 0.3, jitter: 0.30, shadow: true,
+        cluster: { period: 620, radius: 40, ring: 7.2, ringWidth: 1.8, jitter: 0.5 } },
+      { type: 'standingStone', density: 0.014, radius: 320, slope: [0, 0.22], height: [-99, 999],
+        moisture: [0, 1], scale: [0.55, 0.75], tilt: 0.05, tint: [0x5e6a6e, 0x808a8c],
+        faceCenter: true, faceJitter: 0.4, upright: true, jitter: 0.5, shadow: true,
+        cluster: { period: 620, radius: 40, ring: 25.5, ringWidth: 2.2, jitter: 0.5 } },
+      { type: 'standingStone', density: 0.0040, radius: 300, slope: [0, 0.3], height: [-99, 999],
+        moisture: [0, 1], scale: [0.7, 1.1], tilt: 0.14, tint: [0x6e6a60, 0x8e8a80],
+        cluster: { period: 380, radius: 9, jitter: 0.6 }, jitter: 0.7, shadow: true },
+
+      { type: 'broadleaf', density: 0.0016, radius: 320, slope: [0, 0.4], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.3], tilt: 0.05, tint: [0x39701f, 0x6a9036], shadow: true, seasonal: true },
+      { type: 'bush', density: 0.018, radius: 150, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.06, tint: [0x35661e, 0x5a8a2c], seasonal: true },
+      { type: 'rock', density: 0.006, radius: 150, slope: [0.05, 1], height: [-99, 999], moisture: [0, 1], scale: [0.4, 1.2], tilt: 0.45, tint: [0x74706a, 0x98938a] },
+      { type: 'grassTuft', density: 2.6, radius: 42, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.6, 1.1], tilt: 0.07, tint: [0x548a2a, 0x86ac42], grass: true }
+    ]
+  }
+,
+buconero: {
+    id: 'buconero', label: 'Buco nero', fantasy: true,
+    blurb: 'Un sasso senz aria in orbita attorno a un buco nero che sta divorando la sua stella. Il disco di accrescimento e l unica luce.',
+    terrain: 'craters', seed: 6101, seaLevel: 0,
+    waterLevel: null, startHeightOffset: 1.7,
+    craters: { freq: 0.0014, amp: 38, cellSize: 150, density: 0.80, depth: 0.44, rim: 0.18, microAmp: 0.60 },
+    snowLine: 9999, seasonal: false, noShadows: false,
+    /* Niente aria: rayleigh quasi a zero, cielo nero, e le stelle si vedono
+     * anche di «giorno». La luce arriva tutta dal disco. */
+    blackHole: { dir: [0.351, 0.341, -0.872], size: 0.030, tilt: 0.20, temp: 1.0 },
+    fixedSun: [19.9, 21.9], sunDisk: 0,
+    sunTint: [1.35, 0.72, 0.34], sunBoost: 0.0, sunAngle: 0.0030,
+    skyTint: [1.0, 0.7, 0.5], nightSky: [0.0009, 0.0006, 0.0010],
+    ambientBoost: 0.55, farFade: 2600, starsAlways: true,
+    palette: {
+      grassLow: 0x2e2c2a, grassHigh: 0x3c3936, grassDry: 0x46423e,
+      dirt: 0x272522, rock: 0x22201e, rockDark: 0x141312,
+      sand: 0x35322e, snow: 0x8a8480, underwater: 0x101010
+    },
+    sky: { turbidity: 1.0, rayleigh: 0.020, mie: 0.0016, mieG: 0.72, groundAlbedo: [0.05, 0.04, 0.04] },
+    fog: { density: 0.0006, heightFalloff: 0.0020, tint: [1.20, 0.66, 0.34] },
+    ambience: { hemiSky: 0x6a3418, hemiGround: 0x1a1614, bounce: 0.20 },
+    motes: { amount: 0.12, color: [1.0, 0.58, 0.26] },
+    scatter: [
+      { type: 'boulder', density: 0.0030, radius: 320, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.2], tilt: 0.35, tint: [0x1e1c1a, 0x3a3632], shadow: true },
+      { type: 'slabRock', density: 0.0022, radius: 300, slope: [0, 0.7], height: [-99, 999], moisture: [0, 1], scale: [1.0, 2.8], tilt: 0.16, tint: [0x232120, 0x403b36], shadow: true },
+      { type: 'lavaRock', density: 0.014, radius: 200, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 2.0], tilt: 0.5, tint: [0x1c1a18, 0x35302c] },
+      { type: 'rock', density: 0.022, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.8], tilt: 0.5, tint: [0x201e1c, 0x38332f] },
+      { type: 'crystal', density: 0.0016, radius: 220, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.0], tilt: 0.12, tint: [0x704028, 0xc07040], emissive: 0.16, shadow: true }
+    ]
+  }
 };
 
 export const BIOME_ORDER = [
@@ -1749,13 +1926,14 @@ export const BIOME_ORDER = [
   'canyonrosso', 'giungla', 'bambu', 'sequoie', 'lavanda', 'salar', 'fiordi', 'geyser',
   'barriera', 'mareaperto', 'cascate',
   // passati
-  'carbonifero', 'saharaverde', 'adeano', 'giurassico', 'glaciale',
+  'carbonifero', 'saharaverde', 'adeano', 'giza', 'stonehenge', 'romaantica',
+  'giurassico', 'glaciale',
   // immaginari
   'boscostregato', 'boscofatato', 'isolecielo', 'smeraldo', 'collegio', 'pianetino',
   'pandora', 'marte', 'luna', 'titano', 'oort', 'desolata', 'neon', 'ghiaccio',
   'contea', 'ombra', 'montefato', 'tatooine',
   'atlantide', 'terracava', 'agartha', 'biblioteca',
-  'mondonuvole', 'macromondo', 'inferno'
+  'mondonuvole', 'macromondo', 'inferno', 'buconero'
 ];
 
 
@@ -1873,6 +2051,19 @@ export const FAUNA = {
   ],
   ghiaccio: [
     { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO }
+  ],
+  giza: [
+    { type: 'raptor', count: 6, radius: 340, y: [50, 140], scale: [0.9, 1.3], tint: RAPACE },
+    { type: 'bird', count: 16, radius: 260, y: [12, 40], scale: [0.8, 1.1], tint: [0x8a7a5a, 0xd0c0a0] }
+  ],
+  romaantica: [
+    { type: 'bird', count: 26, radius: 260, y: [16, 48], scale: [0.8, 1.1], tint: [0x4a4e56, 0x8a8e96] },
+    { type: 'butterfly', count: 30, radius: 44, y: [0.4, 2.2], scale: [0.8, 1.3], tint: [0xe0c050, 0xf0e090] }
+  ],
+  stonehenge: [
+    { type: 'bird', count: 22, radius: 300, y: [20, 60], scale: [0.9, 1.3], tint: CORVO },
+    { type: 'deer', count: 10, radius: 240, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'butterfly', count: 34, radius: 44, y: [0.4, 2.0], scale: [0.8, 1.3], tint: [0xf0e070, 0xf8f8f0] }
   ],
   carbonifero: [
     /* Meganeura: settanta centimetri di apertura alare. Era possibile perche
