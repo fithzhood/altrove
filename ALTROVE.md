@@ -111,6 +111,18 @@ funzionare**, perché ogni tessera mette comunque un candidato per cella. Per
 ottenere una cosa davvero rara — una guglia, un modulo lunare, *il* lampione —
 l'unica leva è un grappolo strettissimo con periodo lunghissimo.
 
+Il grappolo ha tre forme, e la forma è il monumento:
+
+- **a macchia** (`radius`) — un borgo, un quartiere, una fattoria;
+- **ad anello** (`ring`, `ringWidth`) — un cerchio di pietre. Stonehenge *è* la
+  disposizione: a macchia verrebbe un mucchio di sassi. Con `faceCenter` ogni
+  pietra guarda il centro;
+- **a postazioni** (`slots: [[dx, dz, scala], …]`) — un sito con una pianta
+  vera. Le tre piramidi di Giza stanno in punti precisi, con taglie precise, e
+  `fixedYaw: 0` le allinea ai punti cardinali come sono davvero. Si tiene il
+  candidato la cui *cella* contiene la postazione, o se ne otterrebbero dieci
+  sovrapposte.
+
 ### La vegetazione non è una lista
 `js/scatter.js`: la posizione di ogni pianta viene da un hash delle coordinate.
 La stessa cella dà sempre lo stesso albero, quindi si ricalcola invece di
