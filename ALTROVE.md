@@ -77,7 +77,7 @@ ricordarla. L'unità di lavoro è la tessera: muovendosi si generano solo quelle
 nuove. Ogni fotogramma le tessere attive vengono ricompattate negli
 InstancedMesh — un disegno per variante, non per pianta.
 
-Le geometrie (`js/props.js`) sono tutte procedurali: 34 generatori, nessun
+Le geometrie (`js/props.js`) sono tutte procedurali: 40 generatori, nessun
 modello caricato. Ognuno viene **normalizzato a un'altezza dichiarata** dopo la
 costruzione: senza, altezza casuale nel generatore per scala casuale nel bioma
 dava erba alta come un uomo.
@@ -109,8 +109,8 @@ largo sotto), Fresnel con riflesso preso dalla LUT del cielo, e una mappa
 dell'altezza del fondo attorno al giocatore da cui nascono il colore
 dell'acqua bassa e la schiuma sulla riva.
 
-Sette tipi: mare, lago, palude, ghiaccio, lava, mare di nuvole, specchio
-salino, pozze termali.
+Dieci tipi: mare, mare tropicale, lago, palude, ghiaccio, lava, metano, mare
+di nuvole, specchio salino, pozze termali.
 
 ---
 
@@ -120,7 +120,7 @@ salino, pozze termali.
 |---|---|
 | `altrove.html` / `altrove.css` | guscio e interfaccia |
 | `js/main.js` | stato, interfaccia, ciclo di disegno |
-| `js/biomes.js` | i 29 luoghi, gli 8 meteo, le stagioni |
+| `js/biomes.js` | i 44 luoghi, gli 8 meteo, le stagioni, la fauna |
 | `js/world.js` | campo di altezze, pendenze, superfici |
 | `js/noise.js` | rumore condiviso CPU/GPU |
 | `js/sky.js` | scattering atmosferico, sole, luna, stelle, nuvole, aurora |
@@ -128,7 +128,7 @@ salino, pozze termali.
 | `js/fog.js` | prospettiva aerea iniettata in ogni materiale |
 | `js/engine.js` | renderer e post-produzione |
 | `js/terrain.js` | terreno a livelli di dettaglio |
-| `js/props.js` | 34 generatori di geometrie |
+| `js/props.js` | 40 generatori di geometrie |
 | `js/scatter.js` | semina e istanziamento |
 | `js/water.js` | superfici liquide |
 | `js/weather.js` | pioggia, neve, polvere, spore |
