@@ -16,8 +16,17 @@ quanto è torbida l'aria, dov'è l'acqua. Il motore non sa niente di "foresta" o
 di "Marte".
 
 **Fauna**: stormi di uccelli a boids, branchi che pascolano, banchi di pesci,
-farfalle, meduse fluttuanti, e la megafauna (sauropodi, teropodi, pterosauri,
-mammut). La CPU muove gli agenti, la GPU anima le membra.
+farfalle, meduse fluttuanti, la megafauna (sauropodi, teropodi, pterosauri,
+mammut) e gli hobbit della Contea. La CPU muove gli agenti, la GPU anima le
+membra.
+
+**Le firme dei luoghi**: un paesaggio si riconosce dal terreno e dalla flora,
+un *luogo* da cosa ci hanno costruito sopra. Le case hobbit della Contea
+(raccolte in borghi, con orti, staccionate e covoni), le cupole della fattoria
+d'umidità di Tatooine, le case tonde di Namecc, le case di fungo del bosco
+fatato, i cerchi di pietre del bosco stregato, gli archi e i colossi sommersi
+di Atlantide, le torri della Terra d'ombra, la guglia nera del Monte Fato, il
+modulo lunare, il lampione del pianetino, i mulini delle isole nel cielo.
 
 **Sott'acqua**: si nuota davvero. Caustiche sul fondo, luce che vira al blu con
 la profondità, nevischio marino, e la nebbia che diventa l'acqua stessa.
@@ -69,6 +78,20 @@ larghi il doppio ognuno. Il buco centrale di ogni anello coincide esattamente
 con l'area coperta dall'anello più fine. Due chilometri di mondo con ~70.000
 vertici. Le gonne sui bordi tappano le crepe di un pixel dove la risoluzione
 cambia.
+
+### Le cose costruite si raggruppano
+Una casa non si semina come l'erba. `js/scatter.js` conosce tre regole in più
+che valgono solo per gli edifici: **`cluster`** (le case stanno in borghi: ogni
+cella larga *period* ne ospita uno, con il centro spostato a caso ma sempre
+dentro la cella, così il paese non viene tagliato in due dal confine),
+**`faceDownhill`** (la facciata guarda a valle, che è come si scava nel fianco
+di una collina) e **`sink`** più `upright` (l'edificio resta a piombo e
+sprofonda quanto basta a non lasciare spiragli sotto).
+
+Il `cluster` non è solo estetica: **sotto una certa rarità la densità smette di
+funzionare**, perché ogni tessera mette comunque un candidato per cella. Per
+ottenere una cosa davvero rara — una guglia, un modulo lunare, *il* lampione —
+l'unica leva è un grappolo strettissimo con periodo lunghissimo.
 
 ### La vegetazione non è una lista
 `js/scatter.js`: la posizione di ogni pianta viene da un hash delle coordinate.
@@ -140,6 +163,8 @@ di nuvole, specchio salino, pozze termali.
 | `js/controls.js` | camera in prima persona |
 | `dev/shots.js` | strumento di collaudo: molte vedute in un foglio solo |
 | `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro |
+| `dev/oggetti.html` | banco di prova delle geometrie di `props.js`, con un piano d'appoggio |
+| `joystick.html` | pagina di diagnosi del controller (assi e tasti dal vivo) |
 | `servi.py` | server di sviluppo che vieta la cache |
 
 `vendor/three.core.js` + `vendor/three.module.js`: Three.js r185, in locale.
@@ -191,6 +216,28 @@ C salva immagine · Esc liberare il mouse
   centimetri sopra il terreno, o si riempie di bande.
 - **Un blocco GLSL incluso da più moduli va protetto da una guardia**
   (`#ifndef`), altrimenti le funzioni risultano ridefinite.
+- **L'ordine dei vertici decide quale faccia è il davanti.** Questi materiali
+  disegnano una faccia sola: una cupola avvolta al contrario si vede solo da
+  dentro e sparisce da fuori. Per un disco o un anello costruiti attorno a una
+  normale `n`, la terna `(T, B, n)` va destrorsa e i vertici percorsi di
+  conseguenza.
+- **Una facciata messa a una frazione fissa del raggio finisce sepolta.** A un
+  metro da terra un ellissoide è ancora quasi al raggio pieno: il piano della
+  porta va calcolato dall'equazione della superficie a *quella* quota, non a
+  occhio.
+- **Un muretto su un pendio deve scendere molto sotto lo zero**, o resta per
+  aria proprio dal lato da cui lo si guarda.
+- **L'emissivo di un edificio va mascherato**, o di notte si accende tutta la
+  casa invece delle sole finestre. La maschera viaggia in `aFlex`, che per un
+  edificio non serve a nulla (una casa non si piega al vento).
+- **Di notte l'esposizione automatica amplifica moltissimo**: un emissivo a
+  1,7 diventa un faro con un alone grande quanto la casa. I valori giusti per
+  una finestra accesa stanno sotto 0,1.
+- **Non tutti i biomi chiudevano con `  },` sulla stessa riga**: sei finivano
+  con la graffa e la virgola separate, e una modifica automatica che cercava
+  quella chiusura infilava le regole nel bioma successivo. Ora sono uniformi,
+  ma conviene sempre verificare *in quale* bioma è finita una regola aggiunta
+  da uno script.
 
 ---
 
@@ -205,3 +252,11 @@ C salva immagine · Esc liberare il mouse
 - Nessuna occlusione ambientale a schermo (SSAO): sotto le chiome manca un po'
   di ombra di contatto.
 - Le nuvole sono uno strato piatto in parallasse, non volumetriche vere.
+- **Lo scattering è a diffusione singola.** Manca il contributo delle
+  diffusioni multiple, che è proprio quello che schiarisce lo zenit e la
+  foschia bassa: a mezzogiorno, col sole a 63°, il cielo esce (14, 30, 49)
+  mentre l'erba al sole esce (79, 108, 27) — nella realtà il cielo è più
+  chiaro del prato, non dieci volte più scuro. Si correggerebbe con un termine
+  isotropo aggiunto all'integrale, ma va aggiunto in **tutti e tre** i clienti
+  della LUT (cielo visibile, nebbia dei materiali, luci ricalcolate in JS), o
+  l'immagine si spacca.

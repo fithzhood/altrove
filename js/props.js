@@ -1561,13 +1561,17 @@ function ringO(B, c, n, r0, r1, col0, col1, flex, seg) {
  * disegnare un uccello con le ali attaccate al collo. */
 function hobbitHole(rnd, tint) {
   const Bd = new Builder();
-  const rx = 4.8, ry = 3.35, rz = 4.35;
+  /* Piu larga che profonda: la coda allunga il tumulo all indietro, e la
+   * normalizzazione avviene sull ingombro maggiore — con rx e rz uguali la
+   * facciata finiva per rimpicciolirsi. Una casa nel fianco di una collina
+   * mostra un fronte largo, non un muso. */
+  const rx = 5.6, ry = 3.35, rz = 4.10;
   const erbaAlta = mixc(tint, lin(0x8fbe52), 0.25);
   const erbaBassa = scale(mixc(tint, lin(0x2f5c1c), 0.45), 0.92);
 
   dome(Bd, {
     cx: 0, cy: 0, cz: 0, rx, ry, rz, seg: 20, rings: 9,
-    colTop: erbaAlta, colBot: erbaBassa, rough: 0.085, rnd, flex: 0, skirt: 0.7,
+    colTop: erbaAlta, colBot: erbaBassa, rough: 0.055, rnd, flex: 0, skirt: 0.7,
     tail: 0.42
   });
 
@@ -1698,7 +1702,7 @@ function hobbitHole(rnd, tint) {
    * «collina». Scende di mezzo metro sotto lo zero per non restare per aria
    * sul lato a valle. */
   {
-    const rw = 2.55, hw = 0.46, seg = 16;
+    const rw = 3.15, hw = 0.58, seg = 18;
     /* Il davanti e verso -Z, cioe l angolo 3pi/2: l arco va centrato li. Fra
      * 0,62pi e 1,38pi si finisce sul fianco sinistro della casa, che e dove
      * stava prima e dove non serve a niente. */
@@ -1714,9 +1718,9 @@ function hobbitHole(rnd, tint) {
        * resterebbe sospeso proprio dal lato da cui lo si guarda. */
       Bd.quad(pw(b0, rw, -1.7), pw(b1, rw, -1.7), pw(b1, rw, hw), pw(b0, rw, hw), cs, cs, c, c, 0, 0, 0, 0);
       // faccia interna
-      Bd.quad(pw(b1, rw - 0.22, -1.7), pw(b0, rw - 0.22, -1.7), pw(b0, rw - 0.22, hw), pw(b1, rw - 0.22, hw), cs, cs, c, c, 0, 0, 0, 0);
+      Bd.quad(pw(b1, rw - 0.26, -1.7), pw(b0, rw - 0.26, -1.7), pw(b0, rw - 0.26, hw), pw(b1, rw - 0.26, hw), cs, cs, c, c, 0, 0, 0, 0);
       // coronamento
-      Bd.quad(pw(b0, rw - 0.22, hw), pw(b1, rw - 0.22, hw), pw(b1, rw, hw), pw(b0, rw, hw),
+      Bd.quad(pw(b0, rw - 0.26, hw), pw(b1, rw - 0.26, hw), pw(b1, rw, hw), pw(b0, rw, hw),
               mixc(c, [1, 1, 1], 0.12), mixc(c, [1, 1, 1], 0.12), c, c, 0, 0, 0, 0);
     }
   }
@@ -1845,6 +1849,494 @@ function signpost(rnd, tint) {
   return B.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * Le firme dei luoghi immaginari
+ *
+ * Un paesaggio si riconosce dalla forma del terreno e dalla flora; un LUOGO
+ * si riconosce da cosa ci hanno costruito sopra. Tatooine senza le cupole
+ * della fattoria d umidita e solo un deserto, e Namecc senza le case tonde e
+ * solo una prateria verde con il cielo strano.
+ *
+ * Convenzione: il davanti e verso -Z, come per la fauna e per le case della
+ * Contea, cosi il seminatore puo puntare tutto a valle con una sola
+ * rotazione.
+ * ------------------------------------------------------------------ */
+
+/* Faccia piana con normale verso l esterno. L ordine dei vertici e (c-u-v,
+ * c+u-v, c+u+v, c-u+v) e la normale che ne esce e u x v: passando u e v nel
+ * verso giusto non si sbaglia mai il lato, che e l errore che fa sparire meta
+ * di un edificio. */
+function face(B, c, u, v, colA, colB) {
+  const p = (su, sv) => [c[0] + u[0] * su + v[0] * sv,
+                         c[1] + u[1] * su + v[1] * sv,
+                         c[2] + u[2] * su + v[2] * sv];
+  B.quad(p(-1, -1), p(1, -1), p(1, 1), p(-1, 1), colA, colA, colB, colB, 0, 0, 0, 0);
+}
+
+/* Parallelepipedo con le sei facce girate bene. */
+function box(B, c, hx, hy, hz, colBot, colTop) {
+  const X = [hx, 0, 0], Y = [0, hy, 0], Z = [0, 0, hz];
+  const neg = (a) => [-a[0], -a[1], -a[2]];
+  const at = (d) => [c[0] + d[0], c[1] + d[1], c[2] + d[2]];
+  face(B, at(X), Z, Y, colBot, colTop);           // +X
+  face(B, at(neg(X)), neg(Z), Y, colBot, colTop); // -X
+  face(B, at(Z), neg(X), Y, colBot, colTop);      // +Z
+  face(B, at(neg(Z)), X, Y, colBot, colTop);      // -Z
+  face(B, at(Y), X, neg(Z), colTop, colTop);      // +Y
+  face(B, at(neg(Y)), X, Z, colBot, colBot);      // -Y
+}
+
+/* Prisma a N lati, rastremato: torri, guglie, menhir. */
+function prism(B, opts) {
+  const { cx = 0, cz = 0, y0 = 0, y1 = 1, r0 = 1, r1 = 1, seg = 6,
+          colBot, colTop, twist = 0, lean = [0, 0], jag } = opts;
+  const P = (i, t) => {
+    const a = (i / seg) * Math.PI * 2 + twist * t;
+    const r = (r0 + (r1 - r0) * t) * (jag ? jag(i, t) : 1);
+    return [cx + Math.cos(a) * r + lean[0] * t, y0 + (y1 - y0) * t, cz + Math.sin(a) * r + lean[1] * t];
+  };
+  for (let i = 0; i < seg; i++) {
+    const j = (i + 1) % seg;
+    const sh = 0.82 + 0.20 * (0.5 + 0.5 * Math.cos((i / seg) * Math.PI * 2 + 0.9));
+    B.quad(P(i, 0), P(j, 0), P(j, 1), P(i, 1),
+      scale(colBot, sh), scale(colBot, sh), scale(colTop, sh), scale(colTop, sh), 0, 0, 0, 0);
+  }
+  // coperchio
+  const cTop = [cx + lean[0], y1, cz + lean[1]];
+  for (let i = 0; i < seg; i++) {
+    const j = (i + 1) % seg;
+    B.tri(cTop, P(i, 1), P(j, 1), colTop, colTop, colTop, 0, 0, 0);
+  }
+  return cTop;
+}
+
+/* --- CUPOLA ABITATA -------------------------------------------------
+ * Serve a due posti lontanissimi fra loro: la fattoria d umidita di Tatooine
+ * e le case di Namecc. E la stessa forma — mezza sfera di intonaco con una
+ * porta ad arco e un oblo — e cambia solo la tinta. */
+function domeHut(rnd, tint) {
+  const Bd = new Builder();
+  const rx = 2.75, ry = 2.30, rz = 2.70;
+  const muro = mixc(tint, lin(0xe8dcc4), 0.55);
+  const muroScuro = scale(muro, 0.66);
+
+  dome(Bd, {
+    cx: 0, cy: 0, cz: 0, rx, ry, rz, seg: 20, rings: 8,
+    colTop: mixc(muro, [1, 1, 1], 0.10), colBot: muroScuro, rough: 0.02, rnd,
+    flex: 0, skirt: 0.55
+  });
+
+  // porta ad arco, sporgente dalla superficie (l errore gia pagato in Contea)
+  const yc = 0.92, rP = 0.72;
+  const zSup = -rz * Math.sqrt(Math.max(0.04, 1 - (yc * yc) / (ry * ry)));
+  const zf = zSup - 0.22;
+  const seg = 18;
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    const p = (a, z) => [Math.cos(a) * (rP * 1.28), yc + Math.sin(a) * (rP * 1.28), z];
+    Bd.quad(p(a0, zf + 1.4), p(a1, zf + 1.4), p(a1, zf), p(a0, zf),
+      muroScuro, muroScuro, muro, muro, 0, 0, 0, 0);
+  }
+  ringO(Bd, [0, yc, zf], [0, 0, -1], rP * 0.96, rP * 1.28, muro, muroScuro, 0, 20);
+  const vano = scale(muroScuro, 0.30);
+  discO(Bd, [0, yc, zf - 0.06], [0, 0, -1], rP, vano, scale(vano, 0.7), 0, 20);
+
+  // oblo laterale
+  for (const sx of [-1, 1]) {
+    const x = sx * 1.55, y = 1.35;
+    const q = 1 - (x * x) / (rx * rx) - (y * y) / (ry * ry);
+    if (q <= 0.02) continue;
+    const z = -rz * Math.sqrt(q);
+    const n = [x / (rx * rx), y / (ry * ry), z / (rz * rz)];
+    const l = Math.hypot(n[0], n[1], n[2]);
+    const nn = [n[0] / l, n[1] / l, n[2] / l];
+    const c = [x + nn[0] * 0.06, y + nn[1] * 0.06, z + nn[2] * 0.06];
+    discO(Bd, c, nn, 0.30, lin(0xffe2b0), lin(0xd8b070), 1, 14);
+    ringO(Bd, c, nn, 0.30, 0.40, muroScuro, scale(muroScuro, 0.7), 0, 14);
+  }
+
+  // camino di sfiato
+  const met = lin(0x8a8478);
+  const i0 = Bd.p.length;
+  trunk(Bd, { r0: 0.17, r1: 0.14, h: 0.70, seg: 6, rings: 1,
+    colBot: scale(met, 0.7), colTop: met, flexTop: 0, x0: 0.85, z0: 0.55 });
+  const qy = 1 - (0.85 * 0.85) / (rx * rx) - (0.55 * 0.55) / (rz * rz);
+  const cy0 = ry * Math.sqrt(Math.max(0.05, qy)) - 0.10;
+  for (let i = i0; i < Bd.p.length; i += 3) Bd.p[i + 1] += cy0;
+
+  return Bd.toGeometry();
+}
+
+/* --- CASA DI FUNGO --------------------------------------------------
+ * Bosco fatato. Non e un fungo con una porta disegnata sopra: il gambo e
+ * l edificio, e il cappello e il tetto. */
+function mushroomHouse(rnd, tint) {
+  const B = new Builder();
+  /* Il gambo e l edificio: se il cappello lo strapiomba di due volte e mezzo,
+   * da fuori non si vedono piu ne la porta ne le finestre, e resta un fungo
+   * gigante invece di una casa. */
+  const gamboH = 3.7;
+  const crema = mixc(lin(0xe8dcc0), tint, 0.14);
+  const cremaScura = scale(crema, 0.62);
+  trunk(B, { r0: 1.36, r1: 1.16, h: gamboH, seg: 14, rings: 4,
+    colBot: cremaScura, colTop: crema, flexTop: 0, bulge: 0.16 });
+
+  // cappello
+  const capH = 1.70, capR = 1.72;
+  const rossi = [0xc03a2e, 0xb8562e, 0x8a3a5e, 0xc07a2a];
+  const cap = lin(rossi[Math.floor(rnd() * rossi.length)]);
+  const capScuro = scale(cap, 0.55);
+  const seg = 18, rings = 6;
+  for (let j = 0; j < rings; j++) {
+    const t0 = j / rings, t1 = (j + 1) / rings;
+    const R = (t) => capR * Math.sqrt(Math.max(0, 1 - t * t * 0.92));
+    const Y = (t) => gamboH - 0.25 + capH * t;
+    for (let i = 0; i < seg; i++) {
+      const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+      const P = (a, t) => [Math.cos(a) * R(t), Y(t), Math.sin(a) * R(t)];
+      const c0 = mixc(capScuro, cap, t0), c1 = mixc(capScuro, cap, t1);
+      B.quad(P(a0, t0), P(a1, t0), P(a1, t1), P(a0, t1), c0, c0, c1, c1, 0, 0, 0, 0);
+    }
+  }
+  // sotto il cappello: lamelle
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    const lam = scale(crema, 0.72);
+    B.tri([Math.cos(a1) * capR, gamboH - 0.25, Math.sin(a1) * capR],
+      [Math.cos(a0) * capR, gamboH - 0.25, Math.sin(a0) * capR],
+      [0, gamboH - 0.42, 0], lam, lam, cremaScura, 0, 0, 0);
+  }
+  // pallini bianchi
+  for (let k = 0; k < 9; k++) {
+    const a = rnd() * Math.PI * 2, t = 0.15 + rnd() * 0.55;
+    const R = capR * Math.sqrt(Math.max(0, 1 - t * t * 0.92));
+    blob(B, {
+      cx: Math.cos(a) * R * 0.94, cy: gamboH - 0.25 + capH * t + 0.05, cz: Math.sin(a) * R * 0.94,
+      rx: 0.20 + rnd() * 0.10, ry: 0.07, rz: 0.20 + rnd() * 0.10,
+      level: 1, rough: 0.10, rnd, colTop: lin(0xf4efe2), colBot: lin(0xcfc7b4), flex: 0
+    });
+  }
+
+  // porta e finestre nel gambo
+  /* La porta su un portico sporgente, non spiaccicata sul gambo: un disco
+   * piatto appoggiato a un cilindro sporge nel vuoto ai lati, e sembra un
+   * adesivo che si stacca. */
+  const yc = 0.95, rP = 0.55;
+  const zf = -1.62;
+  const legno = lin(0x6a4a2a);
+  for (let i = 0; i < 18; i++) {
+    const a0 = (i / 18) * Math.PI * 2, a1 = ((i + 1) / 18) * Math.PI * 2;
+    const p = (a, z) => [Math.cos(a) * rP * 1.26, yc + Math.sin(a) * rP * 1.26, z];
+    B.quad(p(a0, zf + 1.1), p(a1, zf + 1.1), p(a1, zf), p(a0, zf),
+      scale(cremaScura, 0.85), scale(cremaScura, 0.85), crema, crema, 0, 0, 0, 0);
+  }
+  ringO(B, [0, yc, zf], [0, 0, -1], rP * 0.96, rP * 1.26, cremaScura, scale(cremaScura, 0.7), 0, 18);
+  discO(B, [0, yc, zf - 0.05], [0, 0, -1], rP, legno, scale(legno, 0.7), 0, 18);
+  blob(B, { cx: 0.26, cy: yc, cz: zf - 0.12, rx: 0.06, ry: 0.06, rz: 0.06,
+    level: 0, rough: 0, rnd, colTop: lin(0xd8b45c), colBot: lin(0x8a7038), flex: 0 });
+  for (const [x, y] of [[-0.86, 2.35], [0.88, 2.30]]) {
+    const R = 1.24;
+    const zz = -Math.sqrt(Math.max(0.01, R * R - x * x)) - 0.03;
+    const nn = [x / R, 0, zz / R];
+    const l = Math.hypot(nn[0], nn[2]) || 1;
+    const n2 = [nn[0] / l, 0, nn[2] / l];
+    const c = [x + n2[0] * 0.05, y, zz + n2[2] * 0.05];
+    discO(B, c, n2, 0.26, lin(0xffe0a8), lin(0xe0b070), 1, 14);
+    ringO(B, c, n2, 0.26, 0.34, cremaScura, scale(cremaScura, 0.7), 0, 14);
+  }
+  return B.toGeometry();
+}
+
+/* --- MENHIR ---------------------------------------------------------
+ * Bosco stregato. Una pietra piantata dritta e la cosa piu semplice che dice
+ * «qualcuno e stato qui, e non di recente». */
+function standingStone(rnd, tint) {
+  const B = new Builder();
+  const h = 3.2 * (0.85 + rnd() * 0.4);
+  const pietra = mixc(tint, lin(0x6e6a62), 0.75);
+  const scura = scale(pietra, 0.58);
+  const seg = 5 + Math.floor(rnd() * 3);
+  const jag = (i) => 0.82 + 0.30 * ((i * 7 + 3) % 5) / 4;
+  prism(B, {
+    y0: 0, y1: h, r0: 0.98 * (0.85 + rnd() * 0.35), r1: 0.62, seg,
+    colBot: scura, colTop: pietra, twist: (rnd() - 0.5) * 0.5,
+    lean: [(rnd() - 0.5) * 0.5, (rnd() - 0.5) * 0.5], jag
+  });
+  // fasce incise
+  for (let k = 0; k < 3; k++) {
+    const y = h * (0.30 + k * 0.18);
+    const r = 0.98 + (0.62 - 0.98) * (y / h);
+    for (let i = 0; i < seg; i++) {
+      const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+      const P = (a, yy) => [Math.cos(a) * r * jag(i) * 1.02, yy, Math.sin(a) * r * jag(i) * 1.02];
+      B.quad(P(a0, y - 0.045), P(a1, y - 0.045), P(a1, y + 0.045), P(a0, y + 0.045),
+        scura, scura, scale(scura, 0.7), scale(scura, 0.7), 0, 0, 0, 0);
+    }
+  }
+  return B.toGeometry();
+}
+
+/* --- ARCO IN ROVINA -------------------------------------------------
+ * Atlantide e Terre desolate. Una colonna dice «rovina»; un arco spezzato
+ * dice «qui c era un edificio», che e molto di piu. */
+function archRuin(rnd, tint) {
+  const B = new Builder();
+  const pietra = mixc(tint, lin(0x8a8478), 0.7);
+  const scura = scale(pietra, 0.60);
+  const hp = 3.2, sp = 1.55, rp = 0.34;
+  for (const s of [-1, 1]) {
+    // basamento
+    box(B, [s * sp, 0.18, 0], rp * 1.5, 0.18, rp * 1.5, scura, pietra);
+    prism(B, { cx: s * sp, y0: 0.36, y1: hp, r0: rp, r1: rp * 0.88, seg: 8, colBot: pietra, colTop: pietra });
+  }
+  // arco: due quarti di cerchio, quello di destra rotto a meta
+  const rot = 0.45 + rnd() * 0.35;
+  for (const s of [-1, 1]) {
+    const fine = s < 0 ? 1.0 : rot;
+    const n = 8;
+    for (let i = 0; i < n; i++) {
+      const t0 = (i / n) * fine, t1 = ((i + 1) / n) * fine;
+      const A = (t) => {
+        const a = (Math.PI / 2) * t;
+        return [s * sp * Math.cos(a), hp + sp * Math.sin(a) * 0.86, 0];
+      };
+      const p0 = A(t0), p1 = A(t1);
+      const c = mixc(pietra, scura, t0 * 0.4);
+      box(B, [(p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, 0],
+        Math.max(0.16, Math.abs(p1[0] - p0[0]) / 2 + 0.14),
+        Math.max(0.16, Math.abs(p1[1] - p0[1]) / 2 + 0.14), rp * 0.95, scura, c);
+    }
+  }
+  // un blocco caduto ai piedi
+  const bx = (rnd() - 0.5) * 2.4;
+  box(B, [bx, 0.26, -0.9 - rnd() * 0.8], 0.42, 0.26, 0.34, scura, pietra);
+  return B.toGeometry();
+}
+
+/* --- TORRE DI GUARDIA -----------------------------------------------
+ * Terra d ombra. Tozza, nera, con i merli: si legge in controluce, che e il
+ * modo in cui la si vedra quasi sempre. */
+function watchTower(rnd, tint) {
+  const B = new Builder();
+  const h = 11.0;
+  const pietra = mixc(tint, lin(0x3a3630), 0.72);
+  const scura = scale(pietra, 0.52);
+  prism(B, { y0: 0, y1: h * 0.86, r0: 2.05, r1: 1.55, seg: 8, colBot: scura, colTop: pietra });
+  // cornicione
+  prism(B, { y0: h * 0.86, y1: h * 0.93, r0: 1.95, r1: 1.95, seg: 8, colBot: pietra, colTop: pietra });
+  // merli
+  const nm = 8;
+  for (let i = 0; i < nm; i++) {
+    const a = (i / nm) * Math.PI * 2 + Math.PI / nm;
+    box(B, [Math.cos(a) * 1.62, h * 0.93 + 0.42, Math.sin(a) * 1.62], 0.34, 0.42, 0.34, pietra, scale(pietra, 1.1));
+  }
+  // feritoie
+  for (let k = 0; k < 3; k++) {
+    const a = -Math.PI / 2 + (k - 1) * 0.9;
+    const y = h * (0.42 + (k % 2) * 0.20);
+    const r = 1.55 + (2.05 - 1.55) * (1 - y / (h * 0.86));
+    const nn = [Math.cos(a), 0, Math.sin(a)];
+    const c = [nn[0] * r * 1.01, y, nn[2] * r * 1.01];
+    const u = [-nn[2] * 0.10, 0, nn[0] * 0.10], v = [0, 0.42, 0];
+    face(B, c, u, v, lin(0x140f0c), lin(0x241c16));
+  }
+  // porta
+  const nn = [0, 0, -1];
+  face(B, [0, 0.85, -2.02], [-0.42, 0, 0], [0, 0.85, 0], lin(0x140f0c), lin(0x241c16));
+  return B.toGeometry();
+}
+
+/* --- GUGLIA NERA ----------------------------------------------------
+ * Monte Fato. Non serve che sia dettagliata: si vede solo il profilo contro
+ * il cielo rosso, e da lontano. Serve che sia ALTA. */
+function darkSpire(rnd, tint) {
+  const B = new Builder();
+  const h = 34;
+  const nera = mixc(tint, lin(0x1e1a1e), 0.8);
+  const chiara = scale(nera, 1.7);
+  prism(B, { y0: 0, y1: h * 0.30, r0: 3.6, r1: 2.5, seg: 6, colBot: nera, colTop: nera });
+  prism(B, { y0: h * 0.28, y1: h * 0.66, r0: 2.4, r1: 1.5, seg: 6, colBot: nera, colTop: nera, twist: 0.35 });
+  prism(B, { y0: h * 0.64, y1: h * 0.90, r0: 1.6, r1: 0.55, seg: 6, colBot: nera, colTop: chiara, twist: 0.6 });
+  // contrafforti
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.5;
+    prism(B, {
+      cx: Math.cos(a) * 3.0, cz: Math.sin(a) * 3.0,
+      y0: 0, y1: h * (0.24 + (i % 3) * 0.10), r0: 0.85, r1: 0.28, seg: 5,
+      colBot: nera, colTop: nera, lean: [Math.cos(a) * 0.6, Math.sin(a) * 0.6]
+    });
+  }
+  // la punta: una fessura che brucia
+  const fuoco = lin(0xff8830);
+  for (let i = 0; i < 5; i++) {
+    const a = (i / 5) * Math.PI * 2;
+    const c = [Math.cos(a) * 0.50, h * 0.905, Math.sin(a) * 0.50];
+    const u = [-Math.sin(a) * 0.22, 0, Math.cos(a) * 0.22], v = [0, 0.65, 0];
+    face(B, c, u, v, fuoco, scale(fuoco, 0.6));
+  }
+  prism(B, { y0: h * 0.94, y1: h, r0: 0.55, r1: 0.06, seg: 6, colBot: nera, colTop: nera });
+  return B.toGeometry();
+}
+
+/* --- LAMPIONE -------------------------------------------------------
+ * Il pianetino: un lampione in mezzo al niente e il dettaglio che trasforma
+ * una palla d erba nel pianeta di qualcuno. Il vetro e su aFlex = 1, cosi di
+ * notte si accende solo quello. */
+function lamppost(rnd, tint) {
+  const B = new Builder();
+  const h = 4.0;
+  const ferro = mixc(tint, lin(0x2a2822), 0.75);
+  const chiaro = scale(ferro, 1.5);
+  prism(B, { y0: 0, y1: 0.28, r0: 0.26, r1: 0.14, seg: 8, colBot: scale(ferro, 0.7), colTop: ferro });
+  trunk(B, { r0: 0.085, r1: 0.055, h: h * 0.80, seg: 8, rings: 2, colBot: ferro, colTop: chiaro, flexTop: 0 });
+  // braccio ricurvo
+  const pts = [];
+  for (let i = 0; i <= 5; i++) {
+    const t = i / 5;
+    pts.push([-Math.sin(t * 1.5) * 0.62, h * 0.80 + Math.sin(t * 1.1) * 0.34, 0]);
+  }
+  for (let i = 0; i < pts.length - 1; i++) {
+    tube(B, pts[i], pts[i + 1], 0.048, 0.042, ferro, chiaro, 6, 0, 0);
+  }
+  const capo = pts[pts.length - 1];
+  /* Lanterna: quattro vetri, i montanti agli spigoli, tettuccio e fondo. Con
+   * i soli vetri restava un cartoncino bianco appeso a un palo. */
+  const gy = capo[1] - 0.44, rl = 0.24, hl = 0.42;
+  const vetro = lin(0xffe8b8);
+  const nVetro = B.f.length;
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const nn = [Math.cos(a), 0, Math.sin(a)];
+    face(B, [capo[0] + nn[0] * rl, gy + hl / 2, nn[2] * rl],
+      [-nn[2] * rl, 0, nn[0] * rl], [0, hl / 2, 0], vetro, scale(vetro, 0.88));
+  }
+  // solo i vetri si accendono: aFlex = 1 e la maschera dell emissivo
+  for (let i = nVetro; i < B.f.length; i++) B.f[i] = 1;
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2;
+    const px = capo[0] + Math.cos(a) * rl * 1.42, pz = Math.sin(a) * rl * 1.42;
+    tube(B, [px, gy - 0.03, pz], [px, gy + hl + 0.03, pz], 0.032, 0.032, ferro, chiaro, 4, 0, 0);
+  }
+  prism(B, { cx: capo[0], y0: gy + hl, y1: gy + hl + 0.32, r0: 0.36, r1: 0.05, seg: 4, colBot: ferro, colTop: chiaro });
+  prism(B, { cx: capo[0], y0: gy - 0.14, y1: gy, r0: 0.31, r1: 0.27, seg: 4, colBot: ferro, colTop: ferro });
+  return B.toGeometry();
+}
+
+/* --- MODULO LUNARE --------------------------------------------------
+ * La Luna. Polvere grigia e crateri li ha anche Mercurio: quello che rende la
+ * Luna «la Luna» e che ci siamo stati. */
+function lander(rnd, tint) {
+  const B = new Builder();
+  const oro = lin(0xd8a834), oroScuro = lin(0x8a6a1e);
+  const grigio = lin(0x9a968e), scuro = lin(0x4a4842);
+  // corpo inferiore, ottagonale e dorato
+  prism(B, { y0: 0.95, y1: 1.85, r0: 1.30, r1: 1.24, seg: 8, colBot: oroScuro, colTop: oro });
+  // stadio di risalita
+  prism(B, { y0: 1.85, y1: 2.85, r0: 1.05, r1: 0.85, seg: 8, colBot: grigio, colTop: scale(grigio, 1.15) });
+  prism(B, { y0: 2.85, y1: 3.20, r0: 0.55, r1: 0.34, seg: 6, colBot: grigio, colTop: grigio });
+  // oblo
+  discO(B, [0, 2.35, -0.98], [0, 0, -1], 0.26, lin(0x101418), lin(0x2a3038), 0, 12);
+  // zampe
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + Math.PI / 4;
+    const cx = Math.cos(a), cz = Math.sin(a);
+    tube(B, [cx * 1.05, 1.30, cz * 1.05], [cx * 2.25, 0.12, cz * 2.25], 0.09, 0.06, grigio, scuro, 6, 0, 0);
+    tube(B, [cx * 1.10, 0.95, cz * 1.10], [cx * 2.05, 0.35, cz * 2.05], 0.05, 0.04, scuro, scuro, 5, 0, 0);
+    // piattello
+    prism(B, { cx: cx * 2.28, cz: cz * 2.28, y0: 0, y1: 0.12, r0: 0.38, r1: 0.34, seg: 8, colBot: scuro, colTop: grigio });
+  }
+  // ugello
+  prism(B, { y0: 0.30, y1: 0.95, r0: 0.52, r1: 0.26, seg: 8, colBot: scuro, colTop: scale(scuro, 1.4) });
+  // bandiera
+  const ast = 2.9;
+  tube(B, [ast, 0, 1.3], [ast, 2.1, 1.3], 0.035, 0.030, grigio, grigio, 5, 0, 0);
+  const rosso = lin(0xc03a34), bianco = lin(0xeeeae2), blu = lin(0x2a3f7a);
+  face(B, [ast + 0.45, 1.80, 1.3], [0.45, 0, 0], [0, 0.28, 0], rosso, bianco);
+  face(B, [ast + 0.45, 1.80, 1.3], [-0.45, 0, 0], [0, 0.28, 0], rosso, bianco);
+  face(B, [ast + 0.22, 1.93, 1.298], [0.22, 0, 0], [0, 0.15, 0], blu, blu);
+  face(B, [ast + 0.22, 1.93, 1.302], [-0.22, 0, 0], [0, 0.15, 0], blu, blu);
+  return B.toGeometry();
+}
+
+/* --- MULINO ---------------------------------------------------------
+ * Isole nel cielo. Sopra un isola sospesa il vento e l unica cosa che c e in
+ * abbondanza. */
+function windmill(rnd, tint) {
+  const B = new Builder();
+  const h = 6.2;
+  const muro = mixc(tint, lin(0xd8cdb4), 0.6);
+  const muroScuro = scale(muro, 0.62);
+  const legno = lin(0x6a4e30);
+  prism(B, { y0: 0, y1: h, r0: 1.55, r1: 1.05, seg: 10, colBot: muroScuro, colTop: muro });
+  // tetto conico
+  prism(B, { y0: h, y1: h + 1.5, r0: 1.25, r1: 0.08, seg: 10, colBot: scale(legno, 0.8), colTop: legno });
+  // porta e finestrella
+  face(B, [0, 0.85, -1.42], [-0.38, 0, 0], [0, 0.85, 0], lin(0x3a2a1c), lin(0x5a4430));
+  discO(B, [0.0, h * 0.62, -1.20], [0, 0, -1], 0.24, lin(0xffe0a8), lin(0xd8b070), 1, 12);
+  // pale
+  const zz = -1.35;
+  tube(B, [0, h * 0.86, zz + 0.30], [0, h * 0.86, zz - 0.25], 0.13, 0.11, legno, legno, 8, 0, 0);
+  for (let i = 0; i < 4; i++) {
+    const a = (i / 4) * Math.PI * 2 + 0.35;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const L = 2.9, w = 0.34;
+    const c = [ca * L * 0.55, h * 0.86 + sa * L * 0.55, zz - 0.28];
+    const u = [ca * L * 0.45, sa * L * 0.45, 0];
+    const v = [-sa * w, ca * w, 0];
+    face(B, c, u, v, legno, mixc(legno, [1, 1, 1], 0.25));
+    face(B, [c[0], c[1], c[2] - 0.02], [-u[0], -u[1], 0], v, legno, mixc(legno, [1, 1, 1], 0.25));
+  }
+  return B.toGeometry();
+}
+
+/* --- COLOSSO SPEZZATO -----------------------------------------------
+ * Atlantide. Due gambe e un torso caduto raccontano una citta senza doverla
+ * costruire. */
+function statueRuin(rnd, tint) {
+  const B = new Builder();
+  const marmo = mixc(tint, lin(0xb8b2a2), 0.72);
+  const scuro = scale(marmo, 0.58);
+  // basamento
+  box(B, [0, 0.30, 0], 1.35, 0.30, 1.05, scuro, marmo);
+  /* Gambe grosse e un bacino sopra: due colonnine su una lastra non dicono
+   * «statua», dicono «due colonnine». Serve che la meta rimasta in piedi si
+   * legga come un corpo troncato. */
+  for (const s of [-1, 1]) {
+    const alt = s < 0 ? 2.5 : 1.6 + rnd() * 0.7;
+    prism(B, { cx: s * 0.46, y0: 0.60, y1: 0.60 + alt, r0: 0.56, r1: 0.46, seg: 8, colBot: marmo, colTop: marmo });
+    // piede, che sporge dal basamento
+    box(B, [s * 0.46, 0.66, -0.42], 0.44, 0.14, 0.42, scuro, marmo);
+  }
+  // bacino: si appoggia sulla gamba intera e finisce di netto
+  box(B, [-0.16, 3.24, 0], 0.95, 0.42, 0.62, marmo, scuro);
+  const tx = 1.7 + rnd() * 0.9, tz = -1.1 - rnd() * 0.7;
+  const rotY = rnd() * Math.PI;
+  const i0 = B.p.length;
+  prism(B, { y0: 0, y1: 2.2, r0: 0.72, r1: 0.52, seg: 8, colBot: marmo, colTop: scuro });
+  blob(B, { cx: 0, cy: 2.5, cz: 0, rx: 0.42, ry: 0.48, rz: 0.42, level: 1, rough: 0.10, rnd, colTop: marmo, colBot: scuro, flex: 0 });
+  /* Lo si costruisce in piedi e poi lo si corica: ruotare i vertici e molto
+   * piu semplice che riscrivere la geometria orizzontale. */
+  for (let i = i0; i < B.p.length; i += 3) {
+    const x = B.p[i], y = B.p[i + 1], z = B.p[i + 2];
+    // coricato sul fianco: y diventa -z
+    let X = x, Y = z + 0.55, Z = -y;
+    const c = Math.cos(rotY), sn = Math.sin(rotY);
+    B.p[i] = tx + X * c - Z * sn;
+    B.p[i + 1] = Y;
+    B.p[i + 2] = tz + X * sn + Z * c;
+  }
+  /* Le normali dopo una rotazione non sono piu quelle: si ricalcolano dalla
+   * faccia, che per una forma sfaccettata come questa e esatto. */
+  for (let i = i0; i < B.p.length; i += 9) {
+    const ax = B.p[i + 3] - B.p[i], ay = B.p[i + 4] - B.p[i + 1], az = B.p[i + 5] - B.p[i + 2];
+    const bx = B.p[i + 6] - B.p[i], by = B.p[i + 7] - B.p[i + 1], bz = B.p[i + 8] - B.p[i + 2];
+    let nx = ay * bz - az * by, ny = az * bx - ax * bz, nz = ax * by - ay * bx;
+    const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
+    for (let k = 0; k < 3; k++) { B.n[i + k * 3] = nx; B.n[i + k * 3 + 1] = ny; B.n[i + k * 3 + 2] = nz; }
+  }
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -1856,7 +2348,10 @@ export const PROPS = {
   bamboo, ruinPillar, cycad,
   coral, brainCoral, kelp, anemone, vaporator,
   // costruito
-  hobbitHole, fence, gardenPatch, haystack, signpost
+  hobbitHole, fence, gardenPatch, haystack, signpost,
+  // firme dei luoghi immaginari
+  domeHut, mushroomHouse, standingStone, archRuin, watchTower,
+  darkSpire, lamppost, lander, windmill, statueRuin
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -1875,14 +2370,18 @@ export const PROP_HEIGHT = {
   spiralRock: 5.0, ajisaTree: 9.0, slabRock: 1.4,
   bamboo: 8.0, ruinPillar: 4.0, cycad: 2.6,
   coral: 1.3, brainCoral: 0.9, kelp: 3.4, anemone: 0.55, vaporator: 2.8,
-  hobbitHole: 11.0, fence: 3.0, gardenPatch: 3.2, haystack: 2.6, signpost: 2.2
+  hobbitHole: 11.0, fence: 3.0, gardenPatch: 3.2, haystack: 2.6, signpost: 2.2,
+  domeHut: 6.4, mushroomHouse: 6.8, standingStone: 3.3, archRuin: 5.4,
+  watchTower: 12.0, darkSpire: 38.0, lamppost: 4.2, lander: 5.5,
+  windmill: 8.5, statueRuin: 5.0
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
  * sull altezza lo farebbe diventare un obelisco coricato. */
 /* Misurati sulla larghezza, non sull altezza: un tumulo e largo dieci metri
  * e alto tre, e normalizzarlo in altezza lo gonfierebbe a dismisura. */
-const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz' };
+const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz',
+                    domeHut: 'xz' };
 
 export function buildProp(type, rnd, tint) {
   const fn = PROPS[type];

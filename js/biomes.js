@@ -390,8 +390,7 @@ export const BIOMES = {
       { type: 'mushroom', density: 0.016, radius: 55, slope: [0, 0.4], height: [0.3, 40], moisture: [0.4, 1], scale: [0.7, 1.4], tilt: 0.12, tint: [0x8a6a3c, 0xc4b48c] },
       { type: 'grassTuft', density: 1.8, radius: 38, slope: [0, 0.5], height: [0.1, 40], moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x44581f, 0x66722e], grass: true }
     ]
-  }
-,
+  },
 
   /* ================================================================ *
    * LUOGHI IMMAGINARI
@@ -438,7 +437,19 @@ export const BIOMES = {
       { type: 'rock', density: 0.014, radius: 160, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.5], tilt: 0.45, tint: [0x2e302c, 0x4a4c46] },
       { type: 'boulder', density: 0.0016, radius: 240, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.7], tilt: 0.3, tint: [0x2c2e2a, 0x484a44], shadow: true },
       { type: 'log', density: 0.0022, radius: 130, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.4], tilt: 0.06, tint: [0x211c18, 0x38302a] },
-      { type: 'grassTuft', density: 1.5, radius: 36, slope: [0, 0.55], height: [-99, 999], moisture: [0.15, 1], scale: [0.65, 1.15], tilt: 0.10, tint: [0x2a4018, 0x486028], grass: true }
+      { type: 'grassTuft', density: 1.5, radius: 36, slope: [0, 0.55], height: [-99, 999], moisture: [0.15, 1], scale: [0.65, 1.15], tilt: 0.10, tint: [0x2a4018, 0x486028], grass: true },
+
+      /* Un cerchio di pietre: il grappolo strettissimo (tredici metri) e cio
+       * che lo fa leggere come messo li da qualcuno invece che caduto. */
+      { type: 'standingStone', density: 0.020, radius: 220, slope: [0, 0.32], height: [-99, 999],
+        moisture: [0, 1], scale: [0.8, 1.3], tilt: 0.10, tint: [0x4e4a44, 0x6e6860],
+        cluster: { period: 340, radius: 13, jitter: 0.6 }, jitter: 0.8, shadow: true },
+      /* Anche i menhir isolati passano dal grappolo. Sotto una certa rarita
+       * la densita non serve piu a niente: la tessera mette comunque un
+       * candidato per cella, e ne uscivano quaranta invece di quattro. */
+      { type: 'standingStone', density: 0.0060, radius: 200, slope: [0, 0.45], height: [-99, 999],
+        moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.16, tint: [0x4e4a44, 0x6e6860],
+        cluster: { period: 200, radius: 7, jitter: 0.6 }, jitter: 0.6, shadow: true }
     ]
   },
 
@@ -479,7 +490,13 @@ export const BIOMES = {
       { type: 'flower', density: 0.055, radius: 65, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.5], tilt: 0.12, tint: [0xf0a0e8, 0xfff0a0], emissive: 0.25 },
       { type: 'bush', density: 0.014, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x246048, 0x3f8a60] },
       { type: 'rock', density: 0.009, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.4], tilt: 0.45, tint: [0x4c4658, 0x6e6880] },
-      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x35906a, 0x6ec49a], grass: true }
+      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x35906a, 0x6ec49a], grass: true },
+
+      { type: 'mushroomHouse', density: 0.0016, radius: 220, slope: [0, 0.26], height: [-99, 999],
+        moisture: [0.2, 1], scale: [0.75, 1.35], tilt: 0.02, tint: [0xd8c8a0, 0xf0e4c8],
+        faceDownhill: true, faceJitter: 2.6, upright: true, sink: 0.10, jitter: 0.75,
+        cluster: { period: 260, radius: 46, jitter: 0.6 },
+        emissive: 0.14, emissiveMask: true, shadow: true }
     ]
   },
 
@@ -517,7 +534,13 @@ export const BIOMES = {
       { type: 'rock', density: 0.012, radius: 160, slope: [0, 1], height: [-40, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0x625e50, 0x847f6e] },
       { type: 'bush', density: 0.013, radius: 140, slope: [0, 0.6], height: [-40, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x3c5a24, 0x5f7c30] },
       { type: 'flower', density: 0.030, radius: 60, slope: [0, 0.4], height: [-40, 999], moisture: [0.2, 1], scale: [0.8, 1.3], tilt: 0.12, tint: [0xe8d868, 0xf0f0f0] },
-      { type: 'grassTuft', density: 2.2, radius: 38, slope: [0, 0.6], height: [-40, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x5f8130, 0x8fa447], grass: true }
+      { type: 'grassTuft', density: 2.2, radius: 38, slope: [0, 0.6], height: [-40, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x5f8130, 0x8fa447], grass: true },
+
+      { type: 'windmill', density: 0.0022, radius: 260, slope: [0, 0.20], height: [4, 999],
+        moisture: [0, 1], scale: [0.85, 1.25], tilt: 0.02, tint: [0xcfc4a8, 0xe8dcc0],
+        faceDownhill: true, faceJitter: 2.6, upright: true, sink: 0.35,
+        cluster: { period: 300, radius: 30, jitter: 0.6 }, jitter: 0.7,
+        emissive: 0.10, emissiveMask: true, shadow: true }
     ]
   },
 
@@ -555,7 +578,13 @@ export const BIOMES = {
       { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0x7a6238, 0xa8895a] },
       { type: 'boulder', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.85, 1.9], tilt: 0.3, tint: [0x7a6238, 0xa8895a], shadow: true },
       { type: 'bush', density: 0.012, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x1f6a4e, 0x3a9068] },
-      { type: 'grassTuft', density: 2.1, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x2f9c74, 0x64c8a0], grass: true }
+      { type: 'grassTuft', density: 2.1, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x2f9c74, 0x64c8a0], grass: true },
+
+      { type: 'domeHut', density: 0.0017, radius: 300, slope: [0, 0.16], height: [-99, 999],
+        moisture: [0, 1], scale: [0.9, 1.3], tilt: 0, tint: [0xe4efe2, 0xcfe8dc],
+        faceDownhill: true, faceJitter: 2.2, upright: true, sink: 0.28, jitter: 0.7,
+        cluster: { period: 340, radius: 36, jitter: 0.6 },
+        emissive: 0.07, emissiveMask: true, shadow: true }
     ]
   },
 
@@ -634,10 +663,17 @@ export const BIOMES = {
       { type: 'rock', density: 0.014, radius: 120, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.4], tilt: 0.45, tint: [0x64615a, 0x86827a] },
       { type: 'bush', density: 0.014, radius: 110, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.2], tilt: 0.07, tint: [0x35601f, 0x54802e] },
       { type: 'flower', density: 0.05, radius: 55, slope: [0, 0.45], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.4], tilt: 0.12, tint: [0xf0e05a, 0xf8f8f8] },
-      { type: 'grassTuft', density: 2.6, radius: 40, slope: [0, 0.62], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x5a9c34, 0x8cbe4c], grass: true }
+      { type: 'grassTuft', density: 2.6, radius: 40, slope: [0, 0.62], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x5a9c34, 0x8cbe4c], grass: true },
+      /* Uno o due, non sessanta: il pianeta e largo cento metri, e il senso
+       * del lampione e che ce ne sia UNO. Il grappolo strettissimo e l unico
+       * modo di ottenere una cosa davvero rara — abbassare la densita non
+       * basta, perche ogni tessera un candidato lo mette comunque. */
+      { type: 'lamppost', density: 0.010, radius: 130, slope: [0, 0.62], height: [-99, 999],
+        moisture: [0, 1], scale: [0.9, 1.1], tilt: 0.02, tint: [0x2e2a24, 0x4a443a],
+        upright: true, jitter: 0.7, cluster: { period: 210, radius: 8, jitter: 0.5 },
+        emissive: 0.55, emissiveMask: true, shadow: true }
     ]
-  }
-,
+  },
 
   /* ================================================================ *
    * SECONDA ONDATA
@@ -722,7 +758,14 @@ export const BIOMES = {
     ambience: { hemiSky: 0x585c68, hemiGround: 0x4a4844, bounce: 0.75 },
     scatter: [
       { type: 'rock', density: 0.070, radius: 180, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.30, 1.05], tilt: 0.55, tint: [0x565450, 0x7e7b75] },
-      { type: 'boulder', density: 0.0055, radius: 300, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.6, 1.4], tilt: 0.35, tint: [0x52504c, 0x7a7770], shadow: true }
+      { type: 'boulder', density: 0.0055, radius: 300, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.6, 1.4], tilt: 0.35, tint: [0x52504c, 0x7a7770], shadow: true },
+
+      /* Polvere e crateri li ha anche Mercurio: quello che rende la Luna «la
+       * Luna» e che ci siamo stati. Un solo sito, e non sempre in vista. */
+      { type: 'lander', density: 0.0060, radius: 420, slope: [0, 0.10], height: [-99, 999],
+        moisture: [0, 1], scale: [0.9, 1.1], tilt: 0.01, tint: [0xb0aca4, 0xd8d4cc],
+        upright: true, cluster: { period: 780, radius: 13, jitter: 0.5 }, jitter: 0.5,
+        shadow: true }
     ]
   },
 
@@ -874,7 +917,16 @@ export const BIOMES = {
       { type: 'slabRock', density: 0.0035, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.4], tilt: 0.20, tint: [0x6e6654, 0x8e8674], shadow: true },
       { type: 'dryBush', density: 0.020, radius: 180, slope: [0, 0.55], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.5], tilt: 0.10, tint: [0x6a5f34, 0x877a46] },
       { type: 'rock', density: 0.020, radius: 180, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.5, tint: [0x62594a, 0x847a68] },
-      { type: 'grassTuft', density: 0.55, radius: 38, slope: [0, 0.55], height: [-99, 999], moisture: [0.3, 1], scale: [0.6, 1.1], tilt: 0.12, tint: [0x7a7040, 0x968a52], grass: true }
+      { type: 'grassTuft', density: 0.55, radius: 38, slope: [0, 0.55], height: [-99, 999], moisture: [0.3, 1], scale: [0.6, 1.1], tilt: 0.12, tint: [0x7a7040, 0x968a52], grass: true },
+
+      { type: 'archRuin', density: 0.0009, radius: 240, slope: [0, 0.24], height: [-99, 999],
+        moisture: [0, 1], scale: [0.8, 1.6], tilt: 0.05, tint: [0x7a7460, 0xa09a80],
+        faceDownhill: true, faceJitter: 3.0, upright: true,
+        cluster: { period: 360, radius: 56, jitter: 0.6 }, jitter: 0.8, shadow: true },
+      { type: 'statueRuin', density: 0.0006, radius: 220, slope: [0, 0.18], height: [-99, 999],
+        moisture: [0, 1], scale: [0.8, 1.5], tilt: 0.04, tint: [0x8a8470, 0xaea894],
+        faceDownhill: true, faceJitter: 3.0, upright: true,
+        cluster: { period: 300, radius: 70, jitter: 0.6 }, jitter: 0.8, shadow: true }
     ]
   },
 
@@ -1043,10 +1095,15 @@ export const BIOMES = {
       { type: 'spiralRock', density: 0.0020, radius: 300, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.4], tilt: 0.10, tint: [0x1c1917, 0x36302c], shadow: true },
       { type: 'lavaRock', density: 0.0026, radius: 170, slope: [0, 0.7], height: [-99, 40], moisture: [0, 1], scale: [0.6, 1.5], tilt: 0.4, tint: [0xff4a08, 0xffb43c], emissive: 0.70 },
       { type: 'rock', density: 0.034, radius: 200, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 2.0], tilt: 0.6, tint: [0x1b1816, 0x342f2b] },
-      { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.0], tilt: 0.35, tint: [0x1c1917, 0x38322e], shadow: true }
+      { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.0], tilt: 0.35, tint: [0x1c1917, 0x38322e], shadow: true },
+      /* Rade davvero: il grappolo largo trenta metri con periodo quattrocento
+       * ne mette una ogni tanto, invece di riempire la piana di torri. */
+      { type: 'watchTower', density: 0.0012, radius: 400, slope: [0, 0.46], height: [-99, 999],
+        moisture: [0, 1], scale: [0.8, 1.4], tilt: 0.015, tint: [0x2a2622, 0x4a423a],
+        faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.4,
+        cluster: { period: 400, radius: 30, jitter: 0.6 }, jitter: 0.7, shadow: true }
     ]
-  }
-,
+  },
 
   giurassico: {
     id: 'giurassico', label: 'Giurassico', fantasy: true,
@@ -1104,8 +1161,7 @@ export const BIOMES = {
       { type: 'dryBush', density: 0.012, radius: 160, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.1], tilt: 0.12, tint: [0x6a6450, 0x8a8268] },
       { type: 'grassTuft', density: 0.85, radius: 40, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.5, 0.95], tilt: 0.14, tint: [0x7c7658, 0x9a9070], grass: true }
     ]
-  }
-,
+  },
 
   barriera: {
     id: 'barriera', label: 'Barriera corallina', fantasy: false,
@@ -1154,7 +1210,18 @@ export const BIOMES = {
       { type: 'coral', density: 0.020, radius: 110, slope: [0, 0.7], height: [-99, -4], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.25, tint: [0xc06070, 0xe0a060], underwater: true },
       { type: 'brainCoral', density: 0.012, radius: 110, slope: [0, 0.5], height: [-99, -4], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.2, tint: [0xa89060, 0x90b0a8], underwater: true },
       { type: 'kelp', density: 0.026, radius: 100, slope: [0, 0.5], height: [-99, -6], moisture: [0, 1], scale: [0.8, 1.8], tilt: 0.08, tint: [0x2e5a3a, 0x5e8a4a], underwater: true },
-      { type: 'rock', density: 0.016, radius: 140, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.5, tint: [0x646a5e, 0x8a907e], underwater: true }
+      { type: 'rock', density: 0.016, radius: 140, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.5, tint: [0x646a5e, 0x8a907e], underwater: true },
+
+      /* Colonne sparse dicono «rovina»; archi e statue dicono «qui c era una
+       * citta», che e quello che il posto promette. */
+      { type: 'archRuin', density: 0.0014, radius: 220, slope: [0, 0.26], height: [-99, -4],
+        moisture: [0, 1], scale: [0.9, 1.8], tilt: 0.04, tint: [0x8a9484, 0xb4bca4],
+        faceDownhill: true, faceJitter: 3.0, upright: true, underwater: true,
+        cluster: { period: 330, radius: 52, jitter: 0.6 }, jitter: 0.8, shadow: true },
+      { type: 'statueRuin', density: 0.0005, radius: 200, slope: [0, 0.22], height: [-99, -5],
+        moisture: [0, 1], scale: [0.9, 1.7], tilt: 0.03, tint: [0x94a094, 0xc0c8b4],
+        faceDownhill: true, faceJitter: 3.0, upright: true, underwater: true,
+        cluster: { period: 330, radius: 52, jitter: 0.6 }, jitter: 0.8, shadow: true }
     ]
   },
 
@@ -1219,7 +1286,16 @@ export const BIOMES = {
       { type: 'spiralRock', density: 0.0024, radius: 300, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.6], tilt: 0.07, tint: [0x9a8458, 0xc8b078], shadow: true },
       { type: 'fern', density: 0.035, radius: 85, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.6], tilt: 0.10, tint: [0x2a6a44, 0x4a9060] },
       { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.45, tint: [0x7e7050, 0xa89670] },
-      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x3f9c68, 0x78c890], grass: true }
+      { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x3f9c68, 0x78c890], grass: true },
+
+      { type: 'archRuin', density: 0.0018, radius: 230, slope: [0, 0.24], height: [-99, 999],
+        moisture: [0, 1], scale: [0.9, 1.9], tilt: 0.03, tint: [0xa8b4c0, 0xd0dce8],
+        faceDownhill: true, faceJitter: 3.0, upright: true,
+        cluster: { period: 280, radius: 64, jitter: 0.6 }, jitter: 0.8, shadow: true },
+      { type: 'lamppost', density: 0.0016, radius: 200, slope: [0, 0.24], height: [-99, 999],
+        moisture: [0, 1], scale: [0.9, 1.3], tilt: 0.02, tint: [0x3a4450, 0x5a6878],
+        upright: true, emissive: 0.40, emissiveMask: true,
+        cluster: { period: 280, radius: 64, jitter: 0.6 }, jitter: 0.85 }
     ]
   },
 
@@ -1271,7 +1347,19 @@ export const BIOMES = {
       { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.1], tilt: 0.35, tint: [0x1b1816, 0x36302c], shadow: true },
       { type: 'lavaRock', density: 0.0030, radius: 170, slope: [0, 0.7], height: [-99, 60], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.4, tint: [0xff4a08, 0xffb43c], emissive: 0.70 },
       { type: 'deadTree', density: 0.0016, radius: 260, slope: [0, 0.5], height: [-99, 200], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.2, tint: [0x181514, 0x2c2622], shadow: true },
-      { type: 'ruinPillar', density: 0.0010, radius: 220, slope: [0, 0.35], height: [-99, 200], moisture: [0, 1], scale: [0.8, 1.6], tilt: 0.16, tint: [0x241f1c, 0x3c342e], shadow: true }
+      { type: 'ruinPillar', density: 0.0010, radius: 220, slope: [0, 0.35], height: [-99, 200], moisture: [0, 1], scale: [0.8, 1.6], tilt: 0.16, tint: [0x241f1c, 0x3c342e], shadow: true },
+
+      /* Una guglia alta quaranta metri non va seminata come l erba: il
+       * grappolo strettissimo con periodo lunghissimo ne fa comparire una
+       * ogni tanto, ed e cosi che diventa un punto di riferimento. */
+      { type: 'darkSpire', density: 0.0011, radius: 900, slope: [0, 0.22], height: [-99, 999],
+        moisture: [0, 1], scale: [0.75, 1.5], tilt: 0.01, tint: [0x1a1618, 0x342c34],
+        upright: true, sink: 1.2, emissive: 0.30, emissiveMask: true,
+        cluster: { period: 1150, radius: 20, jitter: 0.5 }, jitter: 0.6, shadow: true },
+      { type: 'watchTower', density: 0.0016, radius: 420, slope: [0, 0.28], height: [-99, 999],
+        moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.02, tint: [0x241f1c, 0x40372e],
+        faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.4,
+        cluster: { period: 430, radius: 28, jitter: 0.6 }, jitter: 0.7, shadow: true }
     ]
   },
 
@@ -1296,7 +1384,15 @@ export const BIOMES = {
       { type: 'dryBush', density: 0.010, radius: 190, slope: [0, 0.5], height: [-99, 999], moisture: [0, 0.75], scale: [0.5, 1.2], tilt: 0.10, tint: [0x8a7a48, 0xa89a60] },
       { type: 'rock', density: 0.016, radius: 190, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.45, 1.6], tilt: 0.5, tint: [0x8e6a44, 0xb89070] },
       { type: 'boulder', density: 0.0022, radius: 300, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.1], tilt: 0.3, tint: [0x8a6642, 0xb08a66], shadow: true },
-      { type: 'slabRock', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.0], tilt: 0.18, tint: [0x94704a, 0xbc966e], shadow: true }
+      { type: 'slabRock', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [1.0, 3.0], tilt: 0.18, tint: [0x94704a, 0xbc966e], shadow: true },
+
+      /* Le cupole non stanno sparse: una fattoria e due o tre corpi vicini,
+       * ed e per questo che il grappolo ha raggio venticinque metri. */
+      { type: 'domeHut', density: 0.0030, radius: 300, slope: [0, 0.13], height: [-99, 999],
+        moisture: [0, 1], scale: [0.85, 1.25], tilt: 0, tint: [0xd8c4a0, 0xefe2c4],
+        faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.30, jitter: 0.7,
+        cluster: { period: 330, radius: 25, jitter: 0.6 },
+        emissive: 0.07, emissiveMask: true, shadow: true }
     ]
   },
 
@@ -1399,8 +1495,7 @@ export const BIOMES = {
     fog: { density: 0.0026, heightFalloff: 0.0035, tint: [0.94, 0.98, 1.04] },
     ambience: { hemiSky: 0x8ab4dc, hemiGround: 0x2a3a44, bounce: 0.30 },
     scatter: []
-  }
-,
+  },
 
   cascate: {
     id: 'cascate', label: 'Le cascate', fantasy: false,
@@ -1428,8 +1523,7 @@ export const BIOMES = {
       { type: 'log', density: 0.0022, radius: 130, slope: [0, 0.4], height: [4, 250], moisture: [0.3, 1], scale: [0.9, 1.7], tilt: 0.06, tint: [0x3a2e20, 0x54432e] },
       { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.62], height: [3, 320], moisture: [0.2, 1], scale: [0.7, 1.2], tilt: 0.09, tint: [0x3f7a26, 0x6f9a38], grass: true }
     ]
-  }
-,
+  },
 
   biblioteca: {
     id: 'biblioteca', label: 'La Biblioteca', fantasy: true,

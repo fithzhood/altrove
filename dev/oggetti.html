@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Altrove - oggetti</title>
+<style>
+  body { margin:0; background:#0b0d10; color:#aab; font:12px ui-monospace, monospace; }
+  #sheet { display:block; margin:0 auto; max-width:100%; }
+  #log { padding:8px 12px; white-space:pre-wrap; }
+</style>
+</head>
+<body>
+<canvas id="sheet"></canvas>
+<div id="log">costruisco...</div>
+<script type="module">
+/* Banco di prova per le geometrie di props.js. Serve alla stessa cosa a cui
+ * serve il bestiario per gli animali: guardarle ferme, su fondo neutro e con
+ * un metro accanto. Dentro la simulazione un oggetto e sempre di sguincio,
+ * mezzo coperto dall erba e alla luce sbagliata, e i difetti si scoprono
+ * troppo tardi.
+ *
+ *   ?only=hobbitHole        una sola geometria
+ *   ?only=a,b,c             piu geometrie
+ *   ?view=0..3              una vista sola (piu grande)
+ *   ?w=760&h=620            dimensione della cella
+ *   ?seed=7                 un altra variante casuale
+ */
+import * as THREE from '../vendor/three.module.js';
+import { PROPS, PROP_HEIGHT, buildProp, lin } from '../js/props.js?v=17';
+import { mulberry32 } from '../js/noise.js?v=17';
+
+const log = (m) => { document.getElementById('log').textContent += '\n' + m; };
+window.__ready = false;
+
+const q = new URLSearchParams(location.search);
+const ONLY = q.get('only');
+const SEED = parseInt(q.get('seed') || '3', 10);
+const TW = parseInt(q.get('w') || '300', 10), TH = parseInt(q.get('h') || '250', 10);
+
+const filtro = ONLY ? ONLY.split(',').map(s => s.trim()) : null;
+const names = Object.keys(PROPS).filter(n => !filtro || filtro.includes(n));
+
+const TUTTE_VISTE = [
+  { name: 'fronte', dir: [0.02, 0.16, -1] },     // il davanti dei modelli e -Z
+  { name: 'tre quarti', dir: [0.75, 0.40, -0.75] },
+  { name: 'fianco', dir: [1, 0.16, 0] },
+  { name: 'alto', dir: [0.15, 1, 0.15] }
+];
+const vSel = q.get('view');
+const VIEWS = vSel === null ? TUTTE_VISTE.slice(0, 3)
+                            : [TUTTE_VISTE[Math.max(0, Math.min(3, parseInt(vSel, 10)))]];
+
+const sheet = document.getElementById('sheet');
+sheet.width = TW * VIEWS.length;
+sheet.height = TH * names.length;
+const ctx = sheet.getContext('2d');
+
+const off = document.createElement('canvas');
+off.width = TW; off.height = TH;
+const renderer = new THREE.WebGLRenderer({ canvas: off, antialias: true });
+renderer.setPixelRatio(1);
+renderer.setSize(TW, TH, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x22262c);
+const key = new THREE.DirectionalLight(0xfff2e0, 2.8);
+key.position.set(0.55, 0.95, -0.75);        // da davanti-alto: la facciata va vista
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x9ab8d8, 0.9);
+fill.position.set(-0.8, 0.35, 0.6);
+scene.add(fill);
+scene.add(new THREE.HemisphereLight(0x8aa8cc, 0x3a3a34, 1.0));
+
+/* Un piano d appoggio: senza, non si capisce se una casa e sprofondata o se
+ * galleggia, che e l errore piu facile da fare e piu difficile da vedere. */
+const suolo = new THREE.Mesh(
+  new THREE.PlaneGeometry(400, 400),
+  new THREE.MeshStandardMaterial({ color: 0x3c4a2e, roughness: 1 })
+);
+suolo.rotation.x = -Math.PI / 2;
+scene.add(suolo);
+
+const mat = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.85 });
+const cam = new THREE.PerspectiveCamera(30, TW / TH, 0.01, 900);
+const holder = new THREE.Group();
+scene.add(holder);
+
+let row = 0;
+for (const name of names) {
+  let geo;
+  try {
+    geo = buildProp(name, mulberry32(SEED * 7919 + row * 131), lin(0x6a8a3a));
+  } catch (e) { log('SALTATO ' + name + ': ' + e.message); row++; continue; }
+  geo.computeBoundingBox();
+  const bb = geo.boundingBox;
+  const sz = bb.getSize(new THREE.Vector3());
+  const c = bb.getCenter(new THREE.Vector3());
+  const r = sz.length() * 0.5;
+
+  const mesh = new THREE.Mesh(geo, mat);
+  holder.clear();
+  holder.add(mesh);
+
+  VIEWS.forEach((V, ci) => {
+    const d = new THREE.Vector3(...V.dir).normalize();
+    const dist = r / Math.tan(cam.fov * Math.PI / 360) * 1.30;
+    cam.position.copy(c).addScaledVector(d, dist);
+    cam.lookAt(c);
+    cam.updateProjectionMatrix();
+    renderer.render(scene, cam);
+    ctx.drawImage(off, ci * TW, row * TH);
+    ctx.fillStyle = 'rgba(0,0,0,.62)';
+    ctx.fillRect(ci * TW, row * TH + TH - 17, TW, 17);
+    ctx.fillStyle = '#fff';
+    ctx.font = '11px ui-monospace, monospace';
+    ctx.fillText(ci === 0
+      ? `${name}  ${sz.x.toFixed(2)}x${sz.y.toFixed(2)}x${sz.z.toFixed(2)} m`
+      : V.name, ci * TW + 6, row * TH + TH - 5);
+    ctx.strokeStyle = 'rgba(255,255,255,.12)';
+    ctx.strokeRect(ci * TW + .5, row * TH + .5, TW - 1, TH - 1);
+  });
+  row++;
+}
+log('geometrie: ' + names.length + '  (seme ' + SEED + ')');
+window.__ready = true;
+</script>
+</body>
+</html>
