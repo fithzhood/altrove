@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=14';
-import { Fauna } from './fauna.js?v=14';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=15';
+import { Fauna } from './fauna.js?v=15';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=14';
-import { SkySystem } from './sky.js?v=14';
-import { FogSystem } from './fog.js?v=14';
-import { Engine } from './engine.js?v=14';
-import { Terrain } from './terrain.js?v=14';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=14';
-import { FirstPersonControls } from './controls.js?v=14';
-import { Scatter } from './scatter.js?v=14';
-import { Water } from './water.js?v=14';
-import { Precipitation } from './weather.js?v=14';
-import { City } from './city.js?v=14';
-import { Castle } from './castle.js?v=14';
-import { Waterfalls } from './waterfall.js?v=14';
-import { Library } from './library.js?v=14';
-import { clamp, lerp, saturate } from './noise.js?v=14';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=15';
+import { SkySystem } from './sky.js?v=15';
+import { FogSystem } from './fog.js?v=15';
+import { Engine } from './engine.js?v=15';
+import { Terrain } from './terrain.js?v=15';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=15';
+import { FirstPersonControls } from './controls.js?v=15';
+import { Scatter } from './scatter.js?v=15';
+import { Water } from './water.js?v=15';
+import { Precipitation } from './weather.js?v=15';
+import { City } from './city.js?v=15';
+import { Castle } from './castle.js?v=15';
+import { Waterfalls } from './waterfall.js?v=15';
+import { Library } from './library.js?v=15';
+import { clamp, lerp, saturate } from './noise.js?v=15';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -617,6 +617,89 @@ canvas.addEventListener('click', () => {
 });
 
 /* ------------------------------------------------------------------ *
+ * Joystick
+ *
+ * Chi gioca col joystick non ha il mouse in mano, quindi non puo nemmeno
+ * premere «Entra»: la schermata iniziale deve essere navigabile per intero.
+ * ------------------------------------------------------------------ */
+controls.onPadConnect = (id, attivo) => {
+  document.body.classList.toggle('has-pad', attivo);
+  if (attivo) toast('Joystick collegato');
+};
+
+function padCards() {
+  return Array.from(document.querySelectorAll('#start-biomes .biome'));
+}
+
+/* Quante schede stanno su una riga non e scritto da nessuna parte: dipende
+ * dalla larghezza della finestra. Si conta quante ne condividono la stessa
+ * quota verticale. */
+function padColonne() {
+  const c = padCards();
+  if (c.length < 2) return 1;
+  const y = c[0].offsetTop;
+  let n = 0;
+  while (n < c.length && c[n].offsetTop === y) n++;
+  return Math.max(1, n);
+}
+
+function padScegli(passo) {
+  const c = padCards();
+  if (!c.length) return;
+  const i = Math.max(0, c.findIndex(el => el.dataset.biome === state.biomeId));
+  const j = Math.max(0, Math.min(c.length - 1, i + passo));
+  if (j === i) return;
+  pickBiomeStart(c[j].dataset.biome);
+  c[j].scrollIntoView({ block: 'nearest' });
+}
+
+function padMeteo(passo) {
+  const i = WEATHERS.findIndex(w => w.id === state.weatherId);
+  const j = (i + passo + WEATHERS.length) % WEATHERS.length;
+  setWeather(WEATHERS[j].id);
+  toast(WEATHERS[j].label);
+}
+
+function padOra(passo) {
+  state.hour = (state.hour + passo + 24) % 24;
+  syncHourUI();
+  if (started) toast(fmtHour(state.hour));
+}
+
+controls.onPadPress = (nome) => {
+  if (!started) {
+    if (nome === 'conferma') { $('enter').click(); return; }
+    if (nome === 'sinistra') padScegli(-1);
+    else if (nome === 'destra') padScegli(1);
+    else if (nome === 'su') padScegli(-padColonne());
+    else if (nome === 'giu') padScegli(padColonne());
+    else if (nome === 'meteoGiu') padMeteo(-1);
+    else if (nome === 'meteoSu') padMeteo(1);
+    else if (nome === 'oraGiu') padOra(-1);
+    else if (nome === 'oraSu') padOra(1);
+    return;
+  }
+  /* In gioco le direzioni sono il movimento, non un menu: vanno ignorate qui,
+   * o si cambierebbe luogo camminando. I grilletti sono corsa e accovacciata,
+   * e valgono lo stesso. */
+  if (nome === 'volo') setFly(!state.fly);
+  else if (nome === 'pannello') togglePanel();
+  else if (nome === 'foto') setPhoto(!state.photo);
+  else if (nome === 'scatto') screenshot();
+  else if (nome === 'meteoGiu') padMeteo(-1);
+  else if (nome === 'meteoSu') padMeteo(1);
+  else if (nome === 'annulla') {
+    if (panelOpen) togglePanel(false);
+    else {
+      state.hudHidden = !state.hudHidden;
+      $('hud').classList.toggle('faded', state.hudHidden);
+      $('crosshair').classList.toggle('hidden', state.hudHidden);
+      $('panel-tab').classList.toggle('hide', state.hudHidden || panelOpen);
+    }
+  }
+};
+
+/* ------------------------------------------------------------------ *
  * Tasti
  * ------------------------------------------------------------------ */
 document.addEventListener('keydown', (e) => {
@@ -713,6 +796,7 @@ function frame(now) {
   if (dt > 0.25) dt = 0.25;
   state.time += dt;
 
+  controls.pollPad(dt);
   if (!started) { renderIdle(dt); return; }
   if (loadJob) { stepLoading(); }
 
@@ -843,6 +927,9 @@ function frame(now) {
 function renderIdle(dt) {
   engine.render(scene, camera, null, dt, { time: state.time });
 }
+
+/* Segnala alla guardia in altrove.html che i moduli sono partiti davvero. */
+window.__altroveBooted = true;
 
 bindUI();
 resize();

@@ -12,8 +12,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_SKY_LUT } from './sky.js?v=14';
-import { GLSL_NOISE } from './noise.js?v=14';
+import { GLSL_SKY_LUT } from './sky.js?v=15';
+import { GLSL_NOISE } from './noise.js?v=15';
 
 export class FogSystem {
   constructor() {

@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store">
 <meta name="description" content="Simulatore di luoghi esplorabili in prima persona">
 <title>Altrove</title>
-<link rel="stylesheet" href="altrove.css?v=14">
+<link rel="stylesheet" href="altrove.css?v=15">
 </head>
 <body>
 
@@ -271,6 +271,47 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=14"></script>
+<script type="module" src="js/main.js?v=15"></script>
+
+<!-- Guardia d'avvio. Aperto con doppio clic (file://) il browser blocca i
+     moduli ES per le regole di origine: main.js non parte affatto e resta il
+     guscio HTML muto. Senza questo avviso sembra che l'app sia rotta. -->
+<script>
+(function () {
+  function mostra(titolo, testo) {
+    var e = document.getElementById('start-error');
+    if (!e) return;
+    e.classList.remove('hidden');
+    e.innerHTML = '<b>' + titolo + '</b><br>' + testo;
+    var b = document.getElementById('enter');
+    if (b) b.disabled = true;
+  }
+  window.addEventListener('error', function (ev) {
+    if (window.__altroveBooted) return;
+    mostra('Qualcosa non ha caricato.',
+      (ev.message || 'errore sconosciuto') +
+      (ev.filename ? '<br><span style="opacity:.7">' + ev.filename + '</span>' : ''));
+  }, true);
+  /* Su file:// il blocco e immediato e definitivo: i moduli non partiranno
+     mai, quindi bastano pochi decimi. Su http invece i moduli sono venti piu
+     Three.js: dare troppo poco tempo farebbe comparire un allarme falso a
+     ogni connessione lenta. */
+  setTimeout(function () {
+    if (window.__altroveBooted || location.protocol !== 'file:') return;
+    mostra('Aprilo da un indirizzo web, non dal file.',
+      'Con doppio clic sul file il browser blocca i moduli JavaScript, e l’app ' +
+      'non parte. Vai su <a href="https://fithzhood.github.io/altrove/altrove.html" ' +
+      'style="color:#d9ac68">fithzhood.github.io/altrove/altrove.html</a>, oppure ' +
+      'lancia <code>python servi.py 8123</code> nella cartella e apri ' +
+      '<code>localhost:8123/altrove.html</code>.');
+  }, 1500);
+  setTimeout(function () {
+    if (window.__altroveBooted || location.protocol === 'file:') return;
+    mostra('L’app non si e avviata.',
+      'Ricarica tenendo premuto Maiusc. Se resta cosi, l’errore preciso e nella ' +
+      'console del browser.');
+  }, 12000);
+})();
+</script>
 </body>
 </html>
