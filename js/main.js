@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=15';
-import { Fauna } from './fauna.js?v=15';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=16';
+import { Fauna } from './fauna.js?v=16';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=15';
-import { SkySystem } from './sky.js?v=15';
-import { FogSystem } from './fog.js?v=15';
-import { Engine } from './engine.js?v=15';
-import { Terrain } from './terrain.js?v=15';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=15';
-import { FirstPersonControls } from './controls.js?v=15';
-import { Scatter } from './scatter.js?v=15';
-import { Water } from './water.js?v=15';
-import { Precipitation } from './weather.js?v=15';
-import { City } from './city.js?v=15';
-import { Castle } from './castle.js?v=15';
-import { Waterfalls } from './waterfall.js?v=15';
-import { Library } from './library.js?v=15';
-import { clamp, lerp, saturate } from './noise.js?v=15';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=16';
+import { SkySystem } from './sky.js?v=16';
+import { FogSystem } from './fog.js?v=16';
+import { Engine } from './engine.js?v=16';
+import { Terrain } from './terrain.js?v=16';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=16';
+import { FirstPersonControls } from './controls.js?v=16';
+import { Scatter } from './scatter.js?v=16';
+import { Water } from './water.js?v=16';
+import { Precipitation } from './weather.js?v=16';
+import { City } from './city.js?v=16';
+import { Castle } from './castle.js?v=16';
+import { Waterfalls } from './waterfall.js?v=16';
+import { Library } from './library.js?v=16';
+import { clamp, lerp, saturate } from './noise.js?v=16';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -627,6 +627,28 @@ controls.onPadConnect = (id, attivo) => {
   if (attivo) toast('Joystick collegato');
 };
 
+/* Un indicatore che si spiega da solo. Con un joystick in mano non si ha
+ * modo di sapere se l app lo vede: senza questa riga l unica diagnosi
+ * possibile e «non funziona». Mostra anche i valori vivi delle due leve,
+ * cosi si vede subito se finiscono sugli assi che Altrove legge. */
+function padLine() {
+  const el = $('pad-line');
+  const p = controls.pad;
+  if (!p) { el.classList.add('hidden'); return; }
+  el.classList.remove('hidden');
+  const a = p.axes || [];
+  const n = (v) => (v || 0).toFixed(2);
+  const std = p.mapping === 'standard';
+  const nome = String(p.id || '').replace(/[<>]/g, '').slice(0, 46);
+  el.innerHTML =
+    'Joystick: <b>' + nome + '</b> · mappatura <span class="' + (std ? 'ok' : 'no') + '">' +
+    (p.mapping || 'non standard') + '</span><br>' +
+    'leva sinistra ' + n(a[0]) + ', ' + n(a[1]) +
+    ' · leva destra ' + n(a[2]) + ', ' + n(a[3]) +
+    ' · assi ' + a.length + ', tasti ' + (p.buttons ? p.buttons.length : 0) +
+    (std ? '' : ' — se muovendo le leve questi numeri non cambiano, dimmelo');
+}
+
 function padCards() {
   return Array.from(document.querySelectorAll('#start-biomes .biome'));
 }
@@ -797,7 +819,7 @@ function frame(now) {
   state.time += dt;
 
   controls.pollPad(dt);
-  if (!started) { renderIdle(dt); return; }
+  if (!started) { padLine(); renderIdle(dt); return; }
   if (loadJob) { stepLoading(); }
 
   // ora del giorno

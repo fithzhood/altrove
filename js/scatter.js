@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=15';
-import { buildProp, PROP_HEIGHT, lin } from './props.js?v=15';
-import { GLSL_NOISE } from './noise.js?v=15';
-import { CITY } from './world.js?v=15';
+import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=16';
+import { buildProp, PROP_HEIGHT, lin } from './props.js?v=16';
+import { GLSL_NOISE } from './noise.js?v=16';
+import { CITY } from './world.js?v=16';
 
 const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();

@@ -29,8 +29,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { mulberry32, clamp, lerp } from './noise.js?v=15';
-import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=15';
+import { mulberry32, clamp, lerp } from './noise.js?v=16';
+import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=16';
 
 /* Codici delle parti: il vertex shader li legge come numeri, quindi devono
  * restare identici fra geometria e shader. */
