@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=18';
-import { Fauna } from './fauna.js?v=18';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=19';
+import { Fauna } from './fauna.js?v=19';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=18';
-import { SkySystem } from './sky.js?v=18';
-import { FogSystem } from './fog.js?v=18';
-import { Engine } from './engine.js?v=18';
-import { Terrain } from './terrain.js?v=18';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=18';
-import { FirstPersonControls } from './controls.js?v=18';
-import { Scatter } from './scatter.js?v=18';
-import { Water } from './water.js?v=18';
-import { Precipitation } from './weather.js?v=18';
-import { City } from './city.js?v=18';
-import { Castle } from './castle.js?v=18';
-import { Waterfalls } from './waterfall.js?v=18';
-import { Library } from './library.js?v=18';
-import { clamp, lerp, saturate } from './noise.js?v=18';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=19';
+import { SkySystem } from './sky.js?v=19';
+import { FogSystem } from './fog.js?v=19';
+import { Engine } from './engine.js?v=19';
+import { Terrain } from './terrain.js?v=19';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=19';
+import { FirstPersonControls } from './controls.js?v=19';
+import { Scatter } from './scatter.js?v=19';
+import { Water } from './water.js?v=19';
+import { Precipitation } from './weather.js?v=19';
+import { City } from './city.js?v=19';
+import { Castle } from './castle.js?v=19';
+import { Waterfalls } from './waterfall.js?v=19';
+import { Library } from './library.js?v=19';
+import { clamp, lerp, saturate } from './noise.js?v=19';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -422,15 +422,19 @@ function updatePlaceLabel() {
 }
 
 /* ---- collegamento dei controlli ---- */
+/* `apply` riceve un secondo argomento che dice se la chiamata viene da una
+ * mano umana o dal collegamento iniziale. Serve al cursore del fuoco, che
+ * deve spegnere l automatico solo se lo muove qualcuno: chiamato all avvio lo
+ * spegneva sempre, e il fuoco automatico non partiva mai. */
 function bindSlider(id, valId, apply, fmt) {
   const el = $(id);
-  const upd = () => {
+  const upd = (daUtente) => {
     const v = parseFloat(el.value);
     if (valId) $(valId).textContent = fmt ? fmt(v) : v;
-    apply(v);
+    apply(v, daUtente);
   };
-  el.addEventListener('input', upd);
-  upd();
+  el.addEventListener('input', () => upd(true));
+  upd(false);
 }
 
 function bindUI() {
@@ -507,7 +511,13 @@ function bindUI() {
   bindSlider('grain', 'grain-val', v => S.grain = v / 1000, v => Math.round(v));
   bindSlider('chromatic', 'chromatic-val', v => S.chromatic = v / 100, v => Math.round(v) + '%');
   $('dof').addEventListener('change', e => S.dof = e.target.checked ? 1 : 0);
-  bindSlider('focus', 'focus-val', v => S.focusDist = v, v => Math.round(v) + ' m');
+  /* Toccare il cursore del fuoco spegne l automatico: altrimenti i due si
+   * contendono lo stesso numero e il cursore sembra rotto. */
+  bindSlider('focus', 'focus-val', (v, daUtente) => {
+    S.focusDist = v;
+    if (daUtente && S.autofocus) { S.autofocus = false; $('autofocus').checked = false; }
+  }, v => Math.round(v) + ' m');
+  $('autofocus').addEventListener('change', e => S.autofocus = e.target.checked);
   bindSlider('aperture', 'aperture-val', v => S.aperture = v, v => v.toFixed(2));
   $('shot').addEventListener('click', screenshot);
 
@@ -735,14 +745,57 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'KeyC') screenshot();
 });
 
+/* Come stavano le impostazioni prima di entrare in modalita foto. Senza
+ * questo, uscendo si rileggeva la casella che la modalita foto aveva appena
+ * scritto: la profondita di campo restava accesa per sempre e non si tornava
+ * piu com era. */
+let fotoPrima = null;
+
 function setPhoto(on) {
   state.photo = on;
   const S = engine.settings;
-  S.dof = on ? (parseFloat($('aperture').value) > 0 ? 1 : 0) : ($('dof').checked ? 1 : 0);
+  if (on) {
+    if (!fotoPrima) fotoPrima = { dof: !!$('dof').checked, auto: !!$('autofocus').checked };
+    $('dof').checked = true; S.dof = 1;
+    $('autofocus').checked = true; S.autofocus = true;
+  } else if (fotoPrima) {
+    $('dof').checked = fotoPrima.dof; S.dof = fotoPrima.dof ? 1 : 0;
+    $('autofocus').checked = fotoPrima.auto; S.autofocus = fotoPrima.auto;
+    fotoPrima = null;
+  }
   $('hud').classList.toggle('faded', on || state.hudHidden);
   $('panel-tab').classList.toggle('hide', on || panelOpen);
-  if (on) { $('dof').checked = true; S.dof = 1; }
   toast(on ? 'Modalità foto' : 'Modalità foto disattivata');
+}
+
+/* Messa a fuoco automatica: si tira un raggio dalla camera nella direzione
+ * dello sguardo e si cerca dove incontra il terreno. Sul campo di altezze
+ * costa qualche decina di valutazioni e non serve leggere la profondita dalla
+ * GPU, che invece bloccherebbe la pipeline ogni fotogramma.
+ *
+ * Guardando il cielo non c e intersezione: allora si mette a fuoco lontano, ed
+ * e giusto cosi — il paesaggio resta nitido. */
+const _afDir = new THREE.Vector3();
+const _afP = new THREE.Vector3();
+function distanzaDiFuoco() {
+  if (!world) return 60;
+  _afDir.set(0, 0, -1).applyQuaternion(camera.quaternion);
+  let t = 0.8;
+  for (let i = 0; i < 56 && t < 520; i++) {
+    _afP.copy(camera.position).addScaledVector(_afDir, t);
+    if (_afP.y <= world.height(_afP.x, _afP.z)) {
+      // bisezione fra l ultimo passo libero e questo
+      let lo = t / 1.10 - 0.3, hi = t;
+      for (let k = 0; k < 7; k++) {
+        const mid = (lo + hi) * 0.5;
+        _afP.copy(camera.position).addScaledVector(_afDir, mid);
+        if (_afP.y <= world.height(_afP.x, _afP.z)) hi = mid; else lo = mid;
+      }
+      return Math.max(1, hi);
+    }
+    t = t * 1.10 + 0.35;
+  }
+  return 520;
 }
 
 function screenshot() {
@@ -831,6 +884,17 @@ function frame(now) {
   controls.bobAmountLimit = state.headbob ? 1 : 0;
   if (!state.headbob) controls.bobAmount = 0;
   controls.update(dt);
+
+  /* La messa a fuoco insegue lo sguardo invece di stare inchiodata a un
+   * numero: e la differenza fra «sfoca tutto» e «sfoca quello che non stai
+   * guardando». */
+  if (engine.settings.dof > 0.001 && engine.settings.autofocus) {
+    const S = engine.settings;
+    const meta = distanzaDiFuoco();
+    S.focusDist += (meta - S.focusDist) * (1 - Math.exp(-5.5 * dt));
+    const sl = $('focus');
+    if (sl) { sl.value = Math.round(S.focusDist); $('focus-val').textContent = Math.round(S.focusDist) + ' m'; }
+  }
 
   const biome = getBiome(state.biomeId);
   atmo.update({

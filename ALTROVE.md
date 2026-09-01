@@ -201,6 +201,19 @@ C salva immagine · Esc liberare il mouse
   `setPixelRatio`, o si disegna in un angolo della tela.
 - **`onBeforeCompile` senza `customProgramCacheKey`** fa riusare a three il
   programma compilato di un altro materiale con iniezioni diverse.
+- **La modalità foto non deve scrivere sui comandi dell'utente.** Scriveva
+  `dof.checked = true` entrando, e uscendo rileggeva quella stessa casella: la
+  profondità di campo restava accesa per sempre. Lo stato di partenza va
+  memorizzato e rimesso.
+- **`bindSlider` chiama `apply` anche in fase di collegamento.** Se quella
+  funzione ha un effetto collaterale (spegnere il fuoco automatico perché
+  «l'utente ha mosso il cursore»), all'avvio scatta da sola. Ora `apply` riceve
+  un secondo argomento che distingue la mano umana dall'inizializzazione.
+- **Il cerchio di confusione deve dipendere dalla distanza di messa a fuoco.**
+  Con `c = A·(d−fuoco)/d` lo sfocato all'infinito vale sempre l'apertura, e
+  mettere a fuoco a dodici metri cancella l'intero paesaggio. In un obiettivo
+  vero c'è un `/(fuoco − f)` che fa sfocare *meno* quando si mette a fuoco
+  lontano.
 - **Il server di sviluppo deve vietare la cache**, o si collauda codice vecchio
   credendo di collaudare quello nuovo.
 - **La taglia di un animale va misurata sull'asse giusto.** Un uccello ad ali

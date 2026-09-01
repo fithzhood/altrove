@@ -63,7 +63,7 @@ export class Engine {
       autoMin: 0.05, autoMax: 20.0,
       vignette: 0.42, grain: 0.030, chromatic: 0.55,
       contrast: 1.0, saturation: 1.0, lift: 0.0,
-      sunGlare: 1.0, dof: 0, focusDist: 12, aperture: 0.6, fxaa: true
+      sunGlare: 1.0, dof: 0, focusDist: 40, aperture: 0.5, autofocus: true, fxaa: true
     };
 
     this._buildTargets(2, 2);
@@ -277,20 +277,27 @@ export class Engine {
         tSrc: { value: null }, tDepth: { value: null },
         uTexel: { value: new THREE.Vector2() },
         uNear: { value: 0.1 }, uFar: { value: 4000 },
-        uFocus: { value: 12 }, uAperture: { value: 0.6 }, uMaxCoc: { value: 22 }
+        uFocus: { value: 40 }, uAperture: { value: 0.5 }, uMaxCoc: { value: 22 },
+        uFocusK: { value: 2.2 }
       },
       vertexShader: FS_VERT,
       fragmentShader: `precision highp float;
         #define texture2D texture
         in vec2 vUv; out vec4 fragColor;
         uniform sampler2D tSrc, tDepth; uniform vec2 uTexel;
-        uniform float uNear, uFar, uFocus, uAperture, uMaxCoc;
+        uniform float uNear, uFar, uFocus, uAperture, uMaxCoc, uFocusK;
         float linDepth(vec2 uv){
           float z = texture2D(tDepth, uv).x * 2.0 - 1.0;
           return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
         }
         float coc(float d){
-          float c = uAperture * (d - uFocus) / max(d, 0.01);
+          /* In un obiettivo vero il cerchio di confusione vale
+           *     c = A * f * |d - fuoco| / (d * (fuoco - f))
+           * e quel «fuoco» al denominatore e tutto: mettendo a fuoco lontano
+           * si sfoca MENO. La formula di prima non ce l aveva, cosi lo
+           * sfocato all infinito valeva sempre l apertura e mettere a fuoco a
+           * dodici metri cancellava l intero paesaggio. */
+          float c = uAperture * uFocusK * (d - uFocus) / (max(d, 0.01) * max(uFocus, 0.5));
           return clamp(c, -1.0, 1.0);
         }
         void main(){
@@ -614,6 +621,7 @@ export class Engine {
       d.uNear.value = camera.near; d.uFar.value = camera.far;
       d.uFocus.value = S.focusDist;
       d.uAperture.value = S.aperture * S.dof;
+      d.uFocusK.value = 2.2;
       d.uMaxCoc.value = 18 * (H / 1080);
       this._blit(this.dofScene, this.dofRT);
       colorTex = this.dofRT.texture;
