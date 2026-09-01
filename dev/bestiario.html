@@ -26,14 +26,20 @@ window.__ready = false;
 const q = new URLSearchParams(location.search);
 const ONLY = q.get('only');
 const POSE = parseFloat(q.get('pose') || '0');     // 0..1 fase del battito
-const TW = 300, TH = 230;
+const TW = parseInt(q.get('w') || '300', 10), TH = parseInt(q.get('h') || '230', 10);
 
 const names = Object.keys(CREATURES).filter(n => !ONLY || n === ONLY);
-const VIEWS = [
+const TUTTE_VISTE = [
   { name: 'fianco', dir: [1, 0.12, 0] },
   { name: 'alto', dir: [0.15, 1, 0.15] },
-  { name: 'tre quarti', dir: [0.75, 0.45, 0.75] }
+  { name: 'tre quarti', dir: [0.75, 0.45, 0.75] },
+  { name: 'fronte', dir: [0.02, 0.10, -1] }   // i modelli guardano verso -Z
 ];
+/* ?view=N tiene una sola vista: il foglio a tre colonne viene ridotto per
+ * stare nella pagina, e su un modello alto un metro non si giudica niente. */
+const vSel = q.get('view');
+const VIEWS = vSel === null ? TUTTE_VISTE.slice(0, 3)
+                            : [TUTTE_VISTE[Math.max(0, Math.min(3, parseInt(vSel, 10)))]];
 
 const sheet = document.getElementById('sheet');
 sheet.width = TW * VIEWS.length;

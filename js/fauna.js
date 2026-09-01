@@ -29,8 +29,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { mulberry32, clamp, lerp } from './noise.js?v=16';
-import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=16';
+import { mulberry32, clamp, lerp } from './noise.js?v=17';
+import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=17';
 
 /* Codici delle parti: il vertex shader li legge come numeri, quindi devono
  * restare identici fra geometria e shader. */
@@ -493,6 +493,196 @@ function jellyMesh(rnd, tint) {
  * Registro. axis dice su quale asse si normalizza la taglia:
  * 'span' apertura alare (X), 'len' lunghezza (Z), 'h' altezza (Y).
  * ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ *
+ * HOBBIT — un bipede costruito sull impalcatura dei quadrupedi
+ *
+ * Le «zampe anteriori» diventano braccia. Non e un trucco: lo shader manda le
+ * diagonali in fase (anteriore sinistra con posteriore destra), che e
+ * esattamente il modo in cui cammina un uomo — braccio destro avanti con
+ * gamba sinistra. Non serve una riga di shader in piu.
+ *
+ * Quello che lo rende riconoscibile a venti metri non e la faccia, che a
+ * quella distanza e due pixel: e la proporzione. Basso e tozzo, testa grossa
+ * come quella di un bambino rispetto al corpo, gambe corte, e i piedi nudi
+ * enormi. Se si sbaglia quella, esce un uomo piccolo, che e un altra cosa.
+ * ------------------------------------------------------------------ */
+function hobbitMesh(rnd, tint) {
+  const R = new Rig(0.020, 0.010);
+  const B = R.B;
+  const H = 1.0;
+
+  const panciotto = tint;
+  const panciottoScuro = cscale(tint, 0.60);
+  const camicia = mixc(lin(0xefe4cc), tint, 0.08);
+  const brache = lin([0x6a5236, 0x55452c, 0x746048, 0x4a5a3a][Math.floor(rnd() * 4)]);
+  const bracheScure = cscale(brache, 0.72);
+  const pelle = mixc(lin(0xd9a878), lin(0xc08a5e), rnd());
+  const pelleScura = cscale(pelle, 0.74);
+  const capelli = lin([0x6a4326, 0x3a2616, 0x8a5c2e, 0x4a3a2a][Math.floor(rnd() * 4)]);
+  const cuoio = lin(0x4a3524);
+
+  /* Il tronco e un ellissoide solo, non due palle sovrapposte: due palle
+   * lasciano un gradino a meta pancia che si vede da lontano. */
+  const cyT = H * 0.545, ryT = H * 0.176, rxT = H * 0.136, rzT = H * 0.116;
+  // mezza larghezza del tronco a una data quota: serve per attaccarci le membra
+  const largh = (y) => {
+    const u = (y - cyT) / ryT;
+    return u * u >= 1 ? 0 : rxT * Math.sqrt(1 - u * u);
+  };
+  // e quanto e profondo, che non e lo stesso numero: serve ai bottoni
+  const prof = (y) => {
+    const u = (y - cyT) / ryT;
+    return u * u >= 1 ? 0 : rzT * Math.sqrt(1 - u * u);
+  };
+
+  R.begin(P_BODY);
+  blob(B, {
+    cx: 0, cy: cyT, cz: 0, rx: rxT, ry: ryT, rz: rzT,
+    level: 2, rough: 0.055, rnd, colTop: panciotto, colBot: panciottoScuro, flex: 0
+  });
+  /* Torace: e questo che da la larghezza alle spalle. Senza, all altezza
+   * delle spalle il tronco e gia quasi finito e le braccia restano per aria
+   * a mezzo palmo dal corpo — che e esattamente come sembrava prima. */
+  const ySpalla = H * 0.672;
+  blob(B, {
+    cx: 0, cy: ySpalla - H * 0.012, cz: -H * 0.004,
+    rx: H * 0.126, ry: H * 0.082, rz: H * 0.102,
+    level: 2, rough: 0.05, rnd, colTop: panciotto, colBot: panciottoScuro, flex: 0
+  });
+  // colletto della camicia
+  blob(B, {
+    cx: 0, cy: H * 0.726, cz: -H * 0.006, rx: H * 0.076, ry: H * 0.044, rz: H * 0.066,
+    level: 1, rough: 0.04, rnd, colTop: camicia, colBot: cscale(camicia, 0.76), flex: 0
+  });
+  // cintura, all altezza in cui il tronco e piu largo
+  blob(B, {
+    cx: 0, cy: H * 0.432, cz: 0,
+    rx: largh(H * 0.432) * 1.06, ry: H * 0.024, rz: rzT * 0.96,
+    level: 1, rough: 0.02, rnd, colTop: cuoio, colBot: cscale(cuoio, 0.62), flex: 0
+  });
+  // bottoni del panciotto
+  for (let i = 0; i < 3; i++) {
+    const y = H * (0.492 + i * 0.062);
+    blob(B, {
+      /* Sulla superficie, non a un raggio fisso: il tronco e un ellissoide e
+       * verso le estremita e piu stretto. Con la profondita massima i bottoni
+       * piu alti e piu bassi restavano sospesi fuori dal panciotto. */
+      cx: 0, cy: y, cz: -prof(y) * 0.92, rx: H * 0.013, ry: H * 0.013, rz: H * 0.010,
+      level: 0, rough: 0, rnd, colTop: lin(0xd8c088), colBot: lin(0x8a7448), flex: 0
+    });
+  }
+
+  /* --- testa: grossa come quella di un bambino. Perno al collo. */
+  const yCollo = H * 0.752;
+  R.begin(P_HEAD, [0, yCollo, 0]);
+  tube(B, [0, yCollo - H * 0.034, 0], [0, yCollo + H * 0.026, -H * 0.004],
+    H * 0.042, H * 0.036, pelleScura, pelle, 8);
+  const yTesta = H * 0.848;
+  blob(B, {
+    cx: 0, cy: yTesta, cz: -H * 0.004, rx: H * 0.094, ry: H * 0.100, rz: H * 0.093,
+    level: 2, rough: 0.035, rnd, colTop: pelle, colBot: pelleScura, flex: 0
+  });
+  // riccioli: ciuffi separati, non una calotta
+  for (let i = 0; i < 8; i++) {
+    const a = (i / 8) * Math.PI * 2 + rnd() * 0.5;
+    const rr = H * (0.050 + rnd() * 0.020);
+    blob(B, {
+      cx: Math.cos(a) * H * 0.062, cy: yTesta + H * (0.046 + rnd() * 0.026),
+      cz: Math.sin(a) * H * 0.060 + H * 0.012,
+      rx: rr, ry: rr * 0.84, rz: rr,
+      level: 1, rough: 0.26, rnd,
+      colTop: mixc(capelli, [1, 1, 1], 0.16), colBot: cscale(capelli, 0.58), flex: 0
+    });
+  }
+  /* Occhi e naso. A venti metri non si vedono, ma un hobbit gli si passa
+   * accanto: una testa senza faccia, da vicino, e la cosa che rovina tutto. */
+  const occhio = lin(0x241a12);
+  for (const s of [-1, 1]) {
+    blob(B, {
+      cx: s * H * 0.036, cy: yTesta + H * 0.012, cz: -H * 0.082,
+      rx: H * 0.014, ry: H * 0.016, rz: H * 0.010,
+      level: 0, rough: 0, rnd, colTop: occhio, colBot: occhio, flex: 0
+    });
+    // sopracciglio
+    blob(B, {
+      cx: s * H * 0.038, cy: yTesta + H * 0.036, cz: -H * 0.078,
+      rx: H * 0.020, ry: H * 0.007, rz: H * 0.010,
+      level: 0, rough: 0, rnd, colTop: cscale(capelli, 0.8), colBot: cscale(capelli, 0.5), flex: 0
+    });
+  }
+  blob(B, {
+    cx: 0, cy: yTesta - H * 0.006, cz: -H * 0.088,
+    rx: H * 0.017, ry: H * 0.019, rz: H * 0.017,
+    level: 1, rough: 0.05, rnd, colTop: mixc(pelle, [1, 1, 1], 0.10), colBot: pelleScura, flex: 0
+  });
+
+  for (const s of [-1, 1]) {
+    const o = [[s * H * 0.089, yTesta + H * 0.010, H * 0.006],
+               [s * H * 0.116, yTesta + H * 0.038, H * 0.016],
+               [s * H * 0.091, yTesta - H * 0.030, H * 0.012]];
+    B.tri(o[0], o[1], o[2], pelle, pelleScura, pelleScura, 0, 0, 0);
+    B.tri(o[2], o[1], o[0], pelleScura, pelleScura, pelle, 0, 0, 0);
+  }
+
+  /* --- braccia sulle «anteriori». La spalla va INFILATA nel torace, non
+   * appoggiata al suo bordo, o resta un dito di vuoto in mezzo. */
+  for (const s of [-1, 1]) {
+    const perno = [s * H * 0.098, ySpalla, 0];
+    R.begin(s < 0 ? P_LEG_FL : P_LEG_FR, perno);
+    blob(B, {
+      cx: s * H * 0.104, cy: ySpalla - H * 0.004, cz: -H * 0.004,
+      rx: H * 0.050, ry: H * 0.050, rz: H * 0.048,
+      level: 1, rough: 0.06, rnd, colTop: camicia, colBot: cscale(camicia, 0.74), flex: 0
+    });
+    const gomito = [s * H * 0.128, H * 0.545, -H * 0.010];
+    tube(B, [s * H * 0.086, ySpalla + H * 0.010, 0], gomito, H * 0.049, H * 0.037,
+      camicia, cscale(camicia, 0.82), 7);
+
+    R.begin(s < 0 ? P_SHIN_FL : P_SHIN_FR, gomito);
+    const mano = [s * H * 0.126, H * 0.412, -H * 0.028];
+    tube(B, [gomito[0], gomito[1] + H * 0.020, gomito[2]], mano, H * 0.037, H * 0.030,
+      pelle, pelleScura, 7);
+    blob(B, {
+      cx: mano[0], cy: mano[1] - H * 0.016, cz: mano[2] - H * 0.008,
+      rx: H * 0.036, ry: H * 0.040, rz: H * 0.031,
+      level: 1, rough: 0.10, rnd, colTop: pelle, colBot: pelleScura, flex: 0
+    });
+  }
+
+  /* --- gambe corte e tozze, e i piedi. I piedi sono il personaggio: sono
+   * loro a dire «hobbit» invece di «uomo basso», e vanno grandi davvero. */
+  for (const s of [-1, 1]) {
+    const yAnca = H * 0.408;
+    const perno = [s * H * 0.066, yAnca, 0];
+    R.begin(s < 0 ? P_LEG_BL : P_LEG_BR, perno);
+    const ginocchio = [s * H * 0.074, H * 0.206, 0];
+    tube(B, [s * H * 0.062, yAnca + H * 0.045, 0], ginocchio, H * 0.072, H * 0.057,
+      brache, bracheScure, 8);
+
+    R.begin(s < 0 ? P_SHIN_BL : P_SHIN_BR, ginocchio);
+    const orlo = [s * H * 0.076, H * 0.148, 0];
+    tube(B, [ginocchio[0], ginocchio[1] + H * 0.022, ginocchio[2]], orlo,
+      H * 0.059, H * 0.052, bracheScure, brache, 8);
+    const caviglia = [s * H * 0.078, H * 0.044, H * 0.006];
+    tube(B, orlo, caviglia, H * 0.045, H * 0.033, pelle, pelleScura, 7);
+    blob(B, {
+      /* Grande, ma non da pagliaccio: a 0,108 il piede era lungo un quinto
+       * dell altezza — su un uomo sarebbe un quaranta di scarpe. */
+      cx: s * H * 0.078, cy: H * 0.031, cz: -H * 0.038,
+      rx: H * 0.052, ry: H * 0.028, rz: H * 0.082,
+      level: 1, rough: 0.08, rnd, colTop: pelle, colBot: pelleScura, flex: 0
+    });
+    // peluria sul dorso del piede
+    blob(B, {
+      cx: s * H * 0.078, cy: H * 0.050, cz: -H * 0.020,
+      rx: H * 0.042, ry: H * 0.014, rz: H * 0.048,
+      level: 1, rough: 0.30, rnd, colTop: capelli, colBot: cscale(capelli, 0.62), flex: 0
+    });
+  }
+
+  return R.toGeometry();
+}
+
 export const CREATURES = {
   bird: { build: birdMesh, size: 0.50, axis: 'span', mode: 'flock', flap: 0.72, gait: 9.5, speed: [6, 10], glideBias: 0.18 },
   raptor: { build: raptorMesh, size: 1.60, axis: 'span', mode: 'flock', flap: 0.46, gait: 2.0, speed: [7, 12], glideBias: 0.82 },
@@ -523,6 +713,12 @@ export const CREATURES = {
       bodyR: 0.215, bodyL: 0.44, bodyY: 0.68,
       legR: 0.105, knee: 0.34, tail: 1.05, tailR: 0.100, bob: 0.030
     }), size: 3.8, axis: 'h', mode: 'ground', flap: 0.46, gait: 3.0
+  },
+  /* Un hobbit e alto poco piu di un metro: e la taglia, non i dettagli, a
+   * dire chi e. Il passo e corto e svelto, non lento come quello di un uomo. */
+  hobbit: {
+    build: hobbitMesh,
+    size: 1.12, axis: 'h', mode: 'ground', flap: 0.52, gait: 6.2, speed: [0.7, 1.4]
   },
   mammoth: {
     build: (r, t) => quadrupedMesh(r, t, {

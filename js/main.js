@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=16';
-import { Fauna } from './fauna.js?v=16';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=17';
+import { Fauna } from './fauna.js?v=17';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=16';
-import { SkySystem } from './sky.js?v=16';
-import { FogSystem } from './fog.js?v=16';
-import { Engine } from './engine.js?v=16';
-import { Terrain } from './terrain.js?v=16';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=16';
-import { FirstPersonControls } from './controls.js?v=16';
-import { Scatter } from './scatter.js?v=16';
-import { Water } from './water.js?v=16';
-import { Precipitation } from './weather.js?v=16';
-import { City } from './city.js?v=16';
-import { Castle } from './castle.js?v=16';
-import { Waterfalls } from './waterfall.js?v=16';
-import { Library } from './library.js?v=16';
-import { clamp, lerp, saturate } from './noise.js?v=16';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=17';
+import { SkySystem } from './sky.js?v=17';
+import { FogSystem } from './fog.js?v=17';
+import { Engine } from './engine.js?v=17';
+import { Terrain } from './terrain.js?v=17';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=17';
+import { FirstPersonControls } from './controls.js?v=17';
+import { Scatter } from './scatter.js?v=17';
+import { Water } from './water.js?v=17';
+import { Precipitation } from './weather.js?v=17';
+import { City } from './city.js?v=17';
+import { Castle } from './castle.js?v=17';
+import { Waterfalls } from './waterfall.js?v=17';
+import { Library } from './library.js?v=17';
+import { clamp, lerp, saturate } from './noise.js?v=17';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -601,7 +601,6 @@ $('enter').addEventListener('click', () => {
   $('start').classList.add('leaving');
   setTimeout(() => $('start').classList.add('hidden'), 520);
   $('hud').classList.remove('hidden');
-  $('crosshair').classList.remove('hidden');
   controls.enabled = true;
   rebuildWithLoading();
   setTimeout(() => controls.requestLock(), 120);
@@ -715,7 +714,6 @@ controls.onPadPress = (nome) => {
     else {
       state.hudHidden = !state.hudHidden;
       $('hud').classList.toggle('faded', state.hudHidden);
-      $('crosshair').classList.toggle('hidden', state.hudHidden);
       $('panel-tab').classList.toggle('hide', state.hudHidden || panelOpen);
     }
   }
@@ -731,7 +729,6 @@ document.addEventListener('keydown', (e) => {
   else if (e.code === 'KeyH') {
     state.hudHidden = !state.hudHidden;
     $('hud').classList.toggle('faded', state.hudHidden);
-    $('crosshair').classList.toggle('hidden', state.hudHidden);
     $('panel-tab').classList.toggle('hide', state.hudHidden || panelOpen);
   }
   else if (e.code === 'KeyP') setPhoto(!state.photo);
@@ -743,7 +740,6 @@ function setPhoto(on) {
   const S = engine.settings;
   S.dof = on ? (parseFloat($('aperture').value) > 0 ? 1 : 0) : ($('dof').checked ? 1 : 0);
   $('hud').classList.toggle('faded', on || state.hudHidden);
-  $('crosshair').classList.toggle('hidden', on || state.hudHidden);
   $('panel-tab').classList.toggle('hide', on || panelOpen);
   if (on) { $('dof').checked = true; S.dof = 1; }
   toast(on ? 'Modalità foto' : 'Modalità foto disattivata');

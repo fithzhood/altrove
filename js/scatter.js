@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=16';
-import { buildProp, PROP_HEIGHT, lin } from './props.js?v=16';
-import { GLSL_NOISE } from './noise.js?v=16';
-import { CITY } from './world.js?v=16';
+import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=17';
+import { buildProp, PROP_HEIGHT, lin } from './props.js?v=17';
+import { GLSL_NOISE } from './noise.js?v=17';
+import { CITY } from './world.js?v=17';
 
 const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -67,8 +67,9 @@ export class Scatter {
   }
 
   /* ------------------------------------------------------------------ */
-  _material(foliage, emissive) {
-    const key = (foliage ? 'f' : 's') + '|' + (emissive > 0 ? emissive.toFixed(2) : '0');
+  _material(foliage, emissive, mask) {
+    const key = (foliage ? 'f' : 's') + '|' + (emissive > 0 ? emissive.toFixed(2) : '0')
+              + (mask ? '|m' : '');
     if (this.matCache.has(key)) return this.matCache.get(key);
 
     const mat = new THREE.MeshStandardMaterial({
@@ -84,6 +85,7 @@ export class Scatter {
     mat.onBeforeCompile = (shader) => {
       for (const k in U) shader.uniforms[k] = U[k];
       shader.uniforms.uEmissive = { value: emi };
+      shader.uniforms.uEmiMask = { value: mask ? 1.0 : 0.0 };
       shader.uniforms.uTranslucency = { value: foliage ? 1.0 : 0.0 };
 
       shader.vertexShader = shader.vertexShader
@@ -91,7 +93,7 @@ export class Scatter {
           in float aFlex;
           out float vFlex;
           out vec3 vWorldNrm;
-          uniform float uTime, uWindAmp, uWindSpeed;
+          uniform float uTime, uWindAmp, uWindSpeed, uEmiMask;
           uniform vec2 uWindDir;
           ${GLSL_NOISE}`)
         .replace('#include <begin_vertex>', `#include <begin_vertex>
@@ -118,7 +120,7 @@ export class Scatter {
             float sway = sin(ph) * 0.6 + sin(ph * 2.31 + 1.7) * 0.26 + sin(ph * 0.57) * 0.30;
             float flutter = sin(ph * 6.3 + iw.x * 0.7) * 0.16;
             float amt = uWindAmp * gust * (sway + flutter);
-            float w = aFlex * aFlex;
+            float w = aFlex * aFlex * (1.0 - uEmiMask);
             transformed.xz += uWindDir * amt * w;
             transformed.y -= abs(amt) * w * 0.18;   // piegandosi si abbassa
           }`);
@@ -127,7 +129,7 @@ export class Scatter {
         .replace('#include <common>', `#include <common>
           in float vFlex;
           in vec3 vWorldNrm;
-          uniform float uSnow, uWetness, uEmissive, uTranslucency;
+          uniform float uSnow, uWetness, uEmissive, uTranslucency, uEmiMask;
           uniform vec3 uSnowColor, uSeasonTint;
           ${GLSL_NOISE}`)
         .replace('#include <color_fragment>', `#include <color_fragment>
@@ -144,7 +146,11 @@ export class Scatter {
         .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
           roughnessFactor = mix(roughnessFactor, 0.35, uWetness * 0.6);`)
         .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
-          totalEmissiveRadiance += diffuseColor.rgb * uEmissive * 0.85;
+          /* Su un edificio non deve accendersi tutto: solo i vetri. La
+           * maschera viaggia in aFlex, che per una casa non serve a niente
+           * (una casa non si piega al vento) e non costa un attributo in piu. */
+          totalEmissiveRadiance += diffuseColor.rgb * uEmissive * 0.85
+                                 * mix(1.0, smoothstep(0.35, 0.75, vFlex), uEmiMask);
           if (uTranslucency > 0.01){
             /* Una foglia e sottile: parte della luce la attraversa invece di
              * fermarsi. Senza questo termine la faccia in ombra di ogni filo
@@ -183,7 +189,8 @@ export class Scatter {
       const geos = [];
       const meshes = [];
       const rnd = mulberry32(0xA17 + ri * 7919 + this.world.seed);
-      const mat = this._material(FOLIAGE_TYPES.has(rule.type), rule.emissive || 0);
+      const mat = this._material(FOLIAGE_TYPES.has(rule.type), rule.emissive || 0,
+                                !!rule.emissiveMask);
 
       // stima del numero massimo di istanze in vista
       const area = Math.PI * radius * radius;
@@ -248,8 +255,28 @@ export class Scatter {
         if (h0 > 0.86) continue;
         const jx = hash2i(gx, gz, R.ri * 131 + 11);
         const jz = hash2i(gx, gz, R.ri * 131 + 13);
-        const x = ox + (i + 0.5 + (jx - 0.5) * 0.92) * step;
-        const z = oz + (j + 0.5 + (jz - 0.5) * 0.92) * step;
+        /* Quanto un oggetto puo scostarsi dal centro della sua cella. Per le
+         * piante conviene il massimo (una griglia si vede subito), per le case
+         * no: due tumuli larghi dieci metri su una griglia da venti, spostati
+         * ciascuno di nove, finiscono uno dentro l altro. */
+        const jit = rule.jitter !== undefined ? rule.jitter : 0.92;
+        const x = ox + (i + 0.5 + (jx - 0.5) * jit) * step;
+        const z = oz + (j + 0.5 + (jz - 0.5) * jit) * step;
+
+        /* Borghi. Le case non si spargono a caso sul territorio: stanno
+         * insieme. Ogni cella larga «period» ospita un paese, il cui centro e
+         * spostato a caso ma resta dentro la cella, cosi il paese non viene
+         * mai tagliato in due dal confine. Verso il bordo si dirada. */
+        if (rule.cluster) {
+          const K = rule.cluster;
+          const kx = Math.floor(x / K.period), kz = Math.floor(z / K.period);
+          const vx = (kx + 0.5 + (hash2i(kx, kz, 811) - 0.5) * (K.jitter || 0.5)) * K.period;
+          const vz = (kz + 0.5 + (hash2i(kx, kz, 823) - 0.5) * (K.jitter || 0.5)) * K.period;
+          const dd = Math.hypot(x - vx, z - vz);
+          if (dd > K.radius) continue;
+          const w = 1 - dd / K.radius;
+          if (hash2i(gx, gz, R.ri * 131 + 53) > 0.45 + 0.55 * w) continue;
+        }
 
         if (world.blocked && world.blocked(x, z)) continue;
         const h = world.height(x, z);
@@ -289,13 +316,31 @@ export class Scatter {
 
         const v = nVar === 1 ? 0 : Math.floor(hash2i(gx, gz, R.ri * 131 + 19) * nVar) % nVar;
         const sc = lerp(sc0, sc1, hash2i(gx, gz, R.ri * 131 + 23));
-        const rot = hash2i(gx, gz, R.ri * 131 + 29) * Math.PI * 2;
+        /* Una casa scavata nella collina non guarda a caso: guarda a valle.
+         * (nx, nz) e gia il verso della discesa, perche nx = (h - h(x+e))/e e
+         * positivo quando il terreno scende verso +x. Il mezzo giro in piu c e
+         * perche i modelli hanno la facciata verso -Z. */
+        let rot;
+        if (rule.yawFromRows && rule.rows) {
+          /* Una staccionata deve correre LUNGO il filare, non attraversarlo.
+           * Il filare e la retta a (x·cosA + z·sinA) costante, quindi la sua
+           * direzione e (-sinA, cosA); la rotazione che porta il lato lungo
+           * del modello (l asse X locale) su quella direzione e questa. */
+          const a = rule.rows.angle;
+          rot = Math.atan2(-Math.cos(a), -Math.sin(a))
+              + (hash2i(gx, gz, R.ri * 131 + 29) - 0.5) * (rule.faceJitter || 0.08);
+        } else if (rule.faceDownhill) {
+          rot = Math.atan2(nx, nz) + Math.PI
+              + (hash2i(gx, gz, R.ri * 131 + 29) - 0.5) * (rule.faceJitter || 0.5);
+        } else {
+          rot = hash2i(gx, gz, R.ri * 131 + 29) * Math.PI * 2;
+        }
         const tiltX = (hash2i(gx, gz, R.ri * 131 + 31) - 0.5) * 2 * tilt;
         const tiltZ = (hash2i(gx, gz, R.ri * 131 + 37) - 0.5) * 2 * tilt;
 
         // i sassi si coricano sul pendio, le piante restano dritte
         let ax = tiltX, az = tiltZ;
-        if (!FOLIAGE_TYPES.has(rule.type)) {
+        if (!FOLIAGE_TYPES.has(rule.type) && !rule.upright) {
           ax += Math.atan2(nz, 1) * 0.75;
           az += -Math.atan2(nx, 1) * 0.75;
         }
@@ -308,8 +353,14 @@ export class Scatter {
         }
         const cj = hash2i(gx, gz, R.ri * 131 + 41);
         const cj2 = hash2i(gx, gz, R.ri * 131 + 43);
-        out[v].push(x, h - buried * sc + yExtra, z, rot, ax, az, sc,
-          0.84 + cj * 0.32, 0.86 + cj2 * 0.28, 0.84 + (1 - cj) * 0.30);
+        /* Affondamento dichiarato: un tumulo appoggiato sul pendio lascia uno
+         * spiraglio a monte. Sprofondarlo di mezzo metro fa sparire il
+         * problema senza dover spianare il terreno. */
+        const sink = rule.sink ? rule.sink * sc : 0;
+        out[v].push(x, h - buried * sc - sink + yExtra, z, rot, ax, az, sc,
+          ...(rule.evenColor
+            ? [1, 1, 1]
+            : [0.84 + cj * 0.32, 0.86 + cj2 * 0.28, 0.84 + (1 - cj) * 0.30]));
       }
     }
     return out.map(a => new Float32Array(a));

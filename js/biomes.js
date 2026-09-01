@@ -977,7 +977,45 @@ export const BIOMES = {
       { type: 'flower', density: 0.075, radius: 70, slope: [0, 0.4], height: [-99, 999], moisture: [0.25, 1], scale: [0.8, 1.4], tilt: 0.12, tint: [0xf0e060, 0xf8f0f8] },
       { type: 'stump', density: 0.0010, radius: 110, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.1], tilt: 0.04, tint: [0x4a3c2c, 0x5e4c38] },
       { type: 'rock', density: 0.006, radius: 150, slope: [0.1, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.3], tilt: 0.45, tint: [0x6a675e, 0x8c887e] },
-      { type: 'grassTuft', density: 3.0, radius: 40, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.6, 1.05], tilt: 0.06, tint: [0x5a9c30, 0x8cbc48], grass: true }
+      { type: 'grassTuft', density: 3.0, radius: 40, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.6, 1.05], tilt: 0.06, tint: [0x5a9c30, 0x8cbc48], grass: true },
+
+      /* Le case. Vanno scavate nel fianco delle colline e devono guardare a
+       * valle: e la sola cosa che distingue la Contea da un prato qualsiasi.
+       * L emissivo e mascherato, cosi di notte si accendono solo le finestre. */
+      { type: 'hobbitHole', density: 0.0044, radius: 320, slope: [0.02, 0.45], height: [2, 999],
+        moisture: [0.2, 1], scale: [0.74, 0.98], tilt: 0, tint: [0x4a8a26, 0x74a83a],
+        faceDownhill: true, faceJitter: 0.55, upright: true, sink: 0.12, jitter: 0.42,
+        cluster: { period: 300, radius: 64, jitter: 0.55 },
+        emissive: 0.09, emissiveMask: true, shadow: true },
+
+      // orti davanti a casa, covoni nei campi, un palo agli incroci
+      // gli orti stanno dove sta la gente, non in mezzo ai campi
+      { type: 'gardenPatch', density: 0.0034, radius: 220, slope: [0, 0.16], height: [1, 999],
+        moisture: [0.3, 1], scale: [0.8, 1.25], tilt: 0, tint: [0x5a9432, 0x86b046],
+        upright: true, sink: 0.06, jitter: 0.8,
+        cluster: { period: 300, radius: 78, jitter: 0.55 } },
+      { type: 'haystack', density: 0.00042, radius: 200, slope: [0, 0.14], height: [1, 999],
+        moisture: [0.25, 1], scale: [0.85, 1.2], tilt: 0.03, tint: [0xc8a850, 0xe0c878],
+        upright: true, shadow: true },
+      { type: 'signpost', density: 0.0009, radius: 220, slope: [0, 0.2], height: [1, 999],
+        moisture: [0.15, 1], scale: [0.9, 1.1], tilt: 0.02, tint: [0x7a6248, 0x9a8058],
+        upright: true, cluster: { period: 300, radius: 92, jitter: 0.55 } },
+
+      /* Staccionate in filari: un campo coltivato ha dei confini, e sono
+       * loro a far leggere il paesaggio come «abitato» invece che «verde». */
+      { type: 'fence', density: 0.030, radius: 170, slope: [0, 0.26], height: [1, 999],
+        moisture: [0.2, 1], scale: [0.95, 1.05], tilt: 0.015, tint: [0x8a7050, 0xa88c68],
+        rows: { angle: 0.62, period: 58, width: 0.020 }, yawFromRows: true,
+        upright: true, evenColor: true },
+      { type: 'fence', density: 0.030, radius: 170, slope: [0, 0.26], height: [1, 999],
+        moisture: [0.2, 1], scale: [0.95, 1.05], tilt: 0.015, tint: [0x8a7050, 0xa88c68],
+        rows: { angle: 0.62 + 1.5708, period: 62, width: 0.019 }, yawFromRows: true,
+        upright: true, evenColor: true },
+
+      // siepi: cespugli fitti allineati, che e come si fa una siepe davvero
+      { type: 'bush', density: 0.22, radius: 150, slope: [0, 0.3], height: [1, 999],
+        moisture: [0.25, 1], scale: [0.9, 1.5], tilt: 0.05, tint: [0x2f5e1a, 0x4c7c26],
+        rows: { angle: 0.62 + 1.5708, period: 62, width: 0.012 }, seasonal: true }
     ]
   },
 
@@ -1545,6 +1583,10 @@ export const FAUNA = {
     { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO }
   ],
   contea: [
+    /* I panciotti cambiano colore da uno all altro: e cio che fa sembrare
+       un gruppo un gruppo di persone e non copie dello stesso modello. */
+    { type: 'hobbit', count: 16, radius: 130, scale: [0.92, 1.08],
+      tint: [0x8a4a3a, 0x4a6a8a], speed: [0.7, 1.4], shadow: true },
     { type: 'bird', count: 30, radius: 300, y: [22, 60], scale: [0.9, 1.3], tint: UCCELLO },
     { type: 'deer', count: 11, radius: 230, scale: [0.8, 1.1], tint: CERVO, speed: [1.0, 1.9], shadow: true },
     { type: 'butterfly', count: 90, radius: 44, y: [0.4, 2.2], scale: [0.9, 1.5], tint: [0xf0d850, 0xf8f8f0] }

@@ -1423,6 +1423,428 @@ function vaporator(rnd, tint) {
 /* ------------------------------------------------------------------ *
  * Registro
  * ------------------------------------------------------------------ */
+/* ------------------------------------------------------------------ *
+ * Costruito dall uomo (o dal mezzuomo)
+ *
+ * Questi non sono cespugli: hanno una facciata, e la facciata deve guardare
+ * da qualche parte. La convenzione e la stessa della fauna — il davanti e
+ * verso -Z — cosi il seminatore puo puntarli a valle con una rotazione sola.
+ * ------------------------------------------------------------------ */
+
+/* Cupola a base piatta. Una sfera schiacciata scenderebbe sotto lo zero e su
+ * un pendio si vedrebbe spuntare la pancia dal lato a valle: qui la meta
+ * inferiore non esiste proprio, e sotto c e una gonna svasata che si perde
+ * nel terreno. */
+function dome(B, opts) {
+  const {
+    cx = 0, cy = 0, cz = 0, rx = 1, ry = 1, rz = 1,
+    seg = 18, rings = 8, colTop, colBot, flex = 0, rough = 0, rnd,
+    skirt = 0.5, colSkirt, tail = 0
+  } = opts;
+  /* La coda abbassa e allunga la meta posteriore. Serve a non ottenere un
+   * igloo: una casa scavata nel fianco di una collina non e una semiellisse
+   * appoggiata sull erba, e a monte deve sparire dentro il pendio. La stessa
+   * deformazione va applicata a tutto cio che si posa sulla cupola, o il
+   * comignolo resta a mezz aria. */
+  const coda = (x, y, z) => {
+    if (tail <= 0) return [x, y, z];
+    const t = Math.max(0, z / rz);
+    return [x, y * (1 - tail * t * t), z * (1 + tail * 1.5 * t)];
+  };
+  const ph = rnd ? [rnd() * 9, rnd() * 9] : [0, 0];
+  const bump = (a, p) => rough
+    ? 1 + rough * (Math.sin(a * 3.1 + ph[0]) * 0.6 + Math.sin(p * 4.3 + a * 1.7 + ph[1]) * 0.4)
+    : 1;
+
+  const P = (p, a) => {
+    const d = bump(a, p);
+    const q = coda(Math.cos(p) * Math.cos(a) * rx * d,
+                   Math.sin(p) * ry * d,
+                   Math.cos(p) * Math.sin(a) * rz * d);
+    return [cx + q[0], cy + q[1], cz + q[2]];
+  };
+  // normale della superficie: la direzione sulla sfera unitaria, non della faccia
+  const N = (p, a) => {
+    const nx = Math.cos(p) * Math.cos(a) / rx, ny = Math.sin(p) / ry, nz = Math.cos(p) * Math.sin(a) / rz;
+    const l = Math.hypot(nx, ny, nz) || 1;
+    return [nx / l, ny / l, nz / l];
+  };
+  const col = (p) => mixc(colBot, colTop, Math.pow(Math.sin(p), 0.7) * 0.8 + 0.2);
+  /* Chiazze: una superficie grande di colore unico legge come plastica, per
+   * quanto sia tornita la forma. Basta una variazione per faccia — qualche
+   * punto percentuale — perche l occhio ci legga dell erba. */
+  const chiazza = (i, j) => {
+    const h = Math.sin(i * 12.9898 + j * 78.233 + (ph[0] || 0)) * 43758.5453;
+    return 0.88 + (h - Math.floor(h)) * 0.24;
+  };
+
+  for (let j = 0; j < rings; j++) {
+    const p0 = (j / rings) * Math.PI / 2, p1 = ((j + 1) / rings) * Math.PI / 2;
+    const cc0 = col(p0), cc1 = col(p1);
+    for (let i = 0; i < seg; i++) {
+      const k = chiazza(i, j);
+      const c0 = scale(cc0, k), c1 = scale(cc1, k);
+      const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+      const A = P(p0, a0), Bp = P(p0, a1), C = P(p1, a1), D = P(p1, a0);
+      const nA = N(p0, a0), nB = N(p0, a1), nC = N(p1, a1), nD = N(p1, a0);
+      /* L ordine dei vertici decide quale faccia e il davanti: questi
+       * materiali disegnano una faccia sola, e avvolti al contrario la cupola
+       * si vedrebbe solo da dentro. */
+      B.triN(A, C, Bp, nA, nC, nB, c0, c1, c0, flex, flex, flex);
+      B.triN(A, D, C, nA, nD, nC, c0, c1, c1, flex, flex, flex);
+    }
+  }
+  // gonna: scende sotto il livello zero e allarga, per sparire nell erba
+  if (skirt > 0) {
+    const cs = colSkirt || scale(colBot, 0.72);
+    for (let i = 0; i < seg; i++) {
+      const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+      const d0 = bump(a0, 0), d1 = bump(a1, 0);
+      const q = (a, k, y) => {
+        const v = coda(Math.cos(a) * rx * k, 0, Math.sin(a) * rz * k);
+        return [cx + v[0], cy + y, cz + v[2]];
+      };
+      const A = q(a0, d0, 0), Bp = q(a1, d1, 0);
+      const C = q(a1, 1.16 * d1, -skirt), D = q(a0, 1.16 * d0, -skirt);
+      B.quad(A, Bp, C, D, colBot, colBot, cs, cs, flex, flex, flex, flex);
+    }
+  }
+}
+
+/* Base ortogonale attorno a una direzione: serve a posare dischi e anelli su
+ * una superficie curva senza che affondino da un lato. */
+function basis(n) {
+  const l = Math.hypot(n[0], n[1], n[2]) || 1;
+  const N = [n[0] / l, n[1] / l, n[2] / l];
+  const up = Math.abs(N[1]) > 0.9 ? [1, 0, 0] : [0, 1, 0];
+  let tx = up[1] * N[2] - up[2] * N[1];
+  let ty = up[2] * N[0] - up[0] * N[2];
+  let tz = up[0] * N[1] - up[1] * N[0];
+  const tl = Math.hypot(tx, ty, tz) || 1;
+  tx /= tl; ty /= tl; tz /= tl;
+  const bx = N[1] * tz - N[2] * ty;
+  const by = N[2] * tx - N[0] * tz;
+  const bz = N[0] * ty - N[1] * tx;
+  return { N, T: [tx, ty, tz], Bv: [bx, by, bz] };
+}
+
+function discO(B, c, n, r, colC, colE, flex, seg) {
+  const { N, T, Bv } = basis(n);
+  seg = seg || 20;
+  const pt = (a, rr) => [
+    c[0] + (T[0] * Math.cos(a) + Bv[0] * Math.sin(a)) * rr,
+    c[1] + (T[1] * Math.cos(a) + Bv[1] * Math.sin(a)) * rr,
+    c[2] + (T[2] * Math.cos(a) + Bv[2] * Math.sin(a)) * rr
+  ];
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    B.triN(c, pt(a0, r), pt(a1, r), N, N, N, colC, colE, colE, flex, flex, flex);
+  }
+}
+
+function ringO(B, c, n, r0, r1, col0, col1, flex, seg) {
+  const { N, T, Bv } = basis(n);
+  seg = seg || 20;
+  const pt = (a, rr) => [
+    c[0] + (T[0] * Math.cos(a) + Bv[0] * Math.sin(a)) * rr,
+    c[1] + (T[1] * Math.cos(a) + Bv[1] * Math.sin(a)) * rr,
+    c[2] + (T[2] * Math.cos(a) + Bv[2] * Math.sin(a)) * rr
+  ];
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    B.quad(pt(a0, r1), pt(a1, r1), pt(a1, r0), pt(a0, r0), col1, col1, col0, col0, flex, flex, flex, flex);
+  }
+}
+
+/* Casa hobbit. Il dettaglio che la rende riconoscibile non e il tumulo: e la
+ * porta tonda col pomello in mezzo, non di lato. Sbagliare quello e come
+ * disegnare un uccello con le ali attaccate al collo. */
+function hobbitHole(rnd, tint) {
+  const Bd = new Builder();
+  const rx = 4.8, ry = 3.35, rz = 4.35;
+  const erbaAlta = mixc(tint, lin(0x8fbe52), 0.25);
+  const erbaBassa = scale(mixc(tint, lin(0x2f5c1c), 0.45), 0.92);
+
+  dome(Bd, {
+    cx: 0, cy: 0, cz: 0, rx, ry, rz, seg: 20, rings: 9,
+    colTop: erbaAlta, colBot: erbaBassa, rough: 0.085, rnd, flex: 0, skirt: 0.7,
+    tail: 0.42
+  });
+
+  // --- il vano della porta: un collare che sporge dal fianco della collina
+  const yc = 1.05;                // centro della porta: il bordo basso a terra
+  /* Dove passa davvero la superficie della cupola all altezza della porta.
+   * Prendere una frazione fissa di rz e l errore che sotterra tutto il vano:
+   * a un metro da terra l ellissoide e ancora quasi al suo raggio pieno, non
+   * all 86 per cento. La facciata deve sporgere di trenta centimetri da li. */
+  const zSup = -rz * Math.sqrt(Math.max(0.04, 1 - (yc * yc) / (ry * ry)));
+  const zf = zSup - 0.30;
+  const rColl = 1.29, rPorta = 1.05;   // cornice sottile, non un oblo
+  const pietra = mixc(lin(0x9a9182), lin(0xb8b0a0), rnd() * 0.6);
+  const pietraScura = scale(pietra, 0.66);
+
+  const segC = 22;
+  for (let i = 0; i < segC; i++) {
+    const a0 = (i / segC) * Math.PI * 2, a1 = ((i + 1) / segC) * Math.PI * 2;
+    const p = (a, z) => [Math.cos(a) * rColl, yc + Math.sin(a) * rColl, z];
+    // fianchi del collare, dal fianco della collina fino alla facciata
+    // il collare entra nel fianco della collina e sporge davanti
+    Bd.quad(p(a0, zf + 2.4), p(a1, zf + 2.4), p(a1, zf), p(a0, zf),
+            pietraScura, pietraScura, pietra, pietra, 0, 0, 0, 0);
+  }
+  // muro della facciata: anello fra il collare e la porta
+  /* La cornice deve SOVRAPPORSI alla porta, non sfiorarla: lasciando un
+   * anello scoperto fra le due si vede l interno del collare, e sulla porta
+   * compare una falce nera. */
+  ringO(Bd, [0, yc, zf], [0, 0, -1], rPorta * 0.96, rColl, pietra, pietraScura, 0, 24);
+
+  // --- la porta
+  /* Tinte chiare. Una porta verde scuro, messa in una facciata che guarda a
+   * valle e quindi spesso in ombra, si legge come un buco nero: il colore va
+   * scelto pensando alla luce in cui stara, non su fondo bianco. */
+  const vernici = [0x58a866, 0x4e9c5e, 0xc08a44, 0xb8564a, 0x4e8cb4];
+  const legno = lin(vernici[Math.floor(rnd() * vernici.length)]);
+  const legnoScuro = scale(legno, 0.70);
+  const zp = zf - 0.10;
+  discO(Bd, [0, yc, zp], [0, 0, -1], rPorta, legno, legnoScuro, 0, 22);
+  /* Doghe verticali, come su una porta vera. A raggiera sembrava una ruota
+   * di carro: il fascio di linee che converge al centro e la cosa che piu
+   * tradisce una geometria fatta col compasso. */
+  for (let i = 1; i < 6; i++) {
+    const x = -rPorta + (i / 6) * rPorta * 2;
+    const yh = Math.sqrt(Math.max(0, rPorta * rPorta - x * x)) * 0.985;
+    const c = scale(legno, 0.86);
+    Bd.quad([x - 0.012, yc - yh, zp - 0.010], [x + 0.012, yc - yh, zp - 0.010],
+            [x + 0.012, yc + yh, zp - 0.010], [x - 0.012, yc + yh, zp - 0.010],
+            c, c, c, c, 0, 0, 0, 0);
+  }
+  // due traverse orizzontali
+  for (const yy of [-0.52, 0.52]) {
+    const yh = Math.sqrt(Math.max(0, rPorta * rPorta - yy * yy)) * 0.97;
+    const c = scale(legno, 0.70);
+    Bd.quad([-yh, yc + yy - 0.075, zp - 0.016], [yh, yc + yy - 0.075, zp - 0.016],
+            [yh, yc + yy + 0.075, zp - 0.016], [-yh, yc + yy + 0.075, zp - 0.016],
+            c, c, c, c, 0, 0, 0, 0);
+  }
+  // cornice
+  ringO(Bd, [0, yc, zp - 0.02], [0, 0, -1], rPorta, rPorta * 1.10, legnoScuro, pietraScura, 0, 22);
+  // pomello: in mezzo, non di lato
+  const ottone = lin(0xd8b45c);
+  blob(Bd, { cx: 0, cy: yc, cz: zp - 0.16, rx: 0.14, ry: 0.14, rz: 0.14,
+             level: 1, rough: 0, rnd, colTop: ottone, colBot: scale(ottone, 0.5), flex: 0 });
+
+  // --- finestre tonde, posate sulla superficie della cupola
+  const vetro = lin(0xffdca8);
+  const telaio = mixc(legnoScuro, pietraScura, 0.4);
+  for (const sx of [-1, 1]) {
+    const x = sx * 2.30, y = 1.45;
+    const q = 1 - (x * x) / (rx * rx) - (y * y) / (ry * ry);
+    if (q <= 0.02) continue;
+    const z = -rz * Math.sqrt(q);
+    const n = [x / (rx * rx), y / (ry * ry), z / (rz * rz)];
+    const l = Math.hypot(n[0], n[1], n[2]);
+    const nn = [n[0] / l, n[1] / l, n[2] / l];
+    const c = [x + nn[0] * 0.10, y + nn[1] * 0.10, z + nn[2] * 0.10];
+    /* aFlex = 1 solo sul vetro: e la maschera che di notte accende le finestre
+     * e lascia spento il resto della casa. */
+    discO(Bd, c, nn, 0.44, vetro, scale(vetro, 0.82), 1, 16);
+    ringO(Bd, [c[0] - nn[0] * 0.02, c[1] - nn[1] * 0.02, c[2] - nn[2] * 0.02], nn,
+          0.44, 0.56, telaio, scale(telaio, 0.7), 0, 16);
+    // croce dei vetri
+    const { T, Bv } = basis(nn);
+    const negT = [-T[0], -T[1], -T[2]];
+    /* La seconda sbarra va costruita su (Bv, -T) e non su (Bv, T): con la
+     * coppia diretta il prodotto vettore esce all indietro e la sbarra
+     * sparisce vista di fronte. */
+    for (const [u, v] of [[T, Bv], [Bv, negT]]) {
+      const w = 0.035;
+      Bd.quad(
+        [c[0] - u[0] * 0.44 - v[0] * w + nn[0] * 0.01, c[1] - u[1] * 0.44 - v[1] * w + nn[1] * 0.01, c[2] - u[2] * 0.44 - v[2] * w + nn[2] * 0.01],
+        [c[0] + u[0] * 0.44 - v[0] * w + nn[0] * 0.01, c[1] + u[1] * 0.44 - v[1] * w + nn[1] * 0.01, c[2] + u[2] * 0.44 - v[2] * w + nn[2] * 0.01],
+        [c[0] + u[0] * 0.44 + v[0] * w + nn[0] * 0.01, c[1] + u[1] * 0.44 + v[1] * w + nn[1] * 0.01, c[2] + u[2] * 0.44 + v[2] * w + nn[2] * 0.01],
+        [c[0] - u[0] * 0.44 + v[0] * w + nn[0] * 0.01, c[1] - u[1] * 0.44 + v[1] * w + nn[1] * 0.01, c[2] - u[2] * 0.44 + v[2] * w + nn[2] * 0.01],
+        telaio, telaio, telaio, telaio, 0, 0, 0, 0);
+    }
+  }
+
+  // --- comignolo, spostato di lato e leggermente inclinato
+  const mattone = lin(0x8a6a52);
+  const cxx = (rnd() < 0.5 ? -1 : 1) * (1.3 + rnd() * 0.9);
+  const czz = 0.6 + rnd() * 1.1;
+  /* Il comignolo va posato sulla superficie DEFORMATA, non su quella
+   * dell ellissoide di partenza: la coda ha abbassato il dorso, e senza
+   * questa correzione il camino resterebbe sospeso sopra il tetto. */
+  const TAIL = 0.42;
+  const czzRaw = czz / (1 + TAIL * 1.5 * (czz / rz));
+  const qy = 1 - (cxx * cxx) / (rx * rx) - (czzRaw * czzRaw) / (rz * rz);
+  const tCoda = Math.max(0, czzRaw / rz);
+  const cy0 = ry * Math.sqrt(Math.max(0.05, qy)) * (1 - TAIL * tCoda * tCoda) - 0.12;
+  /* trunk() costruisce sempre a partire da y = 0, e il comignolo deve
+   * partire dal dorso della cupola. Si segna dove finisce il buffer prima di
+   * costruirlo e si alza esattamente quel tratto: cercare i vertici per
+   * posizione funzionerebbe finche non ce n e un altro li vicino. */
+  const i0 = Bd.p.length;
+  trunk(Bd, { r0: 0.26, r1: 0.22, h: 1.05, seg: 6, rings: 2,
+              colBot: scale(mattone, 0.7), colTop: mattone, flexTop: 0, x0: cxx, z0: czz });
+  for (let i = i0; i < Bd.p.length; i += 3) Bd.p[i + 1] += cy0;
+  ringO(Bd, [cxx, cy0 + 1.05 + 0.05, czz], [0, 1, 0], 0.16, 0.34,
+        scale(mattone, 0.85), scale(mattone, 0.55), 0, 8);
+
+  // --- soglia e vialetto
+  const lastra = mixc(pietra, lin(0x7a736a), 0.5);
+  /* Muretto del terrazzino: un arco basso di pietra chiara davanti a casa.
+   * Il tumulo e verde come il prato e da cinquanta metri sparisce; questo e
+   * l unico pezzo chiaro, ed e quello che fa leggere «paese» invece che
+   * «collina». Scende di mezzo metro sotto lo zero per non restare per aria
+   * sul lato a valle. */
+  {
+    const rw = 2.55, hw = 0.46, seg = 16;
+    /* Il davanti e verso -Z, cioe l angolo 3pi/2: l arco va centrato li. Fra
+     * 0,62pi e 1,38pi si finisce sul fianco sinistro della casa, che e dove
+     * stava prima e dove non serve a niente. */
+    const a0 = Math.PI * 1.12, a1 = Math.PI * 1.88;
+    const pw = (a, r, y) => [Math.cos(a) * r, y, Math.sin(a) * r];
+    for (let i = 0; i < seg; i++) {
+      const b0 = a0 + (a1 - a0) * (i / seg), b1 = a0 + (a1 - a0) * ((i + 1) / seg);
+      const k = 0.92 + 0.16 * ((i * 7) % 3) / 2;
+      const c = scale(lastra, k), cs = scale(lastra, k * 0.68);
+      // faccia esterna
+      /* Scende fino a -1,7: la casa guarda a valle, e li il terreno e piu
+       * basso di un metro abbondante. Un muretto che si ferma a -0,5
+       * resterebbe sospeso proprio dal lato da cui lo si guarda. */
+      Bd.quad(pw(b0, rw, -1.7), pw(b1, rw, -1.7), pw(b1, rw, hw), pw(b0, rw, hw), cs, cs, c, c, 0, 0, 0, 0);
+      // faccia interna
+      Bd.quad(pw(b1, rw - 0.22, -1.7), pw(b0, rw - 0.22, -1.7), pw(b0, rw - 0.22, hw), pw(b1, rw - 0.22, hw), cs, cs, c, c, 0, 0, 0, 0);
+      // coronamento
+      Bd.quad(pw(b0, rw - 0.22, hw), pw(b1, rw - 0.22, hw), pw(b1, rw, hw), pw(b0, rw, hw),
+              mixc(c, [1, 1, 1], 0.12), mixc(c, [1, 1, 1], 0.12), c, c, 0, 0, 0, 0);
+    }
+  }
+
+  /* Solo la soglia. Un vialetto di lastre a quota costante su un pendio si
+   * sotterra da un lato e resta per aria dall altro: meglio niente che una
+   * fila di pietre che galleggiano. */
+  const w = rPorta * 1.15;
+  const z0 = zf - 0.04, z1 = zf - 0.78;
+  Bd.quad([-w, 0.10, z0], [w, 0.10, z0], [w, 0.02, z1], [-w, 0.02, z1],
+          lastra, lastra, scale(lastra, 0.86), scale(lastra, 0.86), 0, 0, 0, 0);
+  Bd.quad([-w, 0.10, z0], [-w, 0.02, z1], [-w, -0.30, z1], [-w, -0.30, z0],
+          scale(lastra, 0.7), scale(lastra, 0.7), scale(lastra, 0.5), scale(lastra, 0.5), 0, 0, 0, 0);
+  Bd.quad([w, 0.02, z1], [w, 0.10, z0], [w, -0.30, z0], [w, -0.30, z1],
+          scale(lastra, 0.7), scale(lastra, 0.7), scale(lastra, 0.5), scale(lastra, 0.5), 0, 0, 0, 0);
+  return Bd.toGeometry();
+}
+
+/* Staccionata bassa: tre metri di steccato con due traverse. Messa in filari
+ * dal seminatore diventa un recinto. */
+function fence(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x8a7050), 0.5);
+  const scuro = scale(legno, 0.62);
+  const L = 3.0, h = 1.05;
+  const n = 9;
+  for (let i = 0; i < n; i++) {
+    const x = -L / 2 + (i + 0.5) * (L / n);
+    const hh = h * (0.88 + rnd() * 0.2);
+    const w = 0.055, t = 0.03;
+    // asse con la punta
+    B.quad([x - w, 0, -t], [x + w, 0, -t], [x + w, hh - 0.14, -t], [x - w, hh - 0.14, -t], scuro, scuro, legno, legno, 0, 0, 0, 0);
+    B.quad([x + w, 0, t], [x - w, 0, t], [x - w, hh - 0.14, t], [x + w, hh - 0.14, t], scuro, scuro, legno, legno, 0, 0, 0, 0);
+    B.tri([x - w, hh - 0.14, -t], [x + w, hh - 0.14, -t], [x, hh, -t], legno, legno, legno, 0, 0, 0);
+    B.tri([x + w, hh - 0.14, t], [x - w, hh - 0.14, t], [x, hh, t], legno, legno, legno, 0, 0, 0);
+  }
+  for (const y of [h * 0.34, h * 0.68]) {
+    B.quad([-L / 2, y - 0.045, -0.045], [L / 2, y - 0.045, -0.045],
+           [L / 2, y + 0.045, -0.045], [-L / 2, y + 0.045, -0.045], scuro, scuro, legno, legno, 0, 0, 0, 0);
+    B.quad([L / 2, y - 0.045, 0.045], [-L / 2, y - 0.045, 0.045],
+           [-L / 2, y + 0.045, 0.045], [L / 2, y + 0.045, 0.045], scuro, scuro, legno, legno, 0, 0, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* Orto: zolle rialzate e file di cavoli. Non e decorazione — e il motivo per
+ * cui un prato sembra abitato invece che solo verde. */
+function gardenPatch(rnd, tint) {
+  const B = new Builder();
+  const terra = lin(0x6b5238), terraCh = lin(0x8a6c4a);
+  const W = 2.8, D = 2.0;
+  const nf = 4;
+  for (let i = 0; i < nf; i++) {
+    const z0 = -D / 2 + (i / nf) * D + 0.06, z1 = -D / 2 + ((i + 1) / nf) * D - 0.06;
+    const y = 0.10 + rnd() * 0.03;
+    B.quad([-W / 2, y, z0], [W / 2, y, z0], [W / 2, y, z1], [-W / 2, y, z1],
+           terraCh, terraCh, terra, terra, 0, 0, 0, 0);
+    B.quad([-W / 2, 0, z0], [W / 2, 0, z0], [W / 2, y, z0], [-W / 2, y, z0], terra, terra, terraCh, terraCh, 0, 0, 0, 0);
+    B.quad([W / 2, 0, z1], [-W / 2, 0, z1], [-W / 2, y, z1], [W / 2, y, z1], terra, terra, terraCh, terraCh, 0, 0, 0, 0);
+    const nc = 4;
+    for (let j = 0; j < nc; j++) {
+      const x = -W / 2 + (j + 0.5) * (W / nc) + (rnd() - 0.5) * 0.14;
+      const z = (z0 + z1) * 0.5;
+      const r = 0.17 + rnd() * 0.08;
+      const verde = mixc(tint, lin(0x6ea83c), 0.4 + rnd() * 0.3);
+      dome(B, { cx: x, cy: y, cz: z, rx: r, ry: r * 0.78, rz: r,
+                seg: 8, rings: 3, colTop: verde, colBot: scale(verde, 0.6),
+                rough: 0.18, rnd, flex: 0.25, skirt: 0 });
+    }
+  }
+  return B.toGeometry();
+}
+
+/* Covone: un cono di paglia attorno a un palo. */
+function haystack(rnd, tint) {
+  const B = new Builder();
+  const paglia = mixc(tint, lin(0xd8b45c), 0.55);
+  const scuro = scale(paglia, 0.55);
+  const h = 2.5 * (0.85 + rnd() * 0.3), r = 1.05;
+  const seg = 12;
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    const d0 = 0.9 + 0.2 * Math.sin(a0 * 3 + 1), d1 = 0.9 + 0.2 * Math.sin(a1 * 3 + 1);
+    B.tri([Math.cos(a0) * r * d0, 0, Math.sin(a0) * r * d0],
+          [Math.cos(a1) * r * d1, 0, Math.sin(a1) * r * d1],
+          [0, h, 0], scuro, scuro, paglia, 0, 0, 0);
+    // ciocche sporgenti a meta altezza
+    const am = (a0 + a1) * 0.5;
+    const ym = h * (0.25 + 0.4 * ((i % 3) / 3));
+    const rm = r * (1 - ym / h) * 1.16;
+    B.tri([Math.cos(am) * rm, ym, Math.sin(am) * rm],
+          [Math.cos(am + 0.2) * rm * 0.7, ym - 0.28, Math.sin(am + 0.2) * rm * 0.7],
+          [Math.cos(am - 0.2) * rm * 0.7, ym - 0.24, Math.sin(am - 0.2) * rm * 0.7],
+          paglia, scuro, scuro, 0.3, 0.1, 0.1);
+  }
+  trunk(B, { r0: 0.05, r1: 0.04, h: h + 0.3, seg: 4, rings: 1,
+             colBot: lin(0x4a3826), colTop: lin(0x6a5238), flexTop: 0 });
+  return B.toGeometry();
+}
+
+/* Palo indicatore: due tavolette che puntano da parti diverse. */
+function signpost(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x7a6248), 0.5);
+  const scuro = scale(legno, 0.6);
+  const chiaro = mixc(legno, lin(0xd8c8a8), 0.45);
+  const h = 2.1;
+  trunk(B, { r0: 0.075, r1: 0.06, h, seg: 5, rings: 2, colBot: scuro, colTop: legno, flexTop: 0 });
+  for (let i = 0; i < 2; i++) {
+    const y = h * (0.92 - i * 0.24);
+    const a = rnd() * Math.PI * 2;
+    const dir = i ? -1 : 1;
+    const L = 0.9, w = 0.145;
+    const ca = Math.cos(a), sa = Math.sin(a);
+    const p = (u, v, yy) => [ca * u - sa * v, yy, sa * u + ca * v];
+    const x0 = 0.06 * dir, x1 = (0.06 + L) * dir;
+    for (const zz of [-0.022, 0.022]) {
+      B.quad(p(x0, zz, y - w), p(x1 * 0.82, zz, y - w * 0.72),
+             p(x1 * 0.82, zz, y + w * 0.72), p(x0, zz, y + w),
+             scuro, chiaro, chiaro, scuro, 0, 0, 0, 0);
+    }
+    // la punta
+    B.tri(p(x1 * 0.82, 0, y - w * 0.72), p(x1, 0, y), p(x1 * 0.82, 0, y + w * 0.72),
+          chiaro, chiaro, chiaro, 0, 0, 0);
+  }
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -1432,7 +1854,9 @@ export const PROPS = {
   // luoghi immaginari
   twistedTree, glowMushroom, giantMushroom, fairyTree, spiralRock, ajisaTree, slabRock,
   bamboo, ruinPillar, cycad,
-  coral, brainCoral, kelp, anemone, vaporator
+  coral, brainCoral, kelp, anemone, vaporator,
+  // costruito
+  hobbitHole, fence, gardenPatch, haystack, signpost
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -1450,12 +1874,15 @@ export const PROP_HEIGHT = {
   twistedTree: 8.0, glowMushroom: 0.35, giantMushroom: 5.0, fairyTree: 13.0,
   spiralRock: 5.0, ajisaTree: 9.0, slabRock: 1.4,
   bamboo: 8.0, ruinPillar: 4.0, cycad: 2.6,
-  coral: 1.3, brainCoral: 0.9, kelp: 3.4, anemone: 0.55, vaporator: 2.8
+  coral: 1.3, brainCoral: 0.9, kelp: 3.4, anemone: 0.55, vaporator: 2.8,
+  hobbitHole: 11.0, fence: 3.0, gardenPatch: 3.2, haystack: 2.6, signpost: 2.2
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
  * sull altezza lo farebbe diventare un obelisco coricato. */
-const PROP_AXIS = { log: 'xz' };
+/* Misurati sulla larghezza, non sull altezza: un tumulo e largo dieci metri
+ * e alto tre, e normalizzarlo in altezza lo gonfierebbe a dismisura. */
+const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz' };
 
 export function buildProp(type, rnd, tint) {
   const fn = PROPS[type];

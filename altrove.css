@@ -48,19 +48,6 @@ input[type="number"], input[type="text"] { user-select: text; -webkit-user-selec
 .dim { color: var(--dim); }
 
 /* ---------------------------------------------------------------- mirino */
-#crosshair {
-  position: fixed; left: 50%; top: 50%;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  z-index: 20;
-}
-#crosshair span {
-  display: block; width: 5px; height: 5px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.55);
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.45), 0 0 6px rgba(0, 0, 0, 0.5);
-}
-
 /* ---------------------------------------------------------------- HUD */
 #hud {
   position: fixed; inset: 0;
