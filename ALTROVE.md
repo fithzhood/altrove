@@ -130,6 +130,14 @@ ricordarla. L'unità di lavoro è la tessera: muovendosi si generano solo quelle
 nuove. Ogni fotogramma le tessere attive vengono ricompattate negli
 InstancedMesh — un disegno per variante, non per pianta.
 
+**La volta del bosco.** Ogni bioma boscoso ha due strati: le regole di sempre
+sono il bosco visto da lontano; uno strato vicino (raggio 120–160 m) mette
+alberi grandi e fitti, con le chiome che si toccano e coprono il cielo. È
+limitato ai pendii dolci: su un pendio le chiome degli alberi a valle arrivano
+all'altezza degli occhi. E siccome il punto di partenza lo sceglie il terreno,
+che degli alberi non sa niente, dopo la semina `scansaTronchi()` sposta il
+giocatore al primo punto libero.
+
 Le geometrie (`js/props.js`) sono tutte procedurali: 40 generatori, nessun
 modello caricato. Ognuno viene **normalizzato a un'altezza dichiarata** dopo la
 costruzione: senza, altezza casuale nel generatore per scala casuale nel bioma
@@ -142,6 +150,18 @@ fine l'intervallo viene schiacciato nei 256 livelli dello schermo, con
 esposizione automatica (log-media della luminanza, adattamento asimmetrico
 come l'occhio), ACES, bloom a sei livelli, bagliore del sole con prova di
 occlusione sulla profondità, aberrazione cromatica, vignetta, grana, FXAA.
+
+**Raggi di luce e ombre di contatto.** Due passate in più, entrambe dalla sola
+profondità. I raggi crepuscolari non si calcolano nel volume: si prendono i
+pixel di cielo vicino al sole e si strascinano radialmente verso di esso, in
+due iterazioni a un quarto di risoluzione; dove una chioma copre il cielo la
+striscia si interrompe, ed è quello che l'occhio legge come «luce che filtra».
+L'occlusione ambientale ricostruisce la posizione dalla profondità e la normale
+dalle sue derivate, dodici campioni in emisfero ruotati a caso per pixel, poi
+una sfocatura che rispetta i bordi; è applicata al colore finale (un
+compromesso: separare i termini in ogni materiale costerebbe troppo). Sotto una
+chioma o fra due sassi è l'ombra di contatto che nessuna luce diretta può dare.
+Entrambe hanno un cursore nel pannello Immagine.
 
 L'intervallo dell'esposizione automatica è **volutamente limitato**: lasciato
 libero, una scena notturna veniva amplificata al punto che qualunque cosa
@@ -194,6 +214,7 @@ di nuvole, specchio salino, pozze termali.
 | `dev/shots.js` | strumento di collaudo: molte vedute in un foglio solo |
 | `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro |
 | `dev/oggetti.html` | banco di prova delle geometrie di `props.js`, con un piano d'appoggio |
+| `window.__frame(n)` | orologio pilotabile: fa avanzare l'app di n fotogrammi anche a scheda nascosta |
 | `joystick.html` | pagina di diagnosi del controller (assi e tasti dal vivo) |
 | `servi.py` | server di sviluppo che vieta la cache |
 
@@ -257,6 +278,15 @@ C salva immagine · Esc liberare il mouse
   scompare visto da sotto, e nella Biblioteca infinita si vede il cielo.
 - **Due piani complanari sfarfallano.** Il pavimento della Biblioteca sta cinque
   centimetri sopra il terreno, o si riempie di bande.
+- **Nelle schede nascoste il browser sospende `requestAnimationFrame`.** Il
+  riquadro d'anteprima si nasconde da solo, e da lì in poi l'app *sembra*
+  rotta: la barra di caricamento resta a zero, nessun mondo si costruisce, e
+  la console è pulita. Non è un bug — è il tempo che non scorre. Per il
+  collaudo c'è `window.__frame(n)`, che chiama i fotogrammi a mano: una
+  passata su tutti i luoghi si fa così anche a riquadro chiuso.
+- **Un cambio di luogo durante la costruzione veniva ignorato in silenzio.**
+  Ora si mette in coda e parte appena finisce; e se `buildWorld()` lancia
+  un'eccezione, il messaggio compare nella barra invece di lasciarla a zero.
 - **Il bagliore del sole va dove c'è un sole da vedere.** Nel cielo del buco
   nero il «sole» esiste solo per illuminare la scena e sta dentro il buco nero:
   la post-produzione ci disegnava attorno i raggi, e ne usciva una stella di

@@ -7,7 +7,8 @@
  * livelli dello schermo. E la stessa ragione per cui una fotocamera espone.
  *
  * Ordine delle passate:
- *   cielo -> scena -> luminanza media -> bloom -> [profondita di campo] ->
+ *   cielo -> scena -> occlusione ambientale -> raggi di luce -> luminanza
+ *   media -> bloom -> [profondita di campo] ->
  *   composizione (esposizione, ACES, bagliore del sole, vignetta, grana) -> FXAA
  */
 
@@ -63,7 +64,8 @@ export class Engine {
       autoMin: 0.05, autoMax: 20.0,
       vignette: 0.42, grain: 0.030, chromatic: 0.55,
       contrast: 1.0, saturation: 1.0, lift: 0.0,
-      sunGlare: 1.0, dof: 0, focusDist: 40, aperture: 0.5, autofocus: true, fxaa: true
+      sunGlare: 1.0, dof: 0, focusDist: 40, aperture: 0.5, autofocus: true, fxaa: true,
+      rays: 1.0, ao: 0.62
     };
 
     this._buildTargets(2, 2);
@@ -85,6 +87,8 @@ export class Engine {
     if (this.bloomRT) this.bloomRT.forEach(disp);
     if (this.lumRT) this.lumRT.forEach(disp);
     if (this.adaptRT) this.adaptRT.forEach(disp);
+    if (this.raysRT) this.raysRT.forEach(disp);
+    if (this.aoRT) this.aoRT.forEach(disp);
 
     this.hdr = new THREE.WebGLRenderTarget(w, h, {
       ...RT_HDR, depthBuffer: true
@@ -119,6 +123,13 @@ export class Engine {
     }));
     this.adaptIdx = 0;
     this.adaptPrimed = false;
+
+    // raggi a un quarto (due bersagli per le due iterazioni), occlusione a meta
+    const q = { ...RT_HDR, minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter };
+    this.raysRT = [0, 1].map(() => new THREE.WebGLRenderTarget(Math.max(1, w >> 2), Math.max(1, h >> 2), q));
+    this.aoRT = [0, 1].map(() => new THREE.WebGLRenderTarget(Math.max(1, w >> 1), Math.max(1, h >> 1), {
+      ...RT_HDR, type: THREE.UnsignedByteType
+    }));
   }
 
   _buildMaterials() {
@@ -327,6 +338,173 @@ export class Engine {
     });
     this.dofScene = this._mkQuad(this.dofMat);
 
+    /* --- raggi di luce: maschera del cielo visibile, a un quarto ---
+     * Il trucco e vecchio quanto i videogiochi: i raggi crepuscolari non si
+     * calcolano nel volume, si prendono i pixel di cielo vicino al sole e li
+     * si strascina radialmente verso di esso. Dove un albero copre il cielo la
+     * striscia si interrompe, ed e quello che l occhio legge come «raggio che
+     * filtra fra le chiome». */
+    this.raysMaskMat = new THREE.RawShaderMaterial({
+      ...common,
+      uniforms: {
+        tDepth: { value: null },
+        uSunScreen: { value: new THREE.Vector3(0, 0, -1) },
+        uAspect: { value: 1 }
+      },
+      vertexShader: FS_VERT,
+      fragmentShader: `precision highp float;
+        #define texture2D texture
+        in vec2 vUv; out vec4 fragColor;
+        uniform sampler2D tDepth; uniform vec3 uSunScreen; uniform float uAspect;
+        void main(){
+          float sky = step(0.99999, texture2D(tDepth, vUv).x);
+          vec2 v = (vUv - uSunScreen.xy) * vec2(uAspect, 1.0);
+          float r2 = dot(v, v);
+          // la luce e forte vicino al sole e si spegne allontanandosi
+          float w = exp(-r2 * 1.9);
+          fragColor = vec4(vec3(sky * w), 1.0);
+        }`
+    });
+    this.raysMaskScene = this._mkQuad(this.raysMaskMat);
+
+    this.raysBlurMat = new THREE.RawShaderMaterial({
+      ...common,
+      uniforms: {
+        tSrc: { value: null },
+        uSunScreen: { value: new THREE.Vector3(0, 0, -1) },
+        uDensity: { value: 0.5 }, uDecay: { value: 0.965 }
+      },
+      vertexShader: FS_VERT,
+      fragmentShader: `precision highp float;
+        #define texture2D texture
+        in vec2 vUv; out vec4 fragColor;
+        uniform sampler2D tSrc; uniform vec3 uSunScreen; uniform float uDensity, uDecay;
+        float hash12(vec2 p){
+          vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+          p3 += dot(p3, p3.yzx + 33.33);
+          return fract((p3.x + p3.y) * p3.z);
+        }
+        void main(){
+          const int N = 40;
+          vec2 stp = (uSunScreen.xy - vUv) * uDensity / float(N);
+          // rumore per pixel: nasconde le bande fra un campione e l altro
+          vec2 uv = vUv + stp * hash12(vUv * 1731.0);
+          vec3 acc = vec3(0.0); float w = 1.0, tot = 0.0;
+          for (int i = 0; i < N; i++){
+            uv += stp;
+            // fuori dallo schermo non c e informazione: non si legge il bordo
+            float dentro = step(0.0, uv.x) * step(uv.x, 1.0) * step(0.0, uv.y) * step(uv.y, 1.0);
+            acc += texture2D(tSrc, clamp(uv, 0.0, 1.0)).rgb * w * dentro;
+            tot += w; w *= uDecay;
+          }
+          fragColor = vec4(acc / tot, 1.0);
+        }`
+    });
+    this.raysBlurScene = this._mkQuad(this.raysBlurMat);
+
+    /* --- occlusione ambientale, dalla sola profondita, a meta ---
+     * Nessun buffer delle normali: si ricostruisce la posizione in spazio
+     * vista dalla profondita e la normale dalle sue derivate. Dodici campioni
+     * in emisfero, ruotati a caso per pixel, poi una sfocatura che rispetta i
+     * bordi. E quello che manca sotto una chioma o fra due sassi: l ombra di
+     * contatto, che nessuna luce diretta puo dare. */
+    this.aoMat = new THREE.RawShaderMaterial({
+      ...common,
+      uniforms: {
+        tDepth: { value: null },
+        uTexel: { value: new THREE.Vector2() },
+        uProj: { value: new THREE.Vector2(1, 1) },
+        uNear: { value: 0.1 }, uFar: { value: 4000 },
+        uRadius: { value: 0.9 }, uRes: { value: new THREE.Vector2(1, 1) }
+      },
+      vertexShader: FS_VERT,
+      fragmentShader: `precision highp float;
+        #define texture2D texture
+        in vec2 vUv; out vec4 fragColor;
+        uniform sampler2D tDepth; uniform vec2 uTexel, uProj, uRes;
+        uniform float uNear, uFar, uRadius;
+        float lin(vec2 uv){
+          float z = texture2D(tDepth, uv).x * 2.0 - 1.0;
+          return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+        }
+        vec3 posAt(vec2 uv){
+          float z = lin(uv);
+          return vec3((uv * 2.0 - 1.0) * uProj * z, -z);
+        }
+        float hash12(vec2 p){
+          vec3 p3 = fract(vec3(p.xyx) * 0.1031);
+          p3 += dot(p3, p3.yzx + 33.33);
+          return fract((p3.x + p3.y) * p3.z);
+        }
+        void main(){
+          vec3 p = posAt(vUv);
+          float depth = -p.z;
+          if (depth > 2500.0){ fragColor = vec4(1.0); return; }
+          /* Normale dalle derivate. Ai bordi di profondita da spazzatura, ma
+           * la sfocatura dopo la nasconde e a meta risoluzione non si vede. */
+          vec3 n = normalize(cross(dFdx(p), dFdy(p)));
+          vec3 up = abs(n.y) < 0.9 ? vec3(0.0, 1.0, 0.0) : vec3(1.0, 0.0, 0.0);
+          vec3 t = normalize(cross(up, n));
+          vec3 b = cross(n, t);
+          float rot = hash12(vUv * uRes) * 6.2831853;
+          /* Il raggio cresce con la distanza: un metro a due metri dalla
+           * camera e un cerchio enorme, a cento metri e un pixel. */
+          float rad = uRadius * (0.6 + depth * 0.04);
+          float occ = 0.0, cnt = 0.0;
+          for (int i = 0; i < 12; i++){
+            float fi = float(i) + 0.5;
+            float phi = fi * 2.39996323 + rot;
+            float ct = 1.0 - (fi / 12.0) * 0.85;      // piu campioni vicino alla normale
+            float st = sqrt(max(0.0, 1.0 - ct * ct));
+            vec3 dir = t * (cos(phi) * st) + b * (sin(phi) * st) + n * ct;
+            float len = mix(0.18, 1.0, fi / 12.0);
+            vec3 sp = p + dir * rad * len;
+            vec2 suv = 0.5 + 0.5 * (sp.xy / (-sp.z * uProj));
+            if (suv.x < 0.0 || suv.x > 1.0 || suv.y < 0.0 || suv.y > 1.0) continue;
+            float sceneZ = lin(suv);
+            float dz = (-sp.z) - sceneZ;                   // > 0: c e qualcosa davanti al campione
+            float range = smoothstep(0.0, 1.0, rad / max(1e-3, abs(depth - sceneZ)));
+            occ += step(0.02 * rad, dz) * range;
+            cnt += 1.0;
+          }
+          float ao = 1.0 - occ / max(cnt, 1.0);
+          fragColor = vec4(vec3(ao), 1.0);
+        }`
+    });
+    this.aoScene = this._mkQuad(this.aoMat);
+
+    this.aoBlurMat = new THREE.RawShaderMaterial({
+      ...common,
+      uniforms: {
+        tSrc: { value: null }, tDepth: { value: null },
+        uTexel: { value: new THREE.Vector2() },
+        uNear: { value: 0.1 }, uFar: { value: 4000 }
+      },
+      vertexShader: FS_VERT,
+      fragmentShader: `precision highp float;
+        #define texture2D texture
+        in vec2 vUv; out vec4 fragColor;
+        uniform sampler2D tSrc, tDepth; uniform vec2 uTexel; uniform float uNear, uFar;
+        float lin(vec2 uv){
+          float z = texture2D(tDepth, uv).x * 2.0 - 1.0;
+          return (2.0 * uNear * uFar) / (uFar + uNear - z * (uFar - uNear));
+        }
+        void main(){
+          float z0 = lin(vUv);
+          float acc = 0.0, wsum = 0.0;
+          for (int y = -2; y <= 2; y++)
+            for (int x = -2; x <= 2; x++){
+              vec2 uv = vUv + vec2(float(x), float(y)) * uTexel;
+              float z = lin(uv);
+              // un pixel a un altra profondita non deve sporcare questo
+              float w = exp(-abs(z - z0) / max(0.02 * z0, 0.05));
+              acc += texture2D(tSrc, uv).r * w; wsum += w;
+            }
+          fragColor = vec4(vec3(acc / max(wsum, 1e-4)), 1.0);
+        }`
+    });
+    this.aoBlurScene = this._mkQuad(this.aoBlurMat);
+
     /* --- composizione --- */
     this.compMat = new THREE.RawShaderMaterial({
       ...common,
@@ -343,13 +521,16 @@ export class Engine {
         uSunScreen: { value: new THREE.Vector3(0, 0, -1) },
         uSunColor: { value: new THREE.Vector3(1, 1, 1) },
         uSunGlare: { value: 1 },
-        uRainStreaks: { value: 0 }, uWet: { value: 0 }
+        uRainStreaks: { value: 0 }, uWet: { value: 0 },
+        tRays: { value: null }, tAO: { value: null },
+        uRays: { value: 1 }, uAO: { value: 0.6 }
       },
       vertexShader: FS_VERT,
       fragmentShader: `precision highp float;
         #define texture2D texture
         in vec2 vUv; out vec4 fragColor;
-        uniform sampler2D tSrc, tBloom, tAdapt, tDepth;
+        uniform sampler2D tSrc, tBloom, tAdapt, tDepth, tRays, tAO;
+        uniform float uRays, uAO;
         uniform vec2 uResolution;
         uniform float uExposure, uAuto, uKey, uMin, uMax, uBloom, uVignette, uGrain;
         uniform float uChromatic, uContrast, uSaturation, uLift, uTime, uSunGlare;
@@ -403,6 +584,21 @@ export class Engine {
           }
 
           col += texture2D(tBloom, uv).rgb * uBloom;
+
+          /* Occlusione ambientale: scurisce dove la geometria si chiude su se
+           * stessa. Applicata al colore finale e non al solo termine ambiente
+           * — un compromesso, ma il costo di separare i termini in ogni
+           * materiale sarebbe altissimo. Il cielo resta a 1. */
+          if (uAO > 0.001){
+            float ao = texture2D(tAO, uv).r;
+            col *= mix(1.0, ao, uAO);
+          }
+          /* Raggi crepuscolari: luce del sole strascinata dal cielo visibile.
+           * Sommati in HDR, prima della curva tonale, cosi si comportano come
+           * luce vera e non come un velo bianco. */
+          if (uRays > 0.001 && uSunScreen.z > 0.0){
+            col += texture2D(tRays, uv).rgb * uSunColor * uRays * 0.055;
+          }
 
           /* Bagliore del sole: solo se il disco non e coperto da qualcosa.
            * Sondo la profondita in sei punti intorno alla sua posizione. */
@@ -559,6 +755,40 @@ export class Engine {
     if (sky) R.render(sky.skyScene, sky.quadCam);
     R.render(scene, camera);
 
+    // 1b. occlusione ambientale, a meta risoluzione
+    if (S.ao > 0.001) {
+      const a = this.aoMat.uniforms;
+      a.tDepth.value = this.hdr.depthTexture;
+      a.uTexel.value.set(1 / this.aoRT[0].width, 1 / this.aoRT[0].height);
+      a.uRes.value.set(this.aoRT[0].width, this.aoRT[0].height);
+      const th = Math.tan(camera.fov * Math.PI / 360);
+      a.uProj.value.set(th * camera.aspect, th);
+      a.uNear.value = camera.near; a.uFar.value = camera.far;
+      this._blit(this.aoScene, this.aoRT[0]);
+      const ab = this.aoBlurMat.uniforms;
+      ab.tSrc.value = this.aoRT[0].texture;
+      ab.tDepth.value = this.hdr.depthTexture;
+      ab.uTexel.value.set(1 / this.aoRT[0].width, 1 / this.aoRT[0].height);
+      ab.uNear.value = camera.near; ab.uFar.value = camera.far;
+      this._blit(this.aoBlurScene, this.aoRT[1]);
+    }
+
+    // 1c. raggi di luce, a un quarto, due iterazioni di sfocatura radiale
+    const sunScr = frameInfo && frameInfo.sunScreen;
+    if (S.rays > 0.001 && sunScr && sunScr.z > 0.0) {
+      const m = this.raysMaskMat.uniforms;
+      m.tDepth.value = this.hdr.depthTexture;
+      m.uSunScreen.value.copy(sunScr);
+      m.uAspect.value = W / H;
+      this._blit(this.raysMaskScene, this.raysRT[0]);
+      const b = this.raysBlurMat.uniforms;
+      b.uSunScreen.value.copy(sunScr);
+      b.tSrc.value = this.raysRT[0].texture; b.uDensity.value = 0.55; b.uDecay.value = 0.962;
+      this._blit(this.raysBlurScene, this.raysRT[1]);
+      b.tSrc.value = this.raysRT[1].texture; b.uDensity.value = 0.30; b.uDecay.value = 0.975;
+      this._blit(this.raysBlurScene, this.raysRT[0]);
+    }
+
     // 2. luminanza media della scena
     this.lumMat.uniforms.tSrc.value = this.hdr.texture;
     this.lumMat.uniforms.uTexel.value.set(1 / W, 1 / H);
@@ -645,6 +875,10 @@ export class Engine {
     c.uSaturation.value = S.saturation;
     c.uLift.value = S.lift;
     c.uSunGlare.value = S.sunGlare;
+    c.tRays.value = this.raysRT[0].texture;
+    c.tAO.value = this.aoRT[1].texture;
+    c.uRays.value = (sunScr && sunScr.z > 0.0) ? S.rays : 0;
+    c.uAO.value = S.ao;
     if (frameInfo) {
       c.uTime.value = frameInfo.time || 0;
       if (frameInfo.sunScreen) c.uSunScreen.value.copy(frameInfo.sunScreen);

@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=23';
-import { Fauna } from './fauna.js?v=23';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=24';
+import { Fauna } from './fauna.js?v=24';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=23';
-import { SkySystem } from './sky.js?v=23';
-import { FogSystem } from './fog.js?v=23';
-import { Engine } from './engine.js?v=23';
-import { Terrain } from './terrain.js?v=23';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=23';
-import { FirstPersonControls } from './controls.js?v=23';
-import { Scatter } from './scatter.js?v=23';
-import { Water } from './water.js?v=23';
-import { Precipitation } from './weather.js?v=23';
-import { City } from './city.js?v=23';
-import { Castle } from './castle.js?v=23';
-import { Waterfalls } from './waterfall.js?v=23';
-import { Library } from './library.js?v=23';
-import { clamp, lerp, saturate } from './noise.js?v=23';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=24';
+import { SkySystem } from './sky.js?v=24';
+import { FogSystem } from './fog.js?v=24';
+import { Engine } from './engine.js?v=24';
+import { Terrain } from './terrain.js?v=24';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=24';
+import { FirstPersonControls } from './controls.js?v=24';
+import { Scatter } from './scatter.js?v=24';
+import { Water } from './water.js?v=24';
+import { Precipitation } from './weather.js?v=24';
+import { City } from './city.js?v=24';
+import { Castle } from './castle.js?v=24';
+import { Waterfalls } from './waterfall.js?v=24';
+import { Library } from './library.js?v=24';
+import { clamp, lerp, saturate } from './noise.js?v=24';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -275,7 +275,23 @@ function biomeSwatch(b) {
   const g1 = hex(p.grassHigh !== undefined ? p.grassHigh : p.rock);
   const g2 = hex(p.grassLow !== undefined ? p.grassLow : p.rockDark);
   const acc = hex(p.sand !== undefined ? p.sand : p.rock);
-  return `linear-gradient(180deg, ${hex(skyTop)} 0%, ${hex(skyBot)} 40%, ${acc} 44%, ${g1} 60%, ${g2} 100%)`;
+  /* Una miniatura, non una striscia: il sole (o i soli) nel cielo, una
+   * fascia di foschia all orizzonte, e una lama d acqua se il luogo ne ha
+   * abbastanza da vederla. Cinquantaquattro schede si scelgono a colpo
+   * d occhio solo se ognuna racconta qualcosa. */
+  const strati = [];
+  const sole = b.blackHole ? 'rgba(255,200,140,.85) 0 3%, rgba(0,0,0,.95) 3.5% 9%, rgba(255,150,80,.35) 10%, transparent 20%'
+             : b.space ? 'transparent 0%' : 'rgba(255,246,220,.95) 0 3%, rgba(255,236,190,.45) 6%, transparent 18%';
+  strati.push(`radial-gradient(circle at 68% 24%, ${sole})`);
+  if (b.extraSuns) strati.push(`radial-gradient(circle at 46% 30%, rgba(255,240,210,.9) 0 2.4%, rgba(255,225,170,.35) 5%, transparent 14%)`);
+  if (b.extraSuns > 1) strati.push(`radial-gradient(circle at 84% 12%, rgba(255,240,210,.9) 0 2%, transparent 12%)`);
+  if (b.planet) strati.push(`radial-gradient(circle at 28% 22%, ${hex(tint(0xc8d0d8))} 0 ${Math.round(b.planet.size * 60)}%, transparent ${Math.round(b.planet.size * 60) + 1}%)`);
+  const acqua = (b.waterLevel !== null && b.waterLevel !== undefined && b.waterLevel > -12 && !b.underwater)
+    ? (b.water && b.water.shallow !== undefined ? hex(b.water.shallow) : hex(tint(0x3f6f9a))) : null;
+  const orizz = hex(tint(0xe8ecee));
+  strati.push(`linear-gradient(180deg, ${hex(skyTop)} 0%, ${hex(skyBot)} 36%, ${orizz} 41%, ${acc} 43%, ${g1} 52%,` +
+              (acqua ? ` ${g2} 64%, ${acqua} 66%, ${acqua} 78%, ${g2} 80%,` : '') + ` ${g2} 100%)`);
+  return strati.join(', ');
 }
 
 function makeBiomeCard(id, onPick) {
@@ -511,6 +527,8 @@ function bindUI() {
   bindSlider('exposure', 'exposure-val', v => S.exposure = Math.pow(2, v), v => (v >= 0 ? '+' : '') + v.toFixed(2));
   $('auto-exposure').addEventListener('change', e => S.autoExposure = e.target.checked);
   bindSlider('bloom', 'bloom-val', v => S.bloom = v / 100, v => Math.round(v) + '%');
+  bindSlider('rays', 'rays-val', v => S.rays = v / 100, v => Math.round(v) + '%');
+  bindSlider('ao', 'ao-val', v => S.ao = v / 100, v => Math.round(v) + '%');
   bindSlider('saturation', 'saturation-val', v => S.saturation = v / 100, v => Math.round(v) + '%');
   bindSlider('contrast', 'contrast-val', v => S.contrast = v / 100, v => Math.round(v) + '%');
   bindSlider('vignette', 'vignette-val', v => S.vignette = v / 100, v => Math.round(v) + '%');
@@ -564,18 +582,31 @@ function togglePanel(open) {
  * ------------------------------------------------------------------ */
 let loadJob = null;
 
+let rebuildInAttesa = false;
 function rebuildWithLoading() {
-  if (building) return;
+  /* Se arriva una richiesta mentre un mondo e ancora in costruzione, non si
+   * perde: si esegue appena quello finisce. Prima veniva ignorata in silenzio,
+   * e l utente restava nel luogo vecchio senza capire perche. */
+  if (building) { rebuildInAttesa = true; return; }
   building = true;
   $('loading').classList.remove('hidden');
   $('load-bar').style.width = '0%';
   $('load-label').textContent = 'Sto costruendo ' + getBiome(state.biomeId).label.toLowerCase();
-  const biome = buildWorld();
-  loadJob = { done: 0, total: 1 };
-  // il terreno si costruisce nei fotogrammi successivi, con la barra che avanza
-  terrain.update(controls.pos.x, controls.pos.z, 0);
-  loadJob.total = Math.max(1, terrain.queue.length);
-  loadJob.phase = 'terreno';
+  try {
+    buildWorld();
+    loadJob = { done: 0, total: 1 };
+    // il terreno si costruisce nei fotogrammi successivi, con la barra che avanza
+    terrain.update(controls.pos.x, controls.pos.z, 0);
+    loadJob.total = Math.max(1, terrain.queue.length);
+    loadJob.phase = 'terreno';
+  } catch (err) {
+    /* Un errore qui lasciava la barra a zero per sempre e la console muta
+     * per chi non la guarda: meglio dirlo in faccia. */
+    console.error('[altrove] costruzione fallita:', err);
+    $('load-label').textContent = 'Non riesco a costruire questo luogo: ' + (err && err.message ? err.message : err);
+    building = false;
+    loadJob = null;
+  }
 }
 
 function stepLoading() {
@@ -603,6 +634,38 @@ function stepLoading() {
     $('loading').classList.add('hidden');
     // riposiziona: il terreno ora esiste davvero
     controls.pos.y = world.height(controls.pos.x, controls.pos.z) + controls.eyeHeight;
+    scansaTronchi();
+    if (rebuildInAttesa) { rebuildInAttesa = false; rebuildWithLoading(); }
+  }
+}
+
+/* Con i boschi fitti il punto di partenza finisce spesso dentro un tronco, o
+ * a un passo da uno: la prima cosa che si vede e una corteccia a tutto
+ * schermo. Il punto lo sceglie il terreno, che degli alberi non sa niente —
+ * quindi la correzione va fatta dopo, quando le piante esistono davvero. Si
+ * cerca il punto libero piu vicino entro una quindicina di metri. */
+const TIPI_TRONCO = new Set(['broadleaf', 'conifer', 'birch', 'deadTree', 'palm', 'swampTree',
+  'acacia', 'twistedTree', 'fairyTree', 'ajisaTree', 'lycopod', 'giantMushroom', 'sequoia']);
+function scansaTronchi() {
+  if (!scatter || state.fly) return;
+  const m = new THREE.Matrix4(), p = new THREE.Vector3(), q = new THREE.Quaternion(), sc = new THREE.Vector3();
+  const tronchi = [];
+  for (const R of scatter.rules) {
+    if (!TIPI_TRONCO.has(R.rule.type)) continue;
+    for (const im of R.meshes) for (let i = 0; i < im.count; i++) {
+      im.getMatrixAt(i, m); m.decompose(p, q, sc);
+      if (Math.hypot(p.x - controls.pos.x, p.z - controls.pos.z) < 24) tronchi.push([p.x, p.z, 0.35 * sc.x + 0.5]);
+    }
+  }
+  const libero = (x, z) => tronchi.every(t => Math.hypot(t[0] - x, t[1] - z) > t[2] + 1.4);
+  if (libero(controls.pos.x, controls.pos.z)) return;
+  for (let r = 2; r <= 16; r += 1.5) {
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2 + r * 0.7;
+      const x = controls.pos.x + Math.cos(a) * r, z = controls.pos.z + Math.sin(a) * r;
+      if (world.hasWater && world.height(x, z) < world.waterLevel + 1) continue;
+      if (libero(x, z)) { controls.teleport(x, z, 0.1); return; }
+    }
   }
 }
 
@@ -702,6 +765,17 @@ function padOra(passo) {
   syncHourUI();
   if (started) toast(fmtHour(state.hour));
 }
+
+/* «Sorprendimi»: un luogo a caso. Con cinquantaquattro schede la scelta
+ * costa, e la cosa piu divertente e spesso finire dove non si sarebbe
+ * andati. */
+$('random').addEventListener('click', () => {
+  const id = BIOME_ORDER[Math.floor(Math.random() * BIOME_ORDER.length)];
+  pickBiomeStart(id);
+  const card = document.querySelector(`#start-biomes .biome[data-biome="${id}"]`);
+  if (card) card.scrollIntoView({ block: 'nearest' });
+  setTimeout(() => $('enter').click(), 260);
+});
 
 controls.onPadPress = (nome) => {
   if (!started) {
@@ -1024,8 +1098,13 @@ resize();
 setWeather(state.weatherId);
 requestAnimationFrame(frame);
 
-window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, precip, atmo, THREE };
+window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, get loadJob() { return loadJob; }, get building() { return building; }, precip, atmo, THREE };
 
 /* Agganci per lo strumento di collaudo in dev/shots.js */
 window.__rebuild = rebuildWithLoading;
+/* Orologio pilotabile per il collaudo. Nelle schede nascoste il browser
+ * sospende requestAnimationFrame e l app si ferma: sembra un mondo che non
+ * si costruisce piu, e invece e il tempo che non scorre. Chiamando i
+ * fotogrammi a mano il collaudo va avanti anche a riquadro chiuso. */
+window.__frame = (n = 1, dtMs = 16) => { let t = performance.now(); for (let i = 0; i < n; i++) { t += dtMs; frame(t); } return state.time; };
 window.__snapWeather = () => { wxState = makeWeatherState(wxTarget); };

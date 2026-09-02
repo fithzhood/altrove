@@ -111,6 +111,17 @@ export const BIOMES = {
     fog: { density: 0.0032, heightFalloff: 0.0075, tint: [0.92, 0.98, 1.0] },
     ambience: { hemiSky: 0x8fb4dd, hemiGround: 0x3a3a24, bounce: 0.30 },
     scatter: [
+      /* Qualcuno ci vive: una capanna ogni tanto, un pozzo, un ometto sui
+       * sentieri. Un bosco senza niente di costruito si guarda due minuti. */
+      { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.25], tint: [0x8a6a44, 0xa8845a], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 260, radius: 22, jitter: 0.6 } },
+      { type: 'well', density: 0.0030, radius: 240, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0x8a8478, 0xa8a094], jitter: 0.7, cluster: { period: 260, radius: 30, jitter: 0.6 } },
+      { type: 'cairn', density: 0.0040, radius: 200, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.3], tint: [0x8a8880, 0xa8a69e], cluster: { period: 120, radius: 8, jitter: 0.6 } },
+      /* La volta: uno strato vicino, fitto e grande. Le regole sopra sono il
+       * bosco visto da lontano; queste sono il bosco in cui si sta, con le
+       * chiome che si toccano e coprono il cielo. Raggio corto apposta: e
+       * solo dove serve, e costa poco. */
+      { type: 'broadleaf', density: 0.022, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.25, 1.70], tilt: 0.05, tint: [0x2c5e1e, 0x5a8a34], shadow: true, seasonal: true },
+      { type: 'conifer', density: 0.016, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [1.1, 1.8], tilt: 0.03, tint: [0x1e4a1a, 0x3a6a2a], shadow: true },
       { type: 'conifer', density: 0.0075, radius: 320, slope: [0, 0.62], height: [-40, 240], moisture: [0.3, 1.0], scale: [0.62, 1.28], tilt: 0.035, tint: [0x2b4420, 0x4c6f2e], shadow: true },
       { type: 'broadleaf', density: 0.0055, radius: 300, slope: [0, 0.45], height: [-40, 150], moisture: [0.42, 1.0], scale: [0.70, 1.22], tilt: 0.05, tint: [0x40662a, 0x6d8c35], shadow: true, seasonal: true },
       { type: 'birch', density: 0.0022, radius: 280, slope: [0, 0.4], height: [-40, 130], moisture: [0.5, 1.0], scale: [0.75, 1.15], tilt: 0.06, tint: [0x6f8f38, 0x93ad4a], shadow: true, seasonal: true },
@@ -214,6 +225,9 @@ export const BIOMES = {
     fog: { density: 0.0026, heightFalloff: 0.0045, tint: [0.88, 0.94, 1.0] },
     ambience: { hemiSky: 0x86aede, hemiGround: 0x4a4a48, bounce: 0.42 },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x7a5a38, 0x9a7a50], sink: 0.3, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 300, radius: 22, jitter: 0.6 } },
+      { type: 'cairn', density: 0.0060, radius: 240, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.5], tint: [0x8a8880, 0xb0aea6], cluster: { period: 90, radius: 7, jitter: 0.6 } },
+      { type: 'conifer', density: 0.016, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.5], tilt: 0.03, tint: [0x1c3e1c, 0x2e5a2a], shadow: true },
       { type: 'conifer', density: 0.0060, radius: 320, slope: [0, 0.55], height: [-99, 165], moisture: [0.2, 1], scale: [0.55, 1.12], tilt: 0.05, tint: [0x24401c, 0x3f5f28], shadow: true },
       { type: 'deadTree', density: 0.0009, radius: 260, slope: [0, 0.55], height: [90, 210], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.12, tint: [0x5a5044, 0x746755], shadow: true },
       { type: 'bush', density: 0.010, radius: 140, slope: [0, 0.6], height: [-99, 190], moisture: [0.2, 1], scale: [0.5, 1.0], tilt: 0.08, tint: [0x37501f, 0x4e662a] },
@@ -247,6 +261,8 @@ export const BIOMES = {
     ambience: { hemiSky: 0x8ec4e8, hemiGround: 0x5a6a52, bounce: 0.48 },
     water: { deep: 0x063a4e, shallow: 0x1f9aa0, foam: 0xf2fbff, waveAmp: 0.42, waveScale: 1.0, reflect: 0.9 },
     scatter: [
+      { type: 'lighthouse', density: 0.0040, radius: 500, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.15], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 640, radius: 16, jitter: 0.5 } },
+      { type: 'cabin', density: 0.0026, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.85, 1.1], tint: [0xd8d0c0, 0xeee6d6], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 300, radius: 26, jitter: 0.6 } },
       { type: 'palm', density: 0.0030, radius: 300, slope: [0, 0.42], height: [1.2, 60], moisture: [0, 1], scale: [0.70, 1.28], tilt: 0.14, tint: [0x3d6f2c, 0x5d8f36], shadow: true },
       { type: 'broadleaf', density: 0.0028, radius: 280, slope: [0, 0.5], height: [5, 90], moisture: [0.35, 1], scale: [0.8, 1.5], tilt: 0.05, tint: [0x2f6024, 0x4d7a2e], shadow: true },
       { type: 'bush', density: 0.016, radius: 150, slope: [0, 0.6], height: [1.0, 120], moisture: [0.2, 1], scale: [0.6, 1.5], tilt: 0.07, tint: [0x2f5a22, 0x53782e] },
@@ -282,6 +298,8 @@ export const BIOMES = {
     fog: { density: 0.0038, heightFalloff: 0.0060, tint: [0.86, 0.93, 1.0] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x7e8b98, bounce: 0.75 },
     scatter: [
+      { type: 'domeHut', density: 0.0030, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.55, 0.75], tint: [0xf0f4f8, 0xffffff], sink: 0.35, emissive: 0.06, emissiveMask: true, evenColor: true, jitter: 0.6, cluster: { period: 320, radius: 20, jitter: 0.6 } },
+      { type: 'cairn', density: 0.0060, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.4], tint: [0x6a6e74, 0x9a9ea4], cluster: { period: 110, radius: 7, jitter: 0.6 } },
       { type: 'conifer', density: 0.0016, radius: 300, slope: [0, 0.45], height: [-99, 60], moisture: [0.4, 1], scale: [0.5, 1.1], tilt: 0.08, tint: [0x27381f, 0x3a4c26], shadow: true, snowy: true },
       { type: 'deadTree', density: 0.0007, radius: 260, slope: [0, 0.5], height: [-99, 90], moisture: [0, 1], scale: [0.5, 0.9], tilt: 0.14, tint: [0x5a5248, 0x6e655a], shadow: true },
       { type: 'iceRock', density: 0.006, radius: 220, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.55, 1.45], tilt: 0.3, tint: [0x9cc4d8, 0xd8ecf6], shadow: true },
@@ -315,6 +333,8 @@ export const BIOMES = {
     fog: { density: 0.0026, heightFalloff: 0.0045, tint: [1.0, 0.96, 0.86] },
     ambience: { hemiSky: 0xa0c0e0, hemiGround: 0x7a6838, bounce: 0.52 },
     scatter: [
+      { type: 'stiltHut', density: 0.0026, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.05], tint: [0xa8885a, 0xc8a878], sink: 1.2, jitter: 0.6, cluster: { period: 340, radius: 30, jitter: 0.6 } },
+      { type: 'well', density: 0.0026, radius: 240, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xa89878, 0xc8b898], jitter: 0.7, cluster: { period: 340, radius: 34, jitter: 0.6 } },
       { type: 'acacia', density: 0.0022, radius: 340, slope: [0, 0.35], height: [-99, 999], moisture: [0.2, 1], scale: [0.80, 1.42], tilt: 0.04, tint: [0x4c6630, 0x6a7f3a], shadow: true },
       { type: 'deadTree', density: 0.0007, radius: 280, slope: [0, 0.4], height: [-99, 999], moisture: [0, 0.5], scale: [0.8, 1.4], tilt: 0.08, tint: [0x6b5c44, 0x8a7a5c], shadow: true },
       { type: 'termiteMound', density: 0.0016, radius: 200, slope: [0, 0.3], height: [-99, 999], moisture: [0, 0.7], scale: [0.7, 1.8], tilt: 0.02, tint: [0x8f5f36, 0xa87a4c], shadow: true },
@@ -381,6 +401,7 @@ export const BIOMES = {
     ambience: { hemiSky: 0x8aa8b0, hemiGround: 0x323a22, bounce: 0.24 },
     water: { deep: 0x16241a, shallow: 0x33482a, foam: 0x9aa878, waveAmp: 0.05, waveScale: 2.2, reflect: 0.72 },
     scatter: [
+      { type: 'stiltHut', density: 0.0030, radius: 260, slope: [0, 0.3], height: [-3, 2.5], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a7050, 0xa89070], underwater: true, jitter: 0.6, cluster: { period: 260, radius: 30, jitter: 0.6 } },
       { type: 'swampTree', density: 0.0050, radius: 300, slope: [0, 0.5], height: [-3, 40], moisture: [0, 1], scale: [0.75, 1.32], tilt: 0.05, tint: [0x354a20, 0x4e6428], shadow: true, seasonal: true },
       { type: 'deadTree', density: 0.0026, radius: 280, slope: [0, 0.5], height: [-3, 40], moisture: [0, 1], scale: [0.7, 1.5], tilt: 0.13, tint: [0x3e3a2c, 0x54503c], shadow: true },
       { type: 'reed', density: 0.75, radius: 55, slope: [0, 0.35], height: [-1.4, 2.2], moisture: [0, 1], scale: [0.7, 1.4], tilt: 0.06, tint: [0x5e6a30, 0x84884a], grass: true },
@@ -428,6 +449,7 @@ export const BIOMES = {
     ambience: { hemiSky: 0x6f8a78, hemiGround: 0x22281c, bounce: 0.18 },
     motes: { amount: 0.16, color: [0.35, 0.85, 0.55] },
     scatter: [
+      { type: 'twistedTree', density: 0.032, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.2, 1], scale: [1.1, 1.8], tilt: 0.10, tint: [0x1e2418, 0x3a4230], shadow: true },
       { type: 'twistedTree', density: 0.0110, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.65, 1.30], tilt: 0.10, tint: [0x1e2c16, 0x33421f], shadow: true },
       { type: 'deadTree', density: 0.0038, radius: 280, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.16, tint: [0x1c1815, 0x352e26], shadow: true },
       { type: 'glowMushroom', density: 0.030, radius: 80, slope: [0, 0.5], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.8], tilt: 0.14, tint: [0x2ad6a0, 0x7ef0c8], emissive: 0.45 },
@@ -482,6 +504,8 @@ export const BIOMES = {
     ambience: { hemiSky: 0xb08ad8, hemiGround: 0x2e4a3a, bounce: 0.34 },
     motes: { amount: 0.85, color: [0.55, 1.00, 0.78] },
     scatter: [
+      { type: 'fairyTree', density: 0.012, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.9], tilt: 0.04, tint: [0x2a5a4a, 0x5aa08a], shadow: true, emissive: 0.05 },
+      { type: 'broadleaf', density: 0.018, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.8], tilt: 0.05, tint: [0x2a6a3a, 0x4a9a5a], shadow: true },
       { type: 'fairyTree', density: 0.0044, radius: 340, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.35], tilt: 0.05, tint: [0x3fd0a8, 0x9ef0d0], shadow: true, emissive: 0.10 },
       { type: 'giantMushroom', density: 0.0032, radius: 260, slope: [0, 0.45], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.5], tilt: 0.07, tint: [0xd85aa8, 0xf8a0d0], shadow: true, emissive: 0.14 },
       { type: 'glowMushroom', density: 0.045, radius: 80, slope: [0, 0.5], height: [-99, 999], moisture: [0.25, 1], scale: [0.9, 2.0], tilt: 0.12, tint: [0x50b8f0, 0xa8e8ff], emissive: 0.50 },
@@ -643,6 +667,8 @@ export const BIOMES = {
     fog: { density: 0.0042, heightFalloff: 0.0080, tint: [0.90, 0.95, 1.02] },
     ambience: { hemiSky: 0x86a8d0, hemiGround: 0x33381f, bounce: 0.26 },
     scatter: [
+      { type: 'conifer', density: 0.018, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [1.1, 1.8], tilt: 0.03, tint: [0x1e4a1a, 0x3a6a2a], shadow: true },
+      { type: 'broadleaf', density: 0.014, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.8], tilt: 0.05, tint: [0x2c5e1e, 0x5a8a34], shadow: true, seasonal: true },
       { type: 'conifer', density: 0.0080, radius: 320, slope: [0, 0.6], height: [-40, 999], moisture: [0.3, 1], scale: [0.62, 1.30], tilt: 0.04, tint: [0x22381a, 0x3c5a26], shadow: true },
       { type: 'broadleaf', density: 0.0044, radius: 300, slope: [0, 0.45], height: [-40, 999], moisture: [0.4, 1], scale: [0.7, 1.20], tilt: 0.05, tint: [0x33561f, 0x5a7a2c], shadow: true, seasonal: true },
       { type: 'birch', density: 0.0022, radius: 280, slope: [0, 0.4], height: [-40, 999], moisture: [0.45, 1], scale: [0.75, 1.15], tilt: 0.06, tint: [0x5f8130, 0x86a044], shadow: true, seasonal: true },
@@ -687,7 +713,7 @@ export const BIOMES = {
     fog: { density: 0.00035, heightFalloff: 0.002, tint: [0.85, 0.90, 1.05] },
     ambience: { hemiSky: 0x8fa8d8, hemiGround: 0x4a5a30, bounce: 0.55 },
     scatter: [
-      { type: 'broadleaf', density: 0.0016, radius: 150, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [1.0, 1.6], tilt: 0.04, tint: [0x2f6420, 0x548034], shadow: true },
+      { type: 'broadleaf', density: 0.0016, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.2, 1], scale: [1.0, 1.6], tilt: 0.04, tint: [0x2f6420, 0x548034], shadow: true },
       { type: 'slabRock', density: 0.0035, radius: 140, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.8], tilt: 0.18, tint: [0x6c6860, 0x8e8a80], shadow: true },
       { type: 'rock', density: 0.014, radius: 120, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.4], tilt: 0.45, tint: [0x64615a, 0x86827a] },
       { type: 'bush', density: 0.014, radius: 110, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.2], tilt: 0.07, tint: [0x35601f, 0x54802e] },
@@ -839,6 +865,8 @@ export const BIOMES = {
     fog: { density: 0.0024, heightFalloff: 0.0040, tint: [1.05, 0.94, 0.82] },
     ambience: { hemiSky: 0xa0bce0, hemiGround: 0x7a4626, bounce: 0.55 },
     scatter: [
+      { type: 'archRuin', density: 0.0020, radius: 280, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.2, 2.2], tint: [0x9a5a3a, 0xc07a4a], jitter: 0.7, cluster: { period: 360, radius: 36, jitter: 0.6 } },
+      { type: 'cairn', density: 0.0050, radius: 240, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.4], tint: [0x9a6a4a, 0xc08a62], cluster: { period: 120, radius: 7, jitter: 0.6 } },
       { type: 'dryBush', density: 0.014, radius: 190, slope: [0, 0.5], height: [-999, 999], moisture: [0, 0.8], scale: [0.6, 1.5], tilt: 0.08, tint: [0x7a6b3c, 0x9a8850] },
       { type: 'saguaro', density: 0.0011, radius: 300, slope: [0, 0.28], height: [-999, 999], moisture: [0.3, 1], scale: [0.7, 1.25], tilt: 0.03, tint: [0x3f5a2c, 0x5a7438], shadow: true },
       { type: 'deadTree', density: 0.0007, radius: 260, slope: [0, 0.4], height: [-999, 999], moisture: [0.25, 1], scale: [0.7, 1.2], tilt: 0.10, tint: [0x6b5940, 0x8a7454], shadow: true },
@@ -865,6 +893,10 @@ export const BIOMES = {
     fog: { density: 0.0052, heightFalloff: 0.0105, tint: [0.90, 1.00, 0.90] },
     ambience: { hemiSky: 0x8ab0a0, hemiGround: 0x24401a, bounce: 0.24 },
     scatter: [
+      { type: 'stiltHut', density: 0.0030, radius: 260, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a7050, 0xa89070], sink: 1.0, jitter: 0.6, cluster: { period: 300, radius: 28, jitter: 0.6 } },
+      { type: 'archRuin', density: 0.0020, radius: 260, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.6], tint: [0x6a7a5a, 0x8a9a70], jitter: 0.7, cluster: { period: 380, radius: 40, jitter: 0.6 } },
+      { type: 'broadleaf', density: 0.028, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.3, 1.8], tilt: 0.08, tint: [0x1f5a1c, 0x3f8a2c], shadow: true },
+      { type: 'palm', density: 0.016, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.1, 1.8], tilt: 0.10, tint: [0x2a6a22, 0x4a9034], shadow: true },
       { type: 'broadleaf', density: 0.0180, radius: 260, slope: [0, 0.55], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.45], tilt: 0.06, tint: [0x1e5416, 0x3d7c26], shadow: true },
       { type: 'palm', density: 0.0075, radius: 250, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.30], tilt: 0.12, tint: [0x256018, 0x458428], shadow: true },
       { type: 'swampTree', density: 0.0035, radius: 240, slope: [0, 0.5], height: [-99, 999], moisture: [0.4, 1], scale: [0.8, 1.35], tilt: 0.06, tint: [0x1a4a14, 0x336a20], shadow: true },
@@ -893,6 +925,8 @@ export const BIOMES = {
     fog: { density: 0.0055, heightFalloff: 0.011, tint: [0.88, 1.02, 0.86] },
     ambience: { hemiSky: 0x92b48c, hemiGround: 0x2e4020, bounce: 0.26 },
     scatter: [
+      { type: 'pagoda', density: 0.0030, radius: 320, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.3], tint: [0x8a4a30, 0xa85a3a], sink: 0.3, jitter: 0.5, cluster: { period: 420, radius: 18, jitter: 0.5 } },
+      { type: 'bamboo', density: 0.055, radius: 120, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.1, 1.7], tilt: 0.04, tint: [0x5a8a2a, 0x8ab84a], shadow: true },
       { type: 'bamboo', density: 0.0180, radius: 220, slope: [0, 0.55], height: [-99, 999], moisture: [0.2, 1], scale: [0.75, 1.35], tilt: 0.03, tint: [0x5e8a2c, 0x9ab84a], shadow: true },
       { type: 'broadleaf', density: 0.0016, radius: 260, slope: [0, 0.45], height: [-99, 999], moisture: [0.4, 1], scale: [0.7, 1.15], tilt: 0.05, tint: [0x2f5a1e, 0x4e7a28], shadow: true },
       { type: 'fern', density: 0.055, radius: 80, slope: [0, 0.55], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.4], tilt: 0.10, tint: [0x22461a, 0x3a6822] },
@@ -917,6 +951,7 @@ export const BIOMES = {
     fog: { density: 0.0016, heightFalloff: 0.0035, tint: [0.98, 0.99, 1.0] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0xc8c6bc, bounce: 0.92 },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.0, 1.3], tint: [0xe8e4dc, 0xffffff], sink: 0.2, emissive: 0.08, emissiveMask: true, jitter: 0.5, cluster: { period: 460, radius: 18, jitter: 0.5 } },
       { type: 'rock', density: 0.0016, radius: 200, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.4, 1.2], tilt: 0.5, tint: [0x8e8a80, 0xb4b0a4] }
     ]
   },
@@ -939,6 +974,9 @@ export const BIOMES = {
     ambience: { hemiSky: 0x88a8cc, hemiGround: 0x3a4030, bounce: 0.34 },
     water: { deep: 0x03151c, shallow: 0x0d4048, foam: 0xeaf6ff },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.3], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a3a2e, 0xa84a3a], sink: 0.3, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 280, radius: 26, jitter: 0.6 } },
+      { type: 'lighthouse', density: 0.0040, radius: 500, slope: [0, 0.3], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 700, radius: 16, jitter: 0.5 } },
+      { type: 'conifer', density: 0.020, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.5], tilt: 0.03, tint: [0x1c3e1c, 0x2e5a2a], shadow: true },
       { type: 'conifer', density: 0.0075, radius: 320, slope: [0, 0.62], height: [2, 260], moisture: [0.2, 1], scale: [0.55, 1.10], tilt: 0.06, tint: [0x1e3418, 0x365224], shadow: true },
       { type: 'deadTree', density: 0.0010, radius: 260, slope: [0, 0.55], height: [2, 300], moisture: [0, 1], scale: [0.6, 1.0], tilt: 0.14, tint: [0x50483c, 0x6c6254], shadow: true },
       { type: 'bush', density: 0.011, radius: 140, slope: [0, 0.6], height: [1, 300], moisture: [0.2, 1], scale: [0.5, 1.1], tilt: 0.08, tint: [0x2e4818, 0x466026] },
@@ -1025,6 +1063,8 @@ export const BIOMES = {
     fog: { density: 0.0065, heightFalloff: 0.020, tint: [0.98, 1.0, 1.02] },
     ambience: { hemiSky: 0x9cc0dc, hemiGround: 0x6a5c3c, bounce: 0.44 },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x6a5a48, 0x8a7a60], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 380, radius: 20, jitter: 0.6 } },
+      { type: 'cairn', density: 0.0050, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.2], tint: [0x9a9088, 0xc0b8ac], cluster: { period: 130, radius: 7, jitter: 0.6 } },
       { type: 'conifer', density: 0.0038, radius: 300, slope: [0, 0.55], height: [4, 999], moisture: [0.3, 1], scale: [0.6, 1.15], tilt: 0.05, tint: [0x24401c, 0x3f5f28], shadow: true },
       { type: 'deadTree', density: 0.0026, radius: 260, slope: [0, 0.5], height: [-2, 999], moisture: [0, 0.6], scale: [0.6, 1.1], tilt: 0.14, tint: [0x9a9284, 0xbdb5a5], shadow: true },
       { type: 'rock', density: 0.020, radius: 180, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.5, tint: [0x8e7c50, 0xb8a370] },
@@ -1177,6 +1217,8 @@ export const BIOMES = {
     fog: { density: 0.0056, heightFalloff: 0.0090, tint: [0.98, 1.0, 0.92] },
     ambience: { hemiSky: 0x9ab494, hemiGround: 0x2c4418, bounce: 0.28 },
     scatter: [
+      { type: 'conifer', density: 0.020, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.2, 1], scale: [1.4, 2.4], tilt: 0.04, tint: [0x1e4a1a, 0x3a6a2a], shadow: true },
+      { type: 'cycad', density: 0.030, radius: 120, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.0, 1.9], tilt: 0.06, tint: [0x2e6a24, 0x4f8a30], shadow: true },
       { type: 'conifer', density: 0.0085, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [0.9, 1.9], tilt: 0.04, tint: [0x1e3c18, 0x395c22], shadow: true },
       { type: 'cycad', density: 0.0130, radius: 220, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.5], tilt: 0.05, tint: [0x2e6a24, 0x4f8a30], shadow: true },
       { type: 'palm', density: 0.0040, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.4], tilt: 0.10, tint: [0x276018, 0x468428], shadow: true },
@@ -1511,6 +1553,8 @@ export const BIOMES = {
     fog: { density: 0.0062, heightFalloff: 0.0105, tint: [1.0, 0.96, 0.88] },
     ambience: { hemiSky: 0x8aa8b8, hemiGround: 0x2e4018, bounce: 0.22 },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x7a5a3a, 0x9a7a50], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 340, radius: 22, jitter: 0.6 } },
+      { type: 'conifer', density: 0.0090, radius: 160, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [3.2, 5.0], tilt: 0.02, tint: [0x1c3c1a, 0x2e5a26], shadow: true },
       { type: 'conifer', density: 0.0038, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [2.6, 4.3], tilt: 0.015, tint: [0x1e3a18, 0x35561f], shadow: true },
       { type: 'conifer', density: 0.0060, radius: 280, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.5, 1.1], tilt: 0.05, tint: [0x24421a, 0x3d5e24], shadow: true },
       { type: 'fern', density: 0.075, radius: 90, slope: [0, 0.6], height: [-99, 999], moisture: [0.25, 1], scale: [1.0, 2.2], tilt: 0.10, tint: [0x1e4414, 0x35661e] },
@@ -1539,6 +1583,8 @@ export const BIOMES = {
     fog: { density: 0.0030, heightFalloff: 0.0060, tint: [1.0, 0.98, 1.0] },
     ambience: { hemiSky: 0x9cb8e0, hemiGround: 0x6a6440, bounce: 0.48 },
     scatter: [
+      { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.0, 1.4], tint: [0xd8c8a8, 0xeee0c0], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.5, cluster: { period: 320, radius: 20, jitter: 0.6 } },
+      { type: 'well', density: 0.0030, radius: 240, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xa89878, 0xc8b898], jitter: 0.7, cluster: { period: 320, radius: 28, jitter: 0.6 } },
       { type: 'tallGrass', density: 3.4, radius: 46, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.45, 0.85], tilt: 0.04, tint: [0x6a5a9a, 0xa88fd0], grass: true, rows: { period: 2.4, width: 0.16, angle: 0.5 } },
       { type: 'broadleaf', density: 0.0016, radius: 300, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [0.6, 0.95], tilt: 0.04, tint: [0x6a7a44, 0x93a05c], shadow: true },
       { type: 'bush', density: 0.006, radius: 140, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.06, tint: [0x5a6a38, 0x7d8a4a] },
@@ -1641,6 +1687,7 @@ export const BIOMES = {
     water: { deep: 0x122008, shallow: 0x2c4418, foam: 0x93a274, waveAmp: 0.05, waveScale: 2.0, reflect: 0.70 },
     motes: { amount: 0.30, color: [0.86, 1.0, 0.72] },
     scatter: [
+      { type: 'lycopod', density: 0.020, radius: 150, slope: [0, 0.35], height: [-1.2, 999], moisture: [0.25, 1], scale: [1.0, 1.7], tilt: 0.05, tint: [0x3a5a22, 0x62864a], shadow: true },
       { type: 'lycopod', density: 0.0070, radius: 340, slope: [0, 0.30], height: [-1.2, 999], moisture: [0.25, 1], scale: [0.7, 1.5], tilt: 0.05, tint: [0x3a5a22, 0x62864a], shadow: true },
       { type: 'calamite', density: 0.020, radius: 200, slope: [0, 0.35], height: [-1.6, 999], moisture: [0.35, 1], scale: [0.7, 1.6], tilt: 0.07, tint: [0x4a7a2c, 0x86ac4a], shadow: true },
       { type: 'fern', density: 0.11, radius: 110, slope: [0, 0.5], height: [-0.8, 999], moisture: [0.25, 1], scale: [1.5, 3.4], tilt: 0.10, tint: [0x1e4a12, 0x3a7020] },

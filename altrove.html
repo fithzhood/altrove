@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-store">
 <meta name="description" content="Simulatore di luoghi esplorabili in prima persona">
 <title>Altrove</title>
-<link rel="stylesheet" href="altrove.css?v=23">
+<link rel="stylesheet" href="altrove.css?v=24">
 </head>
 <body>
 
@@ -194,6 +194,14 @@
           <input type="range" id="bloom" min="0" max="150" step="1" value="55">
         </div>
         <div class="ctl">
+          <label for="rays">Raggi di luce <span class="val" id="rays-val">100%</span></label>
+          <input type="range" id="rays" min="0" max="200" step="1" value="100">
+        </div>
+        <div class="ctl">
+          <label for="ao">Ombre di contatto <span class="val" id="ao-val">62%</span></label>
+          <input type="range" id="ao" min="0" max="100" step="1" value="62">
+        </div>
+        <div class="ctl">
           <label for="saturation">Saturazione <span class="val" id="saturation-val">100%</span></label>
           <input type="range" id="saturation" min="0" max="180" step="1" value="100">
         </div>
@@ -267,6 +275,7 @@
 
     <div class="start-cta">
       <button id="enter" class="enter">Entra</button>
+      <button id="random" class="random" title="Un luogo a caso">Sorprendimi</button>
       <div class="start-foot">
         <span id="start-build">build 1</span>
         <span class="sep">&middot;</span>
@@ -278,7 +287,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=23"></script>
+<script type="module" src="js/main.js?v=24"></script>
 
 <!-- Guardia d'avvio. Aperto con doppio clic (file://) il browser blocca i
      moduli ES per le regole di origine: main.js non parte affatto e resta il

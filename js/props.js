@@ -2531,6 +2531,42 @@ function pyramid(rnd, tint) {
       }
     }
   }
+  /* I corsi del rivestimento: file di blocchi alte un metro, che da vicino
+   * si leggono come sottili linee orizzontali. Non tutte: una ogni sei, o la
+   * geometria triplica per un dettaglio che da lontano sparisce. */
+  const linea = scale(calcareOmbra, 0.74);
+  for (let k = 1; k < 22; k++) {
+    const t = k / 22;
+    const y = 2.8 + (h - 2.8) * t, r = b * (1 - t) * 1.004;
+    for (let i = 0; i < 4; i++) {
+      const a0 = i * Math.PI / 2 + Math.PI / 4, a1 = (i + 1) * Math.PI / 2 + Math.PI / 4;
+      const rr = r * Math.SQRT2;
+      const p0 = [Math.cos(a0) * rr, y, Math.sin(a0) * rr], p1 = [Math.cos(a1) * rr, y, Math.sin(a1) * rr];
+      const q0 = [p0[0] * 1.001, y - 0.55, p0[2] * 1.001], q1 = [p1[0] * 1.001, y - 0.55, p1[2] * 1.001];
+      B.quad(q0, q1, p1, p0, linea, linea, linea, linea, 0, 0, 0, 0);
+    }
+  }
+  /* L ingresso originale, sulla faccia nord, a diciassette metri di altezza:
+   * un vano a doppio spiovente, chiuso da un blocco. Sta a nord perche il
+   * corridoio discendente punta alla stella polare dell epoca. */
+  {
+    const ye = 17.0, zN = -b * (1 - ye / h) - 0.4;
+    const buio = lin(0x2a2418);
+    /* La faccia nord guarda verso -Z: percorsa da sinistra a destra la
+     * normale esce verso +Z, cioe dentro la piramide, e il vano sparisce. */
+    B.quad([2.2, ye - 1.6, zN], [-2.2, ye - 1.6, zN], [-2.2, ye + 1.4, zN], [2.2, ye + 1.4, zN],
+           buio, buio, scale(buio, 1.4), scale(buio, 1.4), 0, 0, 0, 0);
+    B.tri([3.4, ye + 1.4, zN], [-3.4, ye + 1.4, zN], [0, ye + 4.2, zN],
+          scale(calcareOmbra, 0.9), scale(calcareOmbra, 0.9), calcareOmbra, 0, 0, 0);
+    // e i corsi si vedano: due tonalita alternate, non una linea sola
+    
+  }
+  /* Il tempio funerario addossato alla faccia est, e la rampa coperta che
+   * scendeva verso il tempio a valle: la piramide non era mai sola. */
+  box(B, [b * 1.045 + 22, 5.0, 0], 22, 5.0, 26, scale(zoccolo, 0.72), zoccolo);
+  box(B, [b * 1.045 + 44 + 3, 3.0, 0], 3, 3.0, 8, scale(zoccolo, 0.72), zoccolo);
+  box(B, [b * 1.045 + 44 + 6 + 60, 2.4, 6], 60, 2.4, 3.2, scale(zoccolo, 0.7), scale(zoccolo, 0.92));
+
   // cuspide dorata
   const oro = lin(0xe8c05a);
   const hc = h * 0.965;
@@ -2550,49 +2586,114 @@ function pyramid(rnd, tint) {
  * Guarda verso -Z, come tutto il resto. */
 function sphinx(rnd, tint) {
   const B = new Builder();
-  const pietra = mixc(tint, lin(0xd8bf94), 0.75);
-  const ombra = scale(pietra, 0.66);
-  const chiaro = mixc(pietra, lin(0xf0e4c8), 0.45);
+  /* Com era, non com e: la Sfinge era DIPINTA. Restano tracce di rosso ocra
+   * sul volto e sul corpo, e di giallo e blu sul nemes. E aveva il naso e la
+   * barba. Il luogo si chiama «Giza com era finita», e vale anche per lei. */
+  const corpo = mixc(tint, lin(0xc48a5a), 0.55);
+  const corpoOmbra = scale(corpo, 0.64);
+  const corpoChiaro = mixc(corpo, lin(0xe8c898), 0.35);
+  const volto = lin(0xb85a3c);
+  const voltoOmbra = scale(volto, 0.66);
+  const giallo = lin(0xd8b048), blu = lin(0x2e5a9a);
+  const scuro = lin(0x2a1e16);
 
-  /* Settantatre metri di lunghezza per venti di altezza: e lunga tre volte e
-   * mezzo quanto e alta, e sbagliare questo rapporto la trasforma in uno
-   * sfinge-cane seduto. La testa e piccola rispetto al corpo — lo e anche
-   * nell originale, e non e un errore di scala. */
-  // corpo, dal petto alla groppa
-  box(B, [0, 5.0, 7], 5.4, 5.0, 15, ombra, pietra);
-  // dorso arrotondato, appena piu largo del corpo cosi lo chiude
-  blob(B, { cx: 0, cy: 9.4, cz: 8, rx: 5.7, ry: 2.3, rz: 14, level: 1, rough: 0.05, rnd,
-            colTop: chiaro, colBot: pietra, flex: 0 });
-  // zampe anteriori distese
-  for (const s of [-1, 1]) {
-    box(B, [s * 3.5, 2.5, -20], 1.9, 2.5, 12.5, ombra, pietra);
-    box(B, [s * 3.5, 1.1, -33], 2.2, 1.1, 2.0, ombra, chiaro);
-  }
-  // petto
-  box(B, [0, 5.2, -9.5], 4.6, 5.2, 2.8, ombra, pietra);
+  /* Settantatre metri per venti: e lunga tre volte e mezzo quanto e alta.
+   * Sbagliare questo rapporto la trasforma in un cane seduto. */
 
-  // testa
-  const yT = 15.2, zT = -10.6;
-  box(B, [0, yT, zT], 2.7, 3.2, 2.6, pietra, chiaro);
-  /* Il nemes: e la sagoma a dire «sfinge» a duecento metri, molto piu della
-   * faccia — due ali di stoffa che scendono dalle tempie sulle spalle. */
-  const nem = mixc(pietra, lin(0xc8a878), 0.4);
+  // --- corpo: tronco disteso, che si alza verso le anche
+  box(B, [0, 5.4, 6], 5.2, 5.4, 13.5, corpoOmbra, corpo);
+  blob(B, { cx: 0, cy: 10.0, cz: 6, rx: 5.5, ry: 2.4, rz: 13.0, level: 1, rough: 0.04, rnd,
+            colTop: corpoChiaro, colBot: corpo, flex: 0 });
+  /* Le anche: la massa che manca a ogni sfinge fatta col parallelepipedo.
+   * Un leone accovacciato ha i posteriori raccolti sotto di se, e da dietro
+   * il corpo si allarga in due cosce tonde piu larghe del tronco. */
   for (const s of [-1, 1]) {
-    const A = [s * 2.7, yT + 3.0, zT + 2.4], Bp = [s * 2.7, yT + 3.0, zT - 2.4];
-    const C = [s * 5.6, yT - 4.4, zT - 1.9], D = [s * 5.6, yT - 4.4, zT + 1.9];
-    if (s > 0) B.quad(A, Bp, C, D, chiaro, chiaro, nem, nem, 0, 0, 0, 0);
-    else B.quad(D, C, Bp, A, nem, nem, chiaro, chiaro, 0, 0, 0, 0);
-    if (s > 0) B.quad(D, C, Bp, A, nem, nem, chiaro, chiaro, 0, 0, 0, 0);
-    else B.quad(A, Bp, C, D, chiaro, chiaro, nem, nem, 0, 0, 0, 0);
+    blob(B, { cx: s * 5.2, cy: 6.2, cz: 15.5, rx: 4.6, ry: 6.0, rz: 6.8, level: 1, rough: 0.05, rnd,
+              colTop: corpoChiaro, colBot: corpoOmbra, flex: 0 });
+    // zampa posteriore raccolta lungo il fianco
+    box(B, [s * 6.4, 1.5, 7.5], 2.2, 1.5, 5.5, corpoOmbra, corpo);
+    box(B, [s * 6.6, 1.2, 1.4], 2.4, 1.2, 1.6, corpoOmbra, corpoChiaro);
   }
-  // calotta sopra la fronte
-  box(B, [0, yT + 2.9, zT - 0.2], 2.9, 1.0, 2.8, nem, chiaro);
-  // ureo
-  box(B, [0, yT + 2.0, zT - 2.8], 0.34, 0.9, 0.32, scale(nem, 0.8), chiaro);
-  // barba cerimoniale, spezzata (lo e davvero)
-  box(B, [0, yT - 2.9, zT - 2.1], 0.9, 1.6, 0.85, ombra, pietra);
-  // stele fra le zampe
-  box(B, [0, 2.6, -29], 1.6, 2.6, 0.4, ombra, chiaro);
+  // coda: gira attorno alla coscia destra e corre lungo il fianco
+  {
+    const pts = [];
+    for (let i = 0; i <= 8; i++) {
+      const t = i / 8;
+      pts.push([9.4 * Math.sin(t * 1.9) + 1.5, 0.9 + 0.3 * Math.sin(t * 3.1), 21.5 - t * 15.5]);
+    }
+    for (let i = 0; i < pts.length - 1; i++)
+      tube(B, pts[i], pts[i + 1], 0.75 - i * 0.04, 0.72 - i * 0.04, corpoOmbra, corpo, 7, 0, 0);
+    blob(B, { cx: pts[8][0], cy: 1.0, cz: pts[8][2], rx: 1.1, ry: 0.8, rz: 1.4, level: 1, rough: 0.1, rnd,
+              colTop: corpo, colBot: corpoOmbra, flex: 0 });
+  }
+
+  // --- petto e spalle
+  box(B, [0, 6.3, -8.6], 5.8, 6.3, 2.4, corpoOmbra, corpo);
+  for (const s of [-1, 1]) {
+    blob(B, { cx: s * 4.3, cy: 8.2, cz: -8.2, rx: 2.3, ry: 2.0, rz: 2.6, level: 1, rough: 0.06, rnd,
+              colTop: corpoChiaro, colBot: corpo, flex: 0 });
+  }
+
+  // --- zampe anteriori distese, con le dita
+  for (const s of [-1, 1]) {
+    box(B, [s * 3.6, 2.7, -20.5], 1.95, 2.7, 12.0, corpoOmbra, corpo);
+    // il dorso della zampa si alza verso la spalla
+    blob(B, { cx: s * 3.6, cy: 5.2, cz: -12.5, rx: 2.0, ry: 1.3, rz: 4.5, level: 1, rough: 0.05, rnd,
+              colTop: corpoChiaro, colBot: corpo, flex: 0 });
+    // quattro dita, con la fessura fra l una e l altra
+    for (let k = 0; k < 4; k++) {
+      const x = s * (3.6 - 1.45 + k * 0.97);
+      box(B, [x, 1.15, -33.6], 0.42, 1.15, 1.35, corpoOmbra, corpoChiaro);
+    }
+  }
+
+  // --- testa. Piccola rispetto al corpo: lo e anche nell originale.
+  const yT = 14.8, zT = -10.3;
+  // cranio, dentro il nemes
+  blob(B, { cx: 0, cy: yT + 0.6, cz: zT + 0.6, rx: 2.9, ry: 3.4, rz: 3.0, level: 2, rough: 0.03, rnd,
+            colTop: giallo, colBot: scale(giallo, 0.7), flex: 0 });
+  // volto: un blocco piatto davanti al cranio, dipinto di rosso
+  box(B, [0, yT - 0.2, zT - 2.5], 2.6, 2.9, 0.75, voltoOmbra, volto);
+  // fronte e sopracciglia
+  box(B, [0, yT + 2.2, zT - 2.7], 2.4, 0.42, 0.55, voltoOmbra, volto);
+  // occhi: incavati, e con la pupilla scura
+  for (const s of [-1, 1]) {
+    box(B, [s * 1.05, yT + 1.35, zT - 3.10], 0.62, 0.30, 0.22, scuro, scale(scuro, 1.6));
+    box(B, [s * 1.05, yT + 1.35, zT - 3.30], 0.24, 0.24, 0.10, scuro, scuro);
+  }
+  // naso: c era
+  prism(B, { cx: 0, cz: zT - 3.25, y0: yT - 0.35, y1: yT + 1.15, r0: 0.48, r1: 0.30, seg: 4,
+             colBot: voltoOmbra, colTop: volto });
+  // bocca
+  box(B, [0, yT - 1.05, zT - 3.20], 0.95, 0.16, 0.18, scale(voltoOmbra, 0.7), voltoOmbra);
+  // barba cerimoniale, intera
+  box(B, [0, yT - 3.6, zT - 2.5], 0.75, 1.5, 0.8, scale(blu, 0.7), blu);
+  box(B, [0, yT - 4.9, zT - 2.4], 0.85, 0.35, 0.9, scale(giallo, 0.7), giallo);
+
+  /* Il nemes: e la sagoma a dire «sfinge» a duecento metri, piu del volto.
+   * Fascia sulla fronte, calotta dietro, e le due alette a righe che scendono
+   * sulle spalle allargandosi. Le righe gialle e blu sono quelle dipinte. */
+  box(B, [0, yT + 2.85, zT - 0.4], 2.75, 0.55, 3.1, scale(giallo, 0.8), giallo);
+  // ureo sulla fronte
+  box(B, [0, yT + 3.4, zT - 2.9], 0.30, 0.85, 0.32, scale(blu, 0.8), giallo);
+  // calotta dietro, a righe
+  for (let k = 0; k < 6; k++) {
+    const c = k % 2 ? blu : giallo;
+    box(B, [0, yT + 2.4 - k * 0.9, zT + 2.2 + k * 0.28], 3.0 + k * 0.25, 0.45, 0.9, scale(c, 0.75), c);
+  }
+  // alette: righe che scendono e si allargano fino alle spalle
+  for (const s of [-1, 1]) {
+    for (let k = 0; k < 8; k++) {
+      const t = k / 7;
+      const c = k % 2 ? blu : giallo;
+      const x = s * (2.95 + t * 2.7);
+      const y = yT + 2.2 - t * 6.6;
+      box(B, [x, y, zT - 0.3], 0.55, 0.48, 2.3 + t * 0.9, scale(c, 0.72), c);
+    }
+  }
+
+  // stele fra le zampe, e il tempietto ai piedi
+  box(B, [0, 2.8, -28.5], 1.7, 2.8, 0.45, corpoOmbra, corpoChiaro);
   return B.toGeometry();
 }
 
@@ -2885,6 +2986,194 @@ function rose(rnd, tint) {
   return B.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * Punti d interesse per i luoghi reali
+ *
+ * Un paesaggio senza niente di costruito si guarda per due minuti. Una
+ * capanna, un faro, un pozzo dicono che qualcuno ci e passato, e danno a
+ * chi cammina un posto verso cui andare. Tutti guardano verso -Z.
+ * ------------------------------------------------------------------ */
+
+/* Tetto a due falde con le tegole o le scandole: lo condividono capanna,
+ * palafitta e pagoda. Le falde sporgono, o sembra una scatola. */
+function tetto(B, cx, y, cz, hw, hd, alt, col, colScuro, sporgenza) {
+  const s = sporgenza || 0.35;
+  const W = hw + s, D = hd + s;
+  for (const k of [-1, 1]) {
+    // falda: dal colmo al bordo, un solo quadrilatero girato verso l esterno
+    const A = [cx, y + alt, cz - D], Bq = [cx, y + alt, cz + D];
+    const C = [cx + k * W, y - 0.05, cz + D], Dq = [cx + k * W, y - 0.05, cz - D];
+    if (k > 0) B.quad(A, Bq, C, Dq, col, col, colScuro, colScuro, 0, 0, 0, 0);
+    else B.quad(Bq, A, Dq, C, col, col, colScuro, colScuro, 0, 0, 0, 0);
+    // spessore del bordo
+    if (k > 0) B.quad(Dq, C, [C[0], C[1] - 0.12, C[2]], [Dq[0], Dq[1] - 0.12, Dq[2]], colScuro, colScuro, colScuro, colScuro, 0, 0, 0, 0);
+    else B.quad(C, Dq, [Dq[0], Dq[1] - 0.12, Dq[2]], [C[0], C[1] - 0.12, C[2]], colScuro, colScuro, colScuro, colScuro, 0, 0, 0, 0);
+  }
+  // timpani, chiusi
+  for (const k of [-1, 1]) {
+    const z = cz + k * hd;
+    const A = [cx - hw, y, z], Bq = [cx + hw, y, z], T = [cx, y + alt, z];
+    if (k < 0) B.tri(A, Bq, T, colScuro, colScuro, col, 0, 0, 0);
+    else B.tri(Bq, A, T, colScuro, colScuro, col, 0, 0, 0);
+  }
+}
+
+/* CAPANNA DI TRONCHI. Boschi, alpi, fiordi: la casa di chi ci vive. */
+function cabin(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x8a6a44), 0.55), scuro = scale(legno, 0.62);
+  const W = 2.6, D = 3.3, H = 2.4;
+  // pareti fatte di tronchi sovrapposti: cilindri orizzontali, uno sull altro
+  for (let k = 0; k < 7; k++) {
+    const y = 0.18 + k * 0.34;
+    const r = 0.17;
+    tube(B, [-W - 0.2, y, -D], [W + 0.2, y, -D], r, r, scuro, legno, 6, 0, 0);
+    tube(B, [-W - 0.2, y, D], [W + 0.2, y, D], r, r, scuro, legno, 6, 0, 0);
+    tube(B, [-W, y + 0.17, -D - 0.2], [-W, y + 0.17, D + 0.2], r, r, scuro, legno, 6, 0, 0);
+    tube(B, [W, y + 0.17, -D - 0.2], [W, y + 0.17, D + 0.2], r, r, scuro, legno, 6, 0, 0);
+  }
+  box(B, [0, H * 0.5, 0], W - 0.05, H * 0.5, D - 0.05, scuro, legno);
+  // porta e finestra sul fronte
+  face(B, [-0.7, 0.95, -D - 0.22], [-0.42, 0, 0], [0, 0.95, 0], lin(0x2a1e14), lin(0x3e2e20));
+  const vetro = lin(0xffe0a8);
+  const nV = B.f.length;
+  face(B, [0.9, 1.35, -D - 0.22], [-0.38, 0, 0], [0, 0.32, 0], vetro, scale(vetro, 0.85));
+  for (let i = nV; i < B.f.length; i++) B.f[i] = 1;   // la finestra si accende
+  tetto(B, 0, H + 0.1, 0, W, D, 1.35, lin(0x5a4a3a), lin(0x3e3228), 0.45);
+  // camino di pietra
+  box(B, [W * 0.55, H + 0.9, D * 0.35], 0.32, 0.9, 0.32, lin(0x6a6660), lin(0x8a867e));
+  return B.toGeometry();
+}
+
+/* FARO. La costa senza un faro e una spiaggia; con il faro e un posto. */
+function lighthouse(rnd, tint) {
+  const B = new Builder();
+  const bianco = mixc(tint, lin(0xeeece6), 0.7), rosso = lin(0xb03a30);
+  const h = 16;
+  // torre a fasce bianche e rosse, rastremata
+  for (let k = 0; k < 6; k++) {
+    const t0 = k / 6, t1 = (k + 1) / 6;
+    const c = k % 2 ? rosso : bianco;
+    prism(B, { y0: h * t0, y1: h * t1, r0: 2.2 - 0.7 * t0, r1: 2.2 - 0.7 * t1, seg: 12,
+               colBot: scale(c, 0.82), colTop: c });
+  }
+  // ballatoio
+  prism(B, { y0: h, y1: h + 0.3, r0: 2.1, r1: 2.1, seg: 12, colBot: lin(0x3a3a3a), colTop: lin(0x4a4a4a) });
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    tube(B, [Math.cos(a) * 2.0, h + 0.3, Math.sin(a) * 2.0], [Math.cos(a) * 2.0, h + 1.2, Math.sin(a) * 2.0], 0.04, 0.04, lin(0x333), lin(0x333), 4, 0, 0);
+  }
+  // lanterna: vetri che si accendono
+  const vetro = lin(0xfff2c8);
+  const nV = B.f.length;
+  prism(B, { y0: h + 0.3, y1: h + 2.4, r0: 1.35, r1: 1.30, seg: 8, colBot: vetro, colTop: vetro });
+  for (let i = nV; i < B.f.length; i++) B.f[i] = 1;
+  // cupola
+  prism(B, { y0: h + 2.4, y1: h + 3.4, r0: 1.5, r1: 0.12, seg: 10, colBot: lin(0x2e3a44), colTop: lin(0x3e4a54) });
+  // casetta del guardiano ai piedi
+  box(B, [3.6, 1.3, 0.8], 2.2, 1.3, 1.8, scale(bianco, 0.8), bianco);
+  tetto(B, 3.6, 2.6, 0.8, 2.2, 1.8, 1.0, rosso, scale(rosso, 0.7), 0.3);
+  return B.toGeometry();
+}
+
+/* POZZO DI PIETRA, con l argano. */
+function well(rnd, tint) {
+  const B = new Builder();
+  const pietra = mixc(tint, lin(0x8a8478), 0.7), scura = scale(pietra, 0.62);
+  const legno = lin(0x6a4e30);
+  prism(B, { y0: 0, y1: 1.0, r0: 0.95, r1: 0.92, seg: 10, colBot: scura, colTop: pietra });
+  // bocca scura
+  discO(B, [0, 1.0, 0], [0, 1, 0], 0.70, lin(0x141a1e), lin(0x24303a), 0, 10);
+  ringO(B, [0, 1.01, 0], [0, 1, 0], 0.70, 0.95, pietra, scura, 0, 10);
+  // due montanti e la traversa con l argano
+  for (const s of [-1, 1]) tube(B, [s * 0.8, 0.9, 0], [s * 0.8, 2.3, 0], 0.07, 0.06, legno, legno, 5, 0, 0);
+  tube(B, [-0.85, 2.05, 0], [0.85, 2.05, 0], 0.09, 0.09, scale(legno, 0.8), legno, 6, 0, 0);
+  // tettuccio
+  tetto(B, 0, 2.3, 0, 0.95, 0.7, 0.55, lin(0x6a5a44), lin(0x4a3e30), 0.2);
+  // secchio
+  prism(B, { cx: 0.2, y0: 1.15, y1: 1.45, r0: 0.14, r1: 0.17, seg: 6, colBot: lin(0x4a4640), colTop: lin(0x6a665e) });
+  return B.toGeometry();
+}
+
+/* PAGODA. Tre tetti sovrapposti con le gronde che si rialzano agli angoli:
+ * e la gronda rialzata a dire «pagoda», non il numero dei piani. */
+function pagoda(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x8a4a30), 0.5), scuro = scale(legno, 0.6);
+  const tegola = lin(0x3a4048), tegolaChiara = lin(0x58606a);
+  let y = 0;
+  const piani = 3;
+  box(B, [0, 0.25, 0], 3.2, 0.25, 3.2, lin(0x6a6660), lin(0x8a867e));
+  y = 0.5;
+  for (let p = 0; p < piani; p++) {
+    const w = 2.3 - p * 0.45, hp = 2.3 - p * 0.25;
+    box(B, [0, y + hp / 2, 0], w, hp / 2, w, scuro, legno);
+    // colonne agli angoli
+    for (const sx of [-1, 1]) for (const sz of [-1, 1])
+      tube(B, [sx * w, y, sz * w], [sx * w, y + hp, sz * w], 0.12, 0.11, scuro, legno, 6, 0, 0);
+    // tetto a quattro falde con la gronda rialzata
+    const W = w + 0.9, top = y + hp + 0.9;
+    const angoli = [[-W, W], [W, W], [W, -W], [-W, -W]];
+    for (let i = 0; i < 4; i++) {
+      const a = angoli[i], b2 = angoli[(i + 1) % 4];
+      // punta d angolo rialzata
+      const ya = y + hp + 0.42, ym = y + hp + 0.05;
+      const mid = [(a[0] + b2[0]) / 2, ym, (a[1] + b2[1]) / 2];
+      const T = [0, top, 0];
+      B.tri([a[0], ya, a[1]], mid, T, tegolaChiara, tegola, tegolaChiara, 0, 0, 0);
+      B.tri(mid, [b2[0], ya, b2[1]], T, tegola, tegolaChiara, tegolaChiara, 0, 0, 0);
+      // gronda spessa
+      B.quad([a[0], ya - 0.15, a[1]], [b2[0], ya - 0.15, b2[1]], [b2[0], ya, b2[1]], [a[0], ya, a[1]],
+             scuro, scuro, tegola, tegola, 0, 0, 0, 0);
+    }
+    y += hp + 0.55;
+  }
+  // guglia
+  prism(B, { y0: y + 0.5, y1: y + 2.2, r0: 0.16, r1: 0.03, seg: 6, colBot: lin(0xc8a040), colTop: lin(0xe8c860) });
+  return B.toGeometry();
+}
+
+/* PALAFITTA. Paludi e coste tropicali: la casa sta sopra l acqua. */
+function stiltHut(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x8a7050), 0.55), scuro = scale(legno, 0.62);
+  const paglia = lin(0xb89a5a), pagliaScura = lin(0x7a6438);
+  const W = 2.2, D = 2.6, yP = 2.4;
+  // pali
+  for (const sx of [-1, 0, 1]) for (const sz of [-1, 1])
+    tube(B, [sx * W * 0.9, -1.2, sz * D * 0.9], [sx * W * 0.9, yP, sz * D * 0.9], 0.13, 0.11, scuro, legno, 6, 0, 0);
+  // piattaforma
+  box(B, [0, yP + 0.08, 0], W + 0.6, 0.08, D + 0.6, scuro, legno);
+  // capanna di canne
+  box(B, [0, yP + 0.16 + 1.05, 0.2], W, 1.05, D - 0.4, pagliaScura, paglia);
+  face(B, [0, yP + 0.16 + 0.85, -D + 0.6 - 0.02], [-0.4, 0, 0], [0, 0.85, 0], lin(0x2a2418), lin(0x3e3424));
+  tetto(B, 0, yP + 0.16 + 2.1, 0.2, W, D - 0.4, 1.3, paglia, pagliaScura, 0.5);
+  // scaletta davanti
+  for (let k = 0; k < 6; k++) {
+    const t = k / 6;
+    tube(B, [-0.35, yP - t * 3.4, -D - 0.6 - t * 1.6], [0.35, yP - t * 3.4, -D - 0.6 - t * 1.6], 0.05, 0.05, scuro, legno, 4, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* OMETTO DI PIETRE. Alpi, artico, brughiera: il segno di chi e passato. */
+function cairn(rnd, tint) {
+  const B = new Builder();
+  const pietra = mixc(tint, lin(0x8a8880), 0.7);
+  let y = 0;
+  const n = 6 + Math.floor(rnd() * 4);
+  for (let k = 0; k < n; k++) {
+    const t = k / n;
+    const r = 0.42 * (1 - t * 0.65) * (0.85 + rnd() * 0.3);
+    const h = 0.14 + rnd() * 0.08;
+    blob(B, { cx: (rnd() - 0.5) * 0.12, cy: y + h * 0.5, cz: (rnd() - 0.5) * 0.12,
+              rx: r, ry: h * 0.55, rz: r * (0.8 + rnd() * 0.4), level: 1, rough: 0.22, rnd,
+              colTop: mixc(pietra, [1, 1, 1], 0.1 * rnd()), colBot: scale(pietra, 0.6), flex: 0 });
+    y += h * 0.92;
+  }
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -2904,7 +3193,9 @@ export const PROPS = {
   lycopod, calamite, cloudPuff,
   // antichita costruita
   pyramid, sphinx, romanTemple, insula, trilithon, statue,
-  volcanoCone, rose
+  volcanoCone, rose,
+  // punti d interesse dei luoghi reali
+  cabin, lighthouse, well, pagoda, stiltHut, cairn
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -2930,7 +3221,8 @@ export const PROP_HEIGHT = {
   lycopod: 22.0, calamite: 7.5, cloudPuff: 9.0,
   pyramid: 146.0, sphinx: 73.0, romanTemple: 12.5, insula: 13.0,
   trilithon: 7.4, statue: 3.6,
-  volcanoCone: 1.5, rose: 0.9
+  volcanoCone: 1.5, rose: 0.9,
+  cabin: 4.0, lighthouse: 19.5, well: 2.9, pagoda: 10.5, stiltHut: 6.4, cairn: 1.3
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
