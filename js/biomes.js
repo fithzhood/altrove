@@ -697,6 +697,21 @@ export const BIOMES = {
        * del lampione e che ce ne sia UNO. Il grappolo strettissimo e l unico
        * modo di ottenere una cosa davvero rara — abbassare la densita non
        * basta, perche ogni tessera un candidato lo mette comunque. */
+      /* Tre vulcani e una rosa, alle posizioni del libro: due vulcani in
+       * attivita e uno spento, e la rosa un po in disparte. La curvatura del
+       * pianetino ha raggio 120 m, quindi l orizzonte cade a una ventina di
+       * metri: se non stanno vicini, semplicemente non esistono. */
+      { type: 'volcanoCone', density: 0.020, radius: 130, slope: [0, 0.5], height: [-99, 999],
+        moisture: [0, 1], scale: [1, 1], tilt: 0.02, tint: [0x6a5240, 0x8a6a50],
+        upright: true, sink: 0.12, shadow: true,
+        cluster: { period: 92, jitter: 0.35, radius: 40, slots: [
+          [-8.5, -5.5, 1.00], [-1.5, -10.5, 0.86], [5.5, -6.5, 0.62]
+        ] } },
+      { type: 'rose', density: 0.020, radius: 130, slope: [0, 0.45], height: [-99, 999],
+        moisture: [0, 1], scale: [1, 1], tilt: 0.03, tint: [0xc8283c, 0xd8384a],
+        upright: true, shadow: true, evenColor: true,
+        cluster: { period: 92, jitter: 0.35, radius: 40, slots: [[7.5, 6.5, 1.0]] } },
+
       { type: 'lamppost', density: 0.010, radius: 130, slope: [0, 0.62], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.1], tilt: 0.02, tint: [0x2e2a24, 0x4a443a],
         upright: true, jitter: 0.7, cluster: { period: 210, radius: 8, jitter: 0.5 },
@@ -711,14 +726,21 @@ export const BIOMES = {
   pandora: {
     id: 'pandora', label: 'Mondo di Pandora', fantasy: true,
     waterfalls: { minDrop: 8.0, chance: 0.46, width: [2.5, 9], radius: 400 },
-    blurb: 'Giungla che brilla al buio e rocce sospese in aria.',
+    blurb: 'Una luna, non un pianeta: Polifemo riempie il cielo. Giungla che di notte si accende tutta, e montagne sospese in aria.',
     terrain: 'hills', seed: 1707, seaLevel: 0,
     waterLevel: -22, waterKind: 'emerald', startHeightOffset: 1.7,
     hills: { amp: 66, freq: 0.0014, oct: 6, medAmp: 7.0, medFreq: 0.012, microAmp: 0.9 },
     snowLine: 9999, seasonal: false,
     skyTint: [1.05, 0.94, 1.16], sunTint: [1.02, 0.98, 1.05],
     nightSky: [0.0030, 0.0038, 0.0060], moonBright: 2.0, ambientBoost: 1.1,
-    planet: { dir: [0.55, 0.42, -0.72], size: 0.105, color: [0.38, 0.30, 0.62] },
+    /* Polifemo. Pandora e una LUNA, e il gigante gassoso attorno a cui gira
+     * occupa una fetta enorme di cielo — a 0,105 di raggio angolare era poco
+     * piu della nostra Luna, cioe un dettaglio invece del fatto dominante del
+     * posto. Ed e azzurro-verde con le bande, non viola. */
+    /* Il colore va tenuto basso: di notte l esposizione automatica amplifica
+     * moltissimo, e un disco largo mezzo cielo con albedo 0,4 diventa una
+     * lampada bianca. Stessa trappola gia pagata con la Luna adeana. */
+    planet: { dir: [0.55, 0.40, -0.73], size: 0.235, color: [0.075, 0.125, 0.155] },
     motes: { amount: 0.75, color: [0.45, 0.90, 1.00] },
     palette: {
       grassLow: 0x1d5a3a, grassHigh: 0x3f8a52, grassDry: 0x6a8a48,
@@ -733,9 +755,12 @@ export const BIOMES = {
       { type: 'broadleaf', density: 0.0060, radius: 300, slope: [0, 0.5], height: [-99, 999], moisture: [0.25, 1], scale: [0.75, 1.25], tilt: 0.05, tint: [0x1f6a42, 0x3f9058], shadow: true },
       { type: 'palm', density: 0.0026, radius: 280, slope: [0, 0.45], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.2], tilt: 0.10, tint: [0x2a7a4a, 0x54a068], shadow: true },
       { type: 'giantMushroom', density: 0.0022, radius: 240, slope: [0, 0.45], height: [-99, 999], moisture: [0.3, 1], scale: [0.6, 1.2], tilt: 0.07, tint: [0xc050d8, 0xf0a0f8], shadow: true, emissive: 0.13 },
-      { type: 'glowMushroom', density: 0.050, radius: 80, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.9, 2.0], tilt: 0.12, tint: [0x30c8ff, 0xa8f0ff], emissive: 0.28 },
+      { type: 'glowMushroom', density: 0.115, radius: 130, slope: [0, 0.55], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 2.2], tilt: 0.12, tint: [0x30c8ff, 0xa8f0ff], emissive: 0.30 },
       { type: 'fern', density: 0.055, radius: 90, slope: [0, 0.55], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.6], tilt: 0.10, tint: [0x18563a, 0x2f8050] },
-      { type: 'flower', density: 0.045, radius: 65, slope: [0, 0.4], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.4], tilt: 0.12, tint: [0xf070c0, 0x70f0d0], emissive: 0.22 },
+      { type: 'flower', density: 0.11, radius: 95, slope: [0, 0.45], height: [-99, 999], moisture: [0.15, 1], scale: [0.8, 1.5], tilt: 0.12, tint: [0xf070c0, 0x70f0d0], emissive: 0.24 },
+      /* Ciuffi luminosi anche a terra: nelle immagini non brillano solo i
+       * funghi e i fiori, brilla il suolo intero. */
+      { type: 'grassTuft', density: 0.55, radius: 60, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.9, 1.6], tilt: 0.10, tint: [0x40e0d0, 0xa0f0ff], emissive: 0.16, grass: true },
       { type: 'slabRock', density: 0.00060, radius: 420, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [4.0, 11.0], tilt: 0.16, tint: [0x54503f, 0x7a7460], yOffset: [55, 190] },
       { type: 'rock', density: 0.010, radius: 160, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.5], tilt: 0.45, tint: [0x4e4a40, 0x6e695c] },
       { type: 'grassTuft', density: 2.2, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.25], tilt: 0.08, tint: [0x27a070, 0x5ecc98], grass: true }
@@ -1394,19 +1419,34 @@ export const BIOMES = {
 
   tatooine: {
     id: 'tatooine', label: 'Tatooine', fantasy: true,
-    blurb: 'Sabbia, canyon e due soli che tramontano insieme.',
+    blurb: 'Due soli che tramontano insieme, sabbia, canyon e le cupole delle fattorie d umidita.',
     terrain: 'dunes', seed: 3929, seaLevel: 0,
     waterLevel: null, startHeightOffset: 1.7,
     dunes: { mesaAmp: 82, mesaFreq: 0.00062, duneAmp: 15, duneFreqX: 0.0016, duneFreqZ: 0.0100, microAmp: 0.32 },
     snowLine: 9999, seasonal: false, extraSuns: 1,
-    skyTint: [1.12, 1.00, 0.84], sunTint: [1.10, 1.00, 0.86],
+    /* I due soli. Il luogo lo prometteva nella descrizione e in cielo ce
+     * n era uno solo: e LA cosa per cui Tatooine e Tatooine. Stanno vicini,
+     * a pochi gradi, e tramontano quasi appaiati. */
+    extraSuns: 1,
+    extraSunOffsets: [[0.082, 0.030]],
+    /* Il tramonto di Tatooine e viola-magenta in alto e arancio all orizzonte,
+     * non giallo-sabbia: e polvere fine in quota che diffonde all indietro. Si
+     * ottiene alzando la componente di Mie e togliendo verde alla tinta. */
+    /* Il verde tolto e il blu spinto: e cosi che il cielo alto vira al viola
+     * invece di restare un grigio caldo. Il viola vero del crepuscolo lo fa
+     * l ozono, che questo modello non ha — la tinta e il modo onesto di
+     * ottenere lo stesso effetto senza rifare lo scattering. */
+    skyTint: [1.20, 0.87, 1.18], sunTint: [1.12, 0.98, 0.84],
     palette: {
       grassLow: 0x9a8452, grassHigh: 0xae9760, grassDry: 0xbca768,
       dirt: 0xa87c48, rock: 0xa07850, rockDark: 0x74553a,
       sand: 0xdcc08c, sandLight: 0xeed8ac, snow: 0xffffff, underwater: 0x6b5a3a
     },
-    sky: { turbidity: 3.8, rayleigh: 0.90, mie: 0.0085, mieG: 0.81, groundAlbedo: [0.38, 0.32, 0.20] },
-    fog: { density: 0.0026, heightFalloff: 0.0038, tint: [1.02, 0.97, 0.86] },
+    /* Rayleigh alto e Mie moderata: e il rapporto fra i due a dare la fascia
+     * viola. Troppa Mie ingrigisce tutto il cielo e il viola sparisce, che e
+     * quello che succedeva a 0,0165. */
+    sky: { turbidity: 4.0, rayleigh: 1.32, mie: 0.0105, mieG: 0.76, groundAlbedo: [0.38, 0.32, 0.20] },
+    fog: { density: 0.0020, heightFalloff: 0.0038, tint: [1.04, 0.96, 0.94] },
     ambience: { hemiSky: 0xb0c0d8, hemiGround: 0x8a6c40, bounce: 0.60 },
     scatter: [
       { type: 'vaporator', density: 0.00070, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [0.9, 1.4], tilt: 0.02, tint: [0x8a8478, 0xb0aa9c], shadow: true },

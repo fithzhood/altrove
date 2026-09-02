@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=22';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=22';
+} from './sky.js?v=23';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=23';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
@@ -324,13 +324,18 @@ export class Atmosphere {
     su.uExtraSuns.value = extra;
     if (extra > 0) {
       _v3.copy(this.sunDir);
-      /* Distanziati davvero: a venti gradi l uno dall altro sembravano un
-       * sole sfocato in tre pezzi. Devono leggersi come tre soli distinti in
-       * tre punti del cielo, che e il motivo per cui non fa mai notte. */
-      su.uSun2.value.copy(_v3).applyAxisAngle(_yAxis, 0.95);
-      su.uSun2.value.y += 0.26; su.uSun2.value.normalize();
-      su.uSun3.value.copy(_v3).applyAxisAngle(_yAxis, -0.78);
-      su.uSun3.value.y -= 0.14; su.uSun3.value.normalize();
+      /* Quanto sono distanti lo decide il bioma. Su Namecc sono tre soli in
+       * punti diversi del cielo — devono leggersi come tre soli distinti, ed
+       * e il motivo per cui non fa mai notte. Su Tatooine sono due soli
+       * vicinissimi che tramontano quasi appaiati: la stessa distanza li
+       * spargerebbe per mezzo cielo e non sarebbe piu Tatooine. */
+      const off = biome.extraSunOffsets || [[0.95, 0.26], [-0.78, -0.14]];
+      su.uSun2.value.copy(_v3).applyAxisAngle(_yAxis, off[0][0]);
+      su.uSun2.value.y += off[0][1]; su.uSun2.value.normalize();
+      if (off[1]) {
+        su.uSun3.value.copy(_v3).applyAxisAngle(_yAxis, off[1][0]);
+        su.uSun3.value.y += off[1][1]; su.uSun3.value.normalize();
+      }
     }
 
     // quanto e notte: serve a chi deve accendere le luci

@@ -262,13 +262,24 @@ C salva immagine · Esc liberare il mouse
   la post-produzione ci disegnava attorno i raggi, e ne usciva una stella di
   Natale. `sunDisk: 0` spegne disco e bagliore insieme.
 - **Un luogo tratto da una fonte va verificato sulla fonte, non a memoria.**
-  Namecc aveva `extraSuns: 2` — tre dischi in cielo — ma i dischi sono solo
-  disegnati: il ciclo giorno/notte continuava a girare, e alle 23:30 faceva
-  buio. I tre soli *sono* la caratteristica del pianeta, e servono a una cosa
-  sola: che non sia mai notte. Ora `minSunAlt` impedisce al sole di scendere
-  sotto una soglia — continua a girare per il cielo, semplicemente non
-  tramonta. Stessa storia per i colori: acqua verde, terra e piante azzurre,
-  cielo giallo-verde, che non è la tavolozza che verrebbe da sé.
+  Il difetto ricorrente è lo stesso: la *descrizione* del luogo promette la
+  caratteristica e il bioma non ce l'ha. Namecc dichiarava tre soli e faceva
+  notte; Tatooine dichiarava «due soli che tramontano insieme» e in cielo ne
+  aveva uno. `extraSuns` disegna solo dischi — non illumina, non impedisce la
+  notte. La verifica utile è leggere il proprio blurb e chiedersi se il codice
+  lo mantiene.
+- **La distanza fra i soli in più dipende dal luogo.** Su Namecc sono tre soli
+  lontani (è per quello che non fa mai notte); su Tatooine sono due soli
+  vicinissimi che tramontano appaiati. Un valore fisso non può servire
+  entrambi: `extraSunOffsets`.
+- **Un corpo celeste grande va tenuto scuro.** Di notte l'esposizione
+  automatica amplifica moltissimo: la Luna adeana con albedo 0,5 e Polifemo con
+  0,4 diventavano lampade bianche. L'albedo della Luna è 0,12, e nel motore
+  serve ancora meno.
+  `minSunAlt` impedisce al sole di scendere sotto una soglia: continua a
+  girare per il cielo, semplicemente non tramonta. Stessa storia per i colori,
+  che vanno presi da una referenza — su Namecc acqua verde, terra e piante
+  azzurre, cielo giallo-verde, che non è la tavolozza che verrebbe da sé.
 - **Un parametro del terreno dimenticato non dà errore: dà NaN**, e NaN si
   propaga a tutto il campo di altezze. Il risultato è un mondo invisibile con
   il giocatore a quota NaN e la console pulita — il modo peggiore di rompersi.

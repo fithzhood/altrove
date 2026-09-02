@@ -2786,6 +2786,105 @@ function statue(rnd, tint) {
   return B.toGeometry();
 }
 
+/* VULCANO DA TASCA. Sul pianeta del Piccolo Principe i vulcani sono alti al
+ * ginocchio: ci si scalda la colazione e si spazzano col ramazzo. La cosa che
+ * li rende loro non e la forma — un cono lo fa chiunque — e la TAGLIA. */
+function volcanoCone(rnd, tint) {
+  const B = new Builder();
+  const h = 1.45 * (0.85 + rnd() * 0.35);
+  /* Cono, non torre di raffreddamento: la base a 0,62 dell altezza e il
+   * cratere a 0,26 davano una forma piu larga che alta. */
+  const r0 = h * 0.46, r1 = h * 0.13;
+  const roccia = mixc(tint, lin(0x6a5240), 0.55);
+  const scura = scale(roccia, 0.58);
+  const seg = 11;
+  const jag = (i) => 0.90 + 0.20 * ((i * 7 + 3) % 5) / 4;
+  for (let i = 0; i < seg; i++) {
+    const a0 = (i / seg) * Math.PI * 2, a1 = ((i + 1) / seg) * Math.PI * 2;
+    const P = (a, rr, y) => [Math.cos(a) * rr * jag(i), y, Math.sin(a) * rr * jag(i)];
+    /* Dal basso verso l alto l avvolgimento esce all indietro e il cono si
+     * vede solo da dentro: va percorso dall alto. */
+    B.quad(P(a0, r1, h), P(a1, r1, h), P(a1, r0, 0), P(a0, r0, 0),
+      roccia, roccia, scura, scura, 0, 0, 0, 0);
+  }
+  // cratere: labbro chiaro e gola scura
+  ringO(B, [0, h, 0], [0, 1, 0], r1 * 0.55, r1, mixc(roccia, [1, 1, 1], 0.18), roccia, 0, 11);
+  const gola = scale(scura, 0.35);
+  for (let i = 0; i < 11; i++) {
+    const a0 = (i / 11) * Math.PI * 2, a1 = ((i + 1) / 11) * Math.PI * 2;
+    const p = (a, rr, y) => [Math.cos(a) * rr, y, Math.sin(a) * rr];
+    // la gola si guarda da dentro: qui la normale deve puntare verso l asse
+    B.quad(p(a1, r1 * 0.55, h), p(a0, r1 * 0.55, h),
+           p(a0, r1 * 0.30, h - 0.22), p(a1, r1 * 0.30, h - 0.22),
+           roccia, roccia, gola, gola, 0, 0, 0, 0);
+  }
+  discO(B, [0, h - 0.22, 0], [0, 1, 0], r1 * 0.30, gola, scale(gola, 0.7), 0, 11);
+  return B.toGeometry();
+}
+
+/* LA ROSA. Una sola, e vanitosa. Non e un fiore fra i tanti: e il motivo per
+ * cui il Piccolo Principe torna. Va costruita a corolla vera — petali su piu
+ * giri, sfalsati — perche un disco rosso su uno stelo non e una rosa. */
+function rose(rnd, tint) {
+  const B = new Builder();
+  const H = 0.85;
+  const stelo = lin(0x3a6a2a), steloScuro = scale(stelo, 0.62);
+  const foglia = mixc(stelo, lin(0x6aa83a), 0.5);
+  const rossi = [0xc8283c, 0xd8384a, 0xb82038, 0xe04858];
+  const petalo = lin(rossi[Math.floor(rnd() * rossi.length)]);
+  const petaloScuro = scale(petalo, 0.55);
+
+  trunk(B, { r0: 0.020, r1: 0.014, h: H * 0.72, seg: 6, rings: 3,
+             colBot: steloScuro, colTop: stelo, flexTop: 0.35,
+             curve: [(rnd() - 0.5) * 0.05, (rnd() - 0.5) * 0.05] });
+  // foglie
+  for (let i = 0; i < 4; i++) {
+    const a = i * 1.9 + rnd() * 0.4, y = H * (0.20 + i * 0.11);
+    blade(B, { x: 0, y, z: 0, dir: a, len: H * 0.20, wid: H * 0.045,
+               seg: 3, bend: 1.0, lift: 0.45, colBase: steloScuro, colTip: foglia,
+               flexMax: 1, taper: 0.7 });
+  }
+  // sepali e corolla
+  const yc = H * 0.76;
+  blob(B, { cx: 0, cy: yc - 0.03, cz: 0, rx: 0.045, ry: 0.035, rz: 0.045,
+            level: 1, rough: 0.10, rnd, colTop: foglia, colBot: steloScuro, flex: 0.2 });
+  /* Tre giri di petali che formano una COPPA: i piu interni stanno quasi
+   * dritti e si chiudono, i piu esterni si aprono e ricadono. A raggiera
+   * piatta viene una margherita, non una rosa — la differenza sta tutta
+   * nell inclinazione, non nel colore ne nel numero. */
+  const GIRI = [
+    { n: 5, r: 0.032, su: 0.075, fuori: 0.20, largo: 1.15 },
+    { n: 6, r: 0.055, su: 0.042, fuori: 0.72, largo: 1.05 },
+    { n: 7, r: 0.075, su: -0.008, fuori: 1.15, largo: 0.95 }
+  ];
+  for (let g = 0; g < GIRI.length; g++) {
+    const G = GIRI[g];
+    for (let i = 0; i < G.n; i++) {
+      const a = (i / G.n) * Math.PI * 2 + g * 0.62;
+      const ca = Math.cos(a), sa = Math.sin(a);
+      const y0 = yc + 0.010;
+      const base = [ca * G.r * 0.30, y0, sa * G.r * 0.30];
+      const rp = G.r * (1 + G.fuori);
+      // punta smussata: due vertici invece di uno, o il petalo diventa un ago
+      const w = G.r * G.largo * 0.55;
+      const p1 = [ca * rp - sa * w * 0.55, y0 + G.su, sa * rp + ca * w * 0.55];
+      const p2 = [ca * rp + sa * w * 0.55, y0 + G.su, sa * rp - ca * w * 0.55];
+      const m1 = [ca * G.r * 0.9 - sa * w, y0 + G.su * 0.55, sa * G.r * 0.9 + ca * w];
+      const m2 = [ca * G.r * 0.9 + sa * w, y0 + G.su * 0.55, sa * G.r * 0.9 - ca * w];
+      const cB = mixc(petaloScuro, petalo, 0.25 + g * 0.22);
+      const cP = mixc(petalo, [1, 1, 1], 0.06 + g * 0.10);
+      // dritto e rovescio: un petalo si vede da tutte e due le parti
+      for (const inv of [false, true]) {
+        const q = (A, B2, C, D) => inv ? B.quad(D, C, B2, A, cP, cP, cB, cB, 0, 0, 0, 0)
+                                       : B.quad(A, B2, C, D, cB, cP, cP, cB, 0, 0, 0, 0);
+        q(base, m1, p1, p2);
+        q(base, p2, p1, m2);
+      }
+    }
+  }
+  return B.toGeometry();
+}
+
 export const PROPS = {
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
@@ -2804,7 +2903,8 @@ export const PROPS = {
   // passato e mondi nuovi
   lycopod, calamite, cloudPuff,
   // antichita costruita
-  pyramid, sphinx, romanTemple, insula, trilithon, statue
+  pyramid, sphinx, romanTemple, insula, trilithon, statue,
+  volcanoCone, rose
 };
 
 /* Altezza naturale in metri, prima della scala del bioma.
@@ -2829,7 +2929,8 @@ export const PROP_HEIGHT = {
   windmill: 8.5, statueRuin: 5.0,
   lycopod: 22.0, calamite: 7.5, cloudPuff: 9.0,
   pyramid: 146.0, sphinx: 73.0, romanTemple: 12.5, insula: 13.0,
-  trilithon: 7.4, statue: 3.6
+  trilithon: 7.4, statue: 3.6,
+  volcanoCone: 1.5, rose: 0.9
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo

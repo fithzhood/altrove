@@ -16,7 +16,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=22';
+import { GLSL_NOISE } from './noise.js?v=23';
 
 /* ------------------------------------------------------------------ *
  * Costanti fisiche condivise
@@ -820,12 +820,15 @@ export class SkySystem {
               vec3 sd = i == 0 ? uSun2 : uSun3;
               if (i == 1 && uExtraSuns < 1.5) break;
               float cs2 = dot(rd, sd);
-              float ang2 = 0.0030;
+              /* Grandi quanto il sole vero: su Tatooine il secondo sole non
+               * e una scintilla, e un disco che si vede benissimo. A 0,0030
+               * spariva a poche decine di pixel. */
+              float ang2 = uSunAngle * 0.86;
               if (cs2 > cos(ang2 * 7.0)){
                 float aa = acos(clamp(cs2, -1.0, 1.0));
                 float rr = aa / ang2;
                 float dk = smoothstep(1.04, 0.96, rr);
-                col += uSunColor * dk * uSunDiskI * 0.42;
+                col += uSunColor * dk * uSunDiskI * 0.72;
                 col += uSunColor * exp(-(rr - 1.0) * 0.7) * 0.014 * uSunDiskI * step(1.0, rr);
               }
             }
