@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=28';
-import { buildProp, PROP_HEIGHT, lin } from './props.js?v=28';
-import { GLSL_NOISE } from './noise.js?v=28';
-import { CITY } from './world.js?v=28';
+import { hash2i, clamp, lerp, saturate, mulberry32 } from './noise.js?v=29';
+import { buildProp, PROP_HEIGHT, lin } from './props.js?v=29';
+import { GLSL_NOISE } from './noise.js?v=29';
+import { CITY } from './world.js?v=29';
 
 const _m4 = new THREE.Matrix4();
 const _q = new THREE.Quaternion();
@@ -32,6 +32,37 @@ const FOLIAGE_TYPES = new Set([
   'twistedTree', 'glowMushroom', 'giantMushroom', 'fairyTree', 'ajisaTree', 'bamboo', 'cycad',
   'coral', 'kelp', 'anemone'
 ]);
+
+/* Centro del grappolo della cella (kx, kz). Sta qui e non dentro _makeTile
+ * perche la bussola (poi.js) deve ricavare gli stessi centri senza generare
+ * tessere: e la stessa formula, chiamata da due posti. */
+export function clusterCenter(K, kx, kz) {
+  const vx = (kx + 0.5 + (hash2i(kx, kz, 811) - 0.5) * (K.jitter || 0.5)) * K.period;
+  const vz = (kz + 0.5 + (hash2i(kx, kz, 823) - 0.5) * (K.jitter || 0.5)) * K.period;
+  return [vx, vz];
+}
+
+/* I filtri di una regola valutati in un punto: quota, acqua, pendenza,
+ * umidita. E la stessa matematica di _makeTile, e DEVE restarlo: per le
+ * regole a postazioni la bussola decide con questa se la struttura c e.
+ * Con coarse si guardano solo quota e acqua (basta per il centro di un
+ * borgo, dove le case si sistemano da sole). */
+export function passesRule(world, rule, x, z, coarse) {
+  if (world.blocked && world.blocked(x, z)) return false;
+  const h = world.height(x, z);
+  if (h < rule.height[0] || h > rule.height[1]) return false;
+  const wl = world.hasWater ? world.waterLevel : -1e9;
+  if (!rule.underwater && h < wl + 0.12) return false;
+  if (coarse) return true;
+  const e = 1.4;
+  const hx = world.height(x + e, z), hz = world.height(x, z + e);
+  const nx = (h - hx) / e, nz = (h - hz) / e;
+  const slope = 1 - 1 / Math.sqrt(nx * nx + nz * nz + 1);
+  if (slope < rule.slope[0] || slope > rule.slope[1]) return false;
+  const m = world.moisture(x, z, h);
+  if (m < rule.moisture[0] || m > rule.moisture[1]) return false;
+  return true;
+}
 
 export class Scatter {
   constructor(world, fog, biome, opts = {}) {
@@ -251,8 +282,11 @@ export class Scatter {
       for (let i = 0; i < n; i++) {
         const gx = tx * 10007 + i, gz = tz * 10009 + j;
         const h0 = hash2i(gx, gz, R.ri * 131 + 7);
-        // diradamento: non tutte le celle producono qualcosa
-        if (h0 > 0.86) continue;
+        /* Diradamento: non tutte le celle producono qualcosa. Non vale per le
+         * regole a postazioni: li la struttura o c e o non c e, e la bussola
+         * ha gia promesso che c e. */
+        const slotRule = !!(rule.cluster && rule.cluster.slots);
+        if (h0 > 0.86 && !slotRule) continue;
         const jx = hash2i(gx, gz, R.ri * 131 + 11);
         const jz = hash2i(gx, gz, R.ri * 131 + 13);
         /* Quanto un oggetto puo scostarsi dal centro della sua cella. Per le
@@ -260,8 +294,8 @@ export class Scatter {
          * no: due tumuli larghi dieci metri su una griglia da venti, spostati
          * ciascuno di nove, finiscono uno dentro l altro. */
         const jit = rule.jitter !== undefined ? rule.jitter : 0.92;
-        const x = ox + (i + 0.5 + (jx - 0.5) * jit) * step;
-        const z = oz + (j + 0.5 + (jz - 0.5) * jit) * step;
+        let x = ox + (i + 0.5 + (jx - 0.5) * jit) * step;
+        let z = oz + (j + 0.5 + (jz - 0.5) * jit) * step;
 
         /* Borghi. Le case non si spargono a caso sul territorio: stanno
          * insieme. Ogni cella larga «period» ospita un paese, il cui centro e
@@ -298,6 +332,10 @@ export class Scatter {
             if (ci !== i || cj !== j) continue;
             slotX = sx; slotZ = sz;
             slotScale = K.slots[sc2][2] !== undefined ? K.slots[sc2][2] : 1;
+            /* Da qui in poi quota, pendenza e umidita si valutano nel punto
+             * esatto della postazione (passesRule fa lo stesso per la
+             * bussola): cosi i due verdetti coincidono sempre. */
+            x = sx; z = sz;
           } else if (K.ring) {
             /* Un cerchio di pietre non e un grappolo: e un anello. Tenendo solo
              * i punti a una data distanza dal centro si ottiene la
@@ -345,7 +383,7 @@ export class Scatter {
         // probabilita finale modulata dall umidita: i bordi si sfrangiano
         const p = hash2i(gx, gz, R.ri * 131 + 17);
         const fit = saturate((m - mmin) / 0.18) * saturate((mmax - m) / 0.18 + 0.4);
-        if (p > 0.30 + 0.70 * fit) continue;
+        if (!slotRule && p > 0.30 + 0.70 * fit) continue;
 
         const v = nVar === 1 ? 0 : Math.floor(hash2i(gx, gz, R.ri * 131 + 19) * nVar) % nVar;
         const sc = lerp(sc0, sc1, hash2i(gx, gz, R.ri * 131 + 23)) * slotScale;

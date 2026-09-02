@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Altrove - bussola</title>
+<link rel="stylesheet" href="../altrove.css">
+<style>
+  /* Banco di prova della bussola: l HUD vero (stesso CSS, stesso markup)
+   * sopra un fondo finto, senza WebGL. Serve a giudicare simboli, etichetta e
+   * bordi senza dover fotografare la scena pesante. ?yaw=gradi ruota. */
+  body { background: linear-gradient(180deg, #6f8fb0 0%, #b8c8d0 48%, #3d5a34 50%, #2a3f24 100%); }
+  #hud { display: block !important; }
+  #note { position: fixed; left: 18px; top: 18px; font: 12px ui-monospace, monospace; color: #dde; text-shadow: 0 1px 3px #000; white-space: pre; }
+</style>
+</head>
+<body>
+<div id="hud">
+  <div id="hud-top">
+    <div id="compass-pois"></div>
+    <div id="compass">
+      <div id="compass-strip"></div>
+      <div id="compass-needle"></div>
+    </div>
+    <div id="compass-label"></div>
+  </div>
+</div>
+<div id="note"></div>
+<script>
+const q = new URLSearchParams(location.search);
+const yawDeg = parseFloat(q.get('yaw') || '0');
+// nastro identico a main.js
+const labels = { 0: 'N', 45: 'NE', 90: 'E', 135: 'SE', 180: 'S', 225: 'SO', 270: 'O', 315: 'NO' };
+let html = '';
+for (let rep = -1; rep <= 1; rep++) for (let a = 0; a < 360; a += 15) { const l = labels[a]; html += `<i class="${l ? 'card' : ''}">${l || '&middot;'}</i>`; }
+document.getElementById('compass-strip').innerHTML = html;
+let deg = yawDeg % 360; if (deg < 0) deg += 360;
+document.getElementById('compass-strip').style.transform = `translateX(${-(deg / 15) * 60 - 24 * 60 + 150}px)`;
+// mete finte: rotta in gradi, icona, etichetta, distanza
+const POIS = [
+  [deg + 1.5, '🏚️', 'Capanna della strega', 302],
+  [deg - 14, '🍄', 'Cerchio di funghi', 187],
+  [deg + 27, '🐺', 'Branco di lupi', 53],
+  [deg + 33, '🪨', 'Cerchio di pietre', 127],
+  [deg - 80, '🌳', 'L albero antico', 640],
+  [deg + 150, '🗼', 'Torre in rovina', 880]
+];
+const row = document.getElementById('compass-pois');
+let best = null, bestOff = 999;
+for (const [hd, icon, label, d] of POIS) {
+  let off = hd - deg; while (off > 180) off -= 360; while (off < -180) off += 360;
+  let x = off * 4; const clamped = Math.abs(x) > 136; if (clamped) x = Math.sign(x) * 136;
+  const b = document.createElement('b');
+  b.textContent = icon; b.style.transform = `translateX(${x}px)`;
+  if (clamped) b.classList.add('edge'); else if (d < 120) b.classList.add('near');
+  row.appendChild(b);
+  if (!clamped && Math.abs(off) < 6 && Math.abs(off) < bestOff) { best = [label, d]; bestOff = Math.abs(off); }
+}
+document.getElementById('compass-label').textContent = best ? `${best[0]} · ${best[1]} m` : '';
+document.getElementById('note').textContent = 'bussola: yaw ' + yawDeg + '°  (mete finte)';
+</script>
+</body>
+</html>

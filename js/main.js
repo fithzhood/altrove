@@ -3,8 +3,9 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=28';
-import { Fauna } from './fauna.js?v=28';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=29';
+import { Fauna } from './fauna.js?v=29';
+import { Pois } from './poi.js?v=29';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,23 +14,23 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=28';
-import { SkySystem } from './sky.js?v=28';
-import { FogSystem } from './fog.js?v=28';
-import { Engine } from './engine.js?v=28';
-import { Terrain } from './terrain.js?v=28';
-import { Volta } from './volta.js?v=28';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=29';
+import { SkySystem } from './sky.js?v=29';
+import { FogSystem } from './fog.js?v=29';
+import { Engine } from './engine.js?v=29';
+import { Terrain } from './terrain.js?v=29';
+import { Volta } from './volta.js?v=29';
 let volta = null;
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=28';
-import { FirstPersonControls } from './controls.js?v=28';
-import { Scatter } from './scatter.js?v=28';
-import { Water } from './water.js?v=28';
-import { Precipitation } from './weather.js?v=28';
-import { City } from './city.js?v=28';
-import { Castle } from './castle.js?v=28';
-import { Waterfalls } from './waterfall.js?v=28';
-import { Library } from './library.js?v=28';
-import { clamp, lerp, saturate } from './noise.js?v=28';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=29';
+import { FirstPersonControls } from './controls.js?v=29';
+import { Scatter } from './scatter.js?v=29';
+import { Water } from './water.js?v=29';
+import { Precipitation } from './weather.js?v=29';
+import { City } from './city.js?v=29';
+import { Castle } from './castle.js?v=29';
+import { Waterfalls } from './waterfall.js?v=29';
+import { Library } from './library.js?v=29';
+import { clamp, lerp, saturate } from './noise.js?v=29';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -87,7 +88,7 @@ const QUALITY = {
  * Avvio del motore
  * ------------------------------------------------------------------ */
 const canvas = $('view');
-let engine, sky, fog, scene, camera, controls, atmo, terrain, world, scatter, water, precip, city, castle, fauna, falls, library;
+let engine, sky, fog, scene, camera, controls, atmo, terrain, world, scatter, water, precip, city, castle, fauna, falls, library, pois;
 let wxState, wxTarget;
 
 function fatal(msg) {
@@ -157,6 +158,9 @@ function buildWorld(opts = {}) {
       { quality: Math.min(1.3, 0.55 + q.scatter * 0.55) });
     scene.add(fauna.group);
   }
+  // le mete della bussola: strutture rare ritrovate dallo scatter, branchi dalla fauna
+  pois = new Pois(world, biome);
+  pois.fauna = fauna;
 
   if (biome.city) {
     city = new City(world, fog, {
@@ -946,6 +950,58 @@ function updateCompass(yaw) {
   $('compass-strip').style.transform = `translateX(${x}px)`;
 }
 
+/* I punti di interesse sulla bussola: un simbolo per meta, alla stessa scala
+ * del nastro (4 px per grado). Fuori dal campo si aggancia al bordo e si
+ * smorza, cosi si sa da che parte girarsi; quando la stanghetta lo tocca,
+ * sotto compaiono il nome e la distanza. Allineare la stanghetta al simbolo
+ * e camminare dritto porta li. */
+const POI_MARKS = [];
+(function buildPoiRow() {
+  const row = $('compass-pois');
+  for (let i = 0; i < 12; i++) {
+    const b = document.createElement('b');
+    b.className = 'hidden';
+    row.appendChild(b);
+    POI_MARKS.push(b);
+  }
+})();
+let poiTick = 0;
+function updatePois(yaw, px, pz) {
+  if (!pois) {
+    for (const b of POI_MARKS) b.classList.add('hidden');
+    $('compass-label').textContent = '';
+    return;
+  }
+  if ((poiTick++ % 3) !== 0) return;   // ogni tre fotogrammi basta
+  const list = pois.list(px, pz);
+  let deg = (-yaw * 180 / Math.PI) % 360;
+  if (deg < 0) deg += 360;
+  const EDGE = 136;
+  let best = null, bestOff = 999;
+  for (let i = 0; i < POI_MARKS.length; i++) {
+    const b = POI_MARKS[i], p = list[i];
+    if (!p) { b.classList.add('hidden'); continue; }
+    // rotta della meta: 0 = nord (-Z), 90 = est (+X), come il nastro
+    const hd = Math.atan2(p.x - px, -(p.z - pz)) * 180 / Math.PI;
+    let off = hd - deg;
+    while (off > 180) off -= 360;
+    while (off < -180) off += 360;
+    let x = off * 4;
+    const clamped = Math.abs(x) > EDGE;
+    if (clamped) x = Math.sign(x) * EDGE;
+    b.textContent = p.icon;
+    b.style.transform = `translateX(${x.toFixed(1)}px)`;
+    b.classList.toggle('edge', clamped);
+    b.classList.toggle('near', !clamped && p.d < 120);
+    b.classList.remove('hidden');
+    const ao = Math.abs(off);
+    if (!clamped && ao < 6 && ao < bestOff) { best = p; bestOff = ao; }
+  }
+  $('compass-label').textContent = best
+    ? `${best.label} · ${best.d < 1000 ? Math.round(best.d) + ' m' : (best.d / 1000).toFixed(1) + ' km'}`
+    : '';
+}
+
 /* ------------------------------------------------------------------ *
  * Ciclo
  * ------------------------------------------------------------------ */
@@ -1091,6 +1147,7 @@ function frame(now) {
   // HUD
   if (!state.hudHidden && !state.photo) {
     updateCompass(controls.yaw);
+    updatePois(controls.yaw, controls.pos.x, controls.pos.z);
     $('hud-coords').textContent = Math.round(controls.pos.x) + ', ' + Math.round(controls.pos.z);
     $('hud-alt').textContent = Math.round(controls.pos.y) + ' m';
   }
@@ -1129,7 +1186,7 @@ resize();
 setWeather(state.weatherId);
 requestAnimationFrame(frame);
 
-window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get volta() { return volta; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, get loadJob() { return loadJob; }, get building() { return building; }, precip, atmo, THREE };
+window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get volta() { return volta; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get pois() { return pois; }, get falls() { return falls; }, get library() { return library; }, get loadJob() { return loadJob; }, get building() { return building; }, precip, atmo, THREE };
 
 /* Agganci per lo strumento di collaudo in dev/shots.js */
 window.__rebuild = rebuildWithLoading;

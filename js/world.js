@@ -8,7 +8,7 @@
  * aprirebbero crepe nel terreno.
  */
 
-import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=28';
+import { Noise, clamp, lerp, smoothstep, saturate, hash2i } from './noise.js?v=29';
 
 /* sRGB -> lineare. Le palette dei biomi sono scritte come colori "da schermo",
  * ma i vertex color devono arrivare allo shader gia in spazio lineare. */

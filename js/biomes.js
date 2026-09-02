@@ -111,6 +111,9 @@ export const BIOMES = {
     fog: { density: 0.0032, heightFalloff: 0.0075, tint: [0.92, 0.98, 1.0] },
     ambience: { hemiSky: 0x8fb4dd, hemiGround: 0x3a3a24, bounce: 0.30 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x3a6a2a, 0x6a9a3a], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'L albero antico', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'watchTower', density: 0.002, radius: 500, slope: [0, 0.30], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x5a5650, 0x7a766e], cluster: { period: 1100, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Torre in rovina', icon: '🗼' }, upright: true, shadow: true, evenColor: true, sink: 0.3 },
       /* Qualcuno ci vive: una capanna ogni tanto, un pozzo, un ometto sui
        * sentieri. Un bosco senza niente di costruito si guarda due minuti. */
       { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.25], tint: [0x8a6a44, 0xa8845a], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 260, radius: 22, jitter: 0.6 } },
@@ -160,6 +163,10 @@ export const BIOMES = {
     fog: { density: 0.0022, heightFalloff: 0.0040, tint: [1.0, 0.95, 0.84] },
     ambience: { hemiSky: 0xa8c2e2, hemiGround: 0x7a5c34, bounce: 0.55 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'obelisk', density: 0.002, radius: 450, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xc8b088, 0xe0d0a8], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Obelisco', icon: '🗿' }, upright: true, shadow: true, evenColor: true, sink: 0.3 },
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xb89868, 0xd8b888], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Accampamento', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xe8dcc0, 0xf0e8d0], cluster: { period: 1300, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Scheletro', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
       { type: 'saguaro', density: 0.0016, radius: 300, slope: [0, 0.28], height: [-99, 999], moisture: [0.25, 1], scale: [0.75, 1.35], tilt: 0.03, tint: [0x3f5a2c, 0x5a7438], shadow: true },
       { type: 'barrelCactus', density: 0.004, radius: 140, slope: [0, 0.35], height: [-99, 999], moisture: [0.15, 1], scale: [0.6, 1.4], tilt: 0.05, tint: [0x46602e, 0x647d3a] },
       { type: 'dryBush', density: 0.014, radius: 190, slope: [0, 0.5], height: [-99, 999], moisture: [0, 0.8], scale: [0.6, 1.5], tilt: 0.08, tint: [0x7a6b3c, 0x9a8850] },
@@ -225,6 +232,8 @@ export const BIOMES = {
     fog: { density: 0.0026, heightFalloff: 0.0045, tint: [0.88, 0.94, 1.0] },
     ambience: { hemiSky: 0x86aede, hemiGround: 0x4a4a48, bounce: 0.42 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'summitCross', density: 0.002, radius: 600, slope: [0, 0.50], height: [80, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x6a5238, 0x7a6248], cluster: { period: 500, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Croce di vetta', icon: '✝️' }, upright: true, shadow: true, evenColor: true, sink: 0.1 },
       { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x7a5a38, 0x9a7a50], sink: 0.3, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 300, radius: 22, jitter: 0.6 } },
       { type: 'cairn', density: 0.0060, radius: 240, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.5], tint: [0x8a8880, 0xb0aea6], cluster: { period: 90, radius: 7, jitter: 0.6 } },
       { type: 'conifer', density: 0.016, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.5], tilt: 0.03, tint: [0x1c3e1c, 0x2e5a2a], shadow: true },
@@ -261,7 +270,9 @@ export const BIOMES = {
     ambience: { hemiSky: 0x8ec4e8, hemiGround: 0x5a6a52, bounce: 0.48 },
     water: { deep: 0x063a4e, shallow: 0x1f9aa0, foam: 0xf2fbff, waveAmp: 0.42, waveScale: 1.0, reflect: 0.9 },
     scatter: [
-      { type: 'lighthouse', density: 0.0040, radius: 500, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.15], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 640, radius: 16, jitter: 0.5 } },
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'shipwreck', density: 0.002, radius: 420, slope: [0, 0.30], height: [-0.5, 3.5], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x5a4634, 0x7a6650], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Relitto', icon: '⚓' }, upright: true, shadow: true, underwater: true, evenColor: true, sink: 0.6 },
+      { type: 'lighthouse', poi: { label: 'Faro', icon: '🗼' }, density: 0.0040, radius: 500, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.15], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 640, radius: 16, jitter: 0.5 } },
       { type: 'cabin', density: 0.0026, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.85, 1.1], tint: [0xd8d0c0, 0xeee6d6], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 300, radius: 26, jitter: 0.6 } },
       { type: 'palm', density: 0.0030, radius: 300, slope: [0, 0.42], height: [1.2, 60], moisture: [0, 1], scale: [0.70, 1.28], tilt: 0.14, tint: [0x3d6f2c, 0x5d8f36], shadow: true },
       { type: 'broadleaf', density: 0.0028, radius: 280, slope: [0, 0.5], height: [5, 90], moisture: [0.35, 1], scale: [0.8, 1.5], tilt: 0.05, tint: [0x2f6024, 0x4d7a2e], shadow: true },
@@ -298,7 +309,7 @@ export const BIOMES = {
     fog: { density: 0.0038, heightFalloff: 0.0060, tint: [0.86, 0.93, 1.0] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x7e8b98, bounce: 0.75 },
     scatter: [
-      { type: 'domeHut', density: 0.0030, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.55, 0.75], tint: [0xf0f4f8, 0xffffff], sink: 0.35, emissive: 0.06, emissiveMask: true, evenColor: true, jitter: 0.6, cluster: { period: 320, radius: 20, jitter: 0.6 } },
+      { type: 'domeHut', poi: { label: 'Igloo', icon: '🛖' }, density: 0.0030, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.55, 0.75], tint: [0xf0f4f8, 0xffffff], sink: 0.35, emissive: 0.06, emissiveMask: true, evenColor: true, jitter: 0.6, cluster: { period: 320, radius: 20, jitter: 0.6 } },
       { type: 'cairn', density: 0.0060, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.4], tint: [0x6a6e74, 0x9a9ea4], cluster: { period: 110, radius: 7, jitter: 0.6 } },
       { type: 'conifer', density: 0.0016, radius: 300, slope: [0, 0.45], height: [-99, 60], moisture: [0.4, 1], scale: [0.5, 1.1], tilt: 0.08, tint: [0x27381f, 0x3a4c26], shadow: true, snowy: true },
       { type: 'deadTree', density: 0.0007, radius: 260, slope: [0, 0.5], height: [-99, 90], moisture: [0, 1], scale: [0.5, 0.9], tilt: 0.14, tint: [0x5a5248, 0x6e655a], shadow: true },
@@ -333,7 +344,10 @@ export const BIOMES = {
     fog: { density: 0.0026, heightFalloff: 0.0045, tint: [1.0, 0.96, 0.86] },
     ambience: { hemiSky: 0xa0c0e0, hemiGround: 0x7a6838, bounce: 0.52 },
     scatter: [
-      { type: 'stiltHut', density: 0.0026, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.05], tint: [0xa8885a, 0xc8a878], sink: 1.2, jitter: 0.6, cluster: { period: 340, radius: 30, jitter: 0.6 } },
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xb89868, 0xd8b888], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Accampamento', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [0.7, 0.7], tilt: 0, tint: [0x8a9a48, 0xb0b868], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Baobab', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'stiltHut', poi: { label: 'Villaggio', icon: '🛖' }, density: 0.0026, radius: 280, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.05], tint: [0xa8885a, 0xc8a878], sink: 1.2, jitter: 0.6, cluster: { period: 340, radius: 30, jitter: 0.6 } },
       { type: 'well', density: 0.0026, radius: 240, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xa89878, 0xc8b898], jitter: 0.7, cluster: { period: 340, radius: 34, jitter: 0.6 } },
       { type: 'acacia', density: 0.0022, radius: 340, slope: [0, 0.35], height: [-99, 999], moisture: [0.2, 1], scale: [0.80, 1.42], tilt: 0.04, tint: [0x4c6630, 0x6a7f3a], shadow: true },
       { type: 'deadTree', density: 0.0007, radius: 280, slope: [0, 0.4], height: [-99, 999], moisture: [0, 0.5], scale: [0.8, 1.4], tilt: 0.08, tint: [0x6b5c44, 0x8a7a5c], shadow: true },
@@ -369,6 +383,8 @@ export const BIOMES = {
     fog: { density: 0.0058, heightFalloff: 0.0060, tint: [1.0, 0.78, 0.62] },
     ambience: { hemiSky: 0x7a6a68, hemiGround: 0x3a1c10, bounce: 0.22 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'volcanoCone', density: 0.002, radius: 500, slope: [0, 0.30], height: [-99, 999], moisture: [0, 1], scale: [10, 10], tilt: 0, tint: [0x2a2624, 0x4a3a30], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Il cratere', icon: '🌋' }, upright: true, shadow: true, sink: 0.4 },
       { type: 'crystal', density: 0.0016, radius: 240, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.35, tint: [0x9c3a2c, 0xe08a3c], emissive: 0.40 },
       { type: 'deadTree', density: 0.0011, radius: 260, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.3], tilt: 0.16, tint: [0x201c1a, 0x332c28], shadow: true },
       { type: 'rock', density: 0.030, radius: 200, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 2.0], tilt: 0.6, tint: [0x1f1c1a, 0x3a3531] },
@@ -401,7 +417,10 @@ export const BIOMES = {
     ambience: { hemiSky: 0x8aa8b0, hemiGround: 0x323a22, bounce: 0.24 },
     water: { deep: 0x16241a, shallow: 0x33482a, foam: 0x9aa878, waveAmp: 0.05, waveScale: 2.2, reflect: 0.72 },
     scatter: [
-      { type: 'stiltHut', density: 0.0030, radius: 260, slope: [0, 0.3], height: [-3, 2.5], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a7050, 0xa89070], underwater: true, jitter: 0.6, cluster: { period: 260, radius: 30, jitter: 0.6 } },
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'witchHut', density: 0.002, radius: 360, slope: [0, 0.30], height: [-1.5, 3], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x4a3a2c, 0x5a4a38], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Capanna nella palude', icon: '🏚️' }, upright: true, shadow: true, underwater: true, emissive: 0.08, emissiveMask: true, evenColor: true },
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.30], height: [-1, 6], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x3a5a3a, 0x5a7a48], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Cipresso antico', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'stiltHut', poi: { label: 'Palafitte', icon: '🛖' }, density: 0.0030, radius: 260, slope: [0, 0.3], height: [-3, 2.5], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a7050, 0xa89070], underwater: true, jitter: 0.6, cluster: { period: 260, radius: 30, jitter: 0.6 } },
       { type: 'swampTree', density: 0.0050, radius: 300, slope: [0, 0.5], height: [-3, 40], moisture: [0, 1], scale: [0.75, 1.32], tilt: 0.05, tint: [0x354a20, 0x4e6428], shadow: true, seasonal: true },
       { type: 'deadTree', density: 0.0026, radius: 280, slope: [0, 0.5], height: [-3, 40], moisture: [0, 1], scale: [0.7, 1.5], tilt: 0.13, tint: [0x3e3a2c, 0x54503c], shadow: true },
       { type: 'reed', density: 0.75, radius: 55, slope: [0, 0.35], height: [-1.4, 2.2], moisture: [0, 1], scale: [0.7, 1.4], tilt: 0.06, tint: [0x5e6a30, 0x84884a], grass: true },
@@ -449,6 +468,9 @@ export const BIOMES = {
     ambience: { hemiSky: 0x6f8a78, hemiGround: 0x22281c, bounce: 0.18 },
     motes: { amount: 0.16, color: [0.35, 0.85, 0.55] },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'witchHut', density: 0.002, radius: 360, slope: [0, 0.28], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x4a3a2c, 0x5a4a38], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Capanna della strega', icon: '🏚️' }, upright: true, shadow: true, emissive: 0.08, emissiveMask: true, evenColor: true, sink: 0.4 },
+      { type: 'glowMushroom', density: 0.45, radius: 70, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [1.2, 2.0], tilt: 0.08, tint: [0x2ad6a0, 0x7ef0c8], emissive: 0.45, cluster: { period: 480, jitter: 0.5, ring: 3.2, ringWidth: 0.7 }, poi: { label: 'Cerchio di funghi', icon: '🍄' } },
       { type: 'twistedTree', density: 0.032, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.2, 1], scale: [1.1, 1.8], tilt: 0.10, tint: [0x1e2418, 0x3a4230], shadow: true },
       { type: 'twistedTree', density: 0.0110, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.65, 1.30], tilt: 0.10, tint: [0x1e2c16, 0x33421f], shadow: true },
       { type: 'deadTree', density: 0.0038, radius: 280, slope: [0, 0.6], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.2], tilt: 0.16, tint: [0x1c1815, 0x352e26], shadow: true },
@@ -463,7 +485,7 @@ export const BIOMES = {
 
       /* Un cerchio di pietre: il grappolo strettissimo (tredici metri) e cio
        * che lo fa leggere come messo li da qualcuno invece che caduto. */
-      { type: 'standingStone', density: 0.020, radius: 220, slope: [0, 0.32], height: [-99, 999],
+      { type: 'standingStone', poi: { label: 'Cerchio di pietre', icon: '🪨' }, density: 0.020, radius: 220, slope: [0, 0.32], height: [-99, 999],
         moisture: [0, 1], scale: [0.8, 1.3], tilt: 0.10, tint: [0x4e4a44, 0x6e6860],
         cluster: { period: 340, radius: 13, jitter: 0.6 }, jitter: 0.8, shadow: true },
       /* Anche i menhir isolati passano dal grappolo. Sotto una certa rarita
@@ -504,6 +526,9 @@ export const BIOMES = {
     ambience: { hemiSky: 0xb08ad8, hemiGround: 0x2e4a3a, bounce: 0.34 },
     motes: { amount: 0.85, color: [0.55, 1.00, 0.78] },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x7ad0b0, 0xc0f0e0], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'L albero madre', icon: '🌳' }, upright: true, shadow: true, sink: 0.3, emissive: 0.07, emissiveMask: true },
+      { type: 'glowMushroom', density: 0.45, radius: 70, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [1.2, 2.0], tilt: 0.08, tint: [0x60f0c0, 0xd0a0ff], emissive: 0.45, cluster: { period: 420, jitter: 0.5, ring: 3.2, ringWidth: 0.7 }, poi: { label: 'Cerchio delle fate', icon: '🍄' } },
       { type: 'fairyTree', density: 0.012, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.9], tilt: 0.04, tint: [0x2a5a4a, 0x5aa08a], shadow: true, emissive: 0.05 },
       { type: 'broadleaf', density: 0.018, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.8], tilt: 0.05, tint: [0x2a6a3a, 0x4a9a5a], shadow: true },
       { type: 'fairyTree', density: 0.0044, radius: 340, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.35], tilt: 0.05, tint: [0x3fd0a8, 0x9ef0d0], shadow: true, emissive: 0.10 },
@@ -516,7 +541,7 @@ export const BIOMES = {
       { type: 'rock', density: 0.009, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.4], tilt: 0.45, tint: [0x4c4658, 0x6e6880] },
       { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x35906a, 0x6ec49a], grass: true },
 
-      { type: 'mushroomHouse', density: 0.0016, radius: 220, slope: [0, 0.26], height: [-99, 999],
+      { type: 'mushroomHouse', poi: { label: 'Villaggio di funghi', icon: '🍄' }, density: 0.0016, radius: 220, slope: [0, 0.26], height: [-99, 999],
         moisture: [0.2, 1], scale: [0.75, 1.35], tilt: 0.02, tint: [0xd8c8a0, 0xf0e4c8],
         faceDownhill: true, faceJitter: 2.6, upright: true, sink: 0.10, jitter: 0.75,
         cluster: { period: 260, radius: 46, jitter: 0.6 },
@@ -560,7 +585,7 @@ export const BIOMES = {
       { type: 'flower', density: 0.030, radius: 60, slope: [0, 0.4], height: [-40, 999], moisture: [0.2, 1], scale: [0.8, 1.3], tilt: 0.12, tint: [0xe8d868, 0xf0f0f0] },
       { type: 'grassTuft', density: 2.2, radius: 38, slope: [0, 0.6], height: [-40, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x5f8130, 0x8fa447], grass: true },
 
-      { type: 'windmill', density: 0.0022, radius: 260, slope: [0, 0.20], height: [4, 999],
+      { type: 'windmill', poi: { label: 'Mulino', icon: '🏠' }, density: 0.0022, radius: 260, slope: [0, 0.20], height: [4, 999],
         moisture: [0, 1], scale: [0.85, 1.25], tilt: 0.02, tint: [0xcfc4a8, 0xe8dcc0],
         faceDownhill: true, faceJitter: 2.6, upright: true, sink: 0.35,
         cluster: { period: 300, radius: 30, jitter: 0.6 }, jitter: 0.7,
@@ -633,7 +658,7 @@ export const BIOMES = {
       { type: 'bush', density: 0.012, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x1a6a86, 0x3a96ac] },
       { type: 'grassTuft', density: 2.1, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x2f96c0, 0x62c4dc], grass: true },
 
-      { type: 'domeHut', density: 0.0017, radius: 300, slope: [0, 0.16], height: [-99, 999],
+      { type: 'domeHut', poi: { label: 'Villaggio', icon: '🛖' }, density: 0.0017, radius: 300, slope: [0, 0.16], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.3], tilt: 0, tint: [0xe4efe2, 0xcfe8dc],
         faceDownhill: true, faceJitter: 2.2, upright: true, sink: 0.28, jitter: 0.7,
         cluster: { period: 340, radius: 36, jitter: 0.6 },
@@ -642,6 +667,7 @@ export const BIOMES = {
   },
 
   collegio: {
+    pois: [{ x: 0, z: 0, label: 'Il castello', icon: '🏰' }],
     id: 'collegio',
     label: 'Il collegio',
     blurb: 'Un castello di torri su un lago nero, e il bosco che comincia subito dopo.',
@@ -667,6 +693,9 @@ export const BIOMES = {
     fog: { density: 0.0042, heightFalloff: 0.0080, tint: [0.90, 0.95, 1.02] },
     ambience: { hemiSky: 0x86a8d0, hemiGround: 0x33381f, bounce: 0.26 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x4a7a3a, 0x7aa858], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Il salice', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'cabin', density: 0.002, radius: 400, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x8a6a44, 0xa8885a], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Capanna del guardiacaccia', icon: '🛖' }, upright: true, shadow: true, emissive: 0.08, emissiveMask: true, evenColor: true, sink: 0.4 },
       { type: 'conifer', density: 0.018, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [1.1, 1.8], tilt: 0.03, tint: [0x1e4a1a, 0x3a6a2a], shadow: true },
       { type: 'broadleaf', density: 0.014, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.2, 1.8], tilt: 0.05, tint: [0x2c5e1e, 0x5a8a34], shadow: true, seasonal: true },
       { type: 'conifer', density: 0.0080, radius: 320, slope: [0, 0.6], height: [-40, 999], moisture: [0.3, 1], scale: [0.62, 1.30], tilt: 0.04, tint: [0x22381a, 0x3c5a26], shadow: true },
@@ -733,12 +762,12 @@ export const BIOMES = {
         cluster: { period: 92, jitter: 0.35, radius: 40, slots: [
           [-8.5, -5.5, 1.00], [-1.5, -10.5, 0.86], [5.5, -6.5, 0.62]
         ] } },
-      { type: 'rose', density: 0.020, radius: 130, slope: [0, 0.45], height: [-99, 999],
+      { type: 'rose', poi: { label: 'La rosa', icon: '🌹' }, density: 0.020, radius: 130, slope: [0, 0.45], height: [-99, 999],
         moisture: [0, 1], scale: [1, 1], tilt: 0.03, tint: [0xc8283c, 0xd8384a],
         upright: true, shadow: true, evenColor: true,
         cluster: { period: 92, jitter: 0.35, radius: 40, slots: [[7.5, 6.5, 1.0]] } },
 
-      { type: 'lamppost', density: 0.010, radius: 130, slope: [0, 0.62], height: [-99, 999],
+      { type: 'lamppost', poi: { label: 'Il lampione', icon: '🏮' }, density: 0.010, radius: 130, slope: [0, 0.62], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.1], tilt: 0.02, tint: [0x2e2a24, 0x4a443a],
         upright: true, jitter: 0.7, cluster: { period: 210, radius: 8, jitter: 0.5 },
         emissive: 0.55, emissiveMask: true, shadow: true }
@@ -777,6 +806,9 @@ export const BIOMES = {
     fog: { density: 0.0052, heightFalloff: 0.0090, tint: [0.98, 0.94, 1.08] },
     ambience: { hemiSky: 0x9a86d0, hemiGround: 0x2a4a30, bounce: 0.30 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 550, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1.2, 1.2], tilt: 0, tint: [0xf0c0e8, 0xffe0f8], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Albero delle Anime', icon: '🌳' }, upright: true, shadow: true, sink: 0.3, emissive: 0.10, emissiveMask: true },
+      { type: 'ancientTree', density: 0.002, radius: 800, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [3.2, 3.2], tilt: 0, tint: [0x3a6a48, 0x6aa070], cluster: { period: 1400, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Albero Casa', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
       { type: 'fairyTree', density: 0.0050, radius: 340, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.85, 1.55], tilt: 0.04, tint: [0x2fb0d0, 0x8ff0e0], shadow: true, emissive: 0.05 },
       { type: 'broadleaf', density: 0.0060, radius: 300, slope: [0, 0.5], height: [-99, 999], moisture: [0.25, 1], scale: [0.75, 1.25], tilt: 0.05, tint: [0x1f6a42, 0x3f9058], shadow: true },
       { type: 'palm', density: 0.0026, radius: 280, slope: [0, 0.45], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.2], tilt: 0.10, tint: [0x2a7a4a, 0x54a068], shadow: true },
@@ -811,6 +843,9 @@ export const BIOMES = {
     fog: { density: 0.0040, heightFalloff: 0.0030, tint: [1.20, 0.86, 0.66] },
     ambience: { hemiSky: 0xc08050, hemiGround: 0x6a3a20, bounce: 0.55 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'rover', density: 0.002, radius: 300, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xd8d6cc, 0xe8e6dc], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Il rover', icon: '🛰️' }, upright: true, shadow: true, evenColor: true, sink: 0.1 },
+      { type: 'lander', density: 0.002, radius: 450, slope: [0, 0.10], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xb0aca4, 0xd8d4cc], cluster: { period: 1300, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Il modulo', icon: '🚀' }, upright: true, shadow: true, evenColor: true, sink: 0.1 },
       { type: 'rock', density: 0.055, radius: 190, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.35, 1.15], tilt: 0.55, tint: [0x6e4024, 0x9c6136] },
       { type: 'boulder', density: 0.0060, radius: 320, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.6, 1.5], tilt: 0.35, tint: [0x6a3c22, 0x965d34], shadow: true },
       { type: 'slabRock', density: 0.0022, radius: 280, slope: [0, 0.9], height: [-999, 999], moisture: [0, 1], scale: [0.7, 1.8], tilt: 0.22, tint: [0x74441f, 0xa06a3a], shadow: true }
@@ -837,12 +872,14 @@ export const BIOMES = {
     fog: { density: 0.00012, heightFalloff: 0.001, tint: [0.85, 0.88, 1.0] },
     ambience: { hemiSky: 0x585c68, hemiGround: 0x4a4844, bounce: 0.75 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'monolith', density: 0.002, radius: 340, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x07080a, 0x101214], cluster: { period: 1100, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Il monolite', icon: '🗿' }, upright: true, shadow: true, evenColor: true, sink: 0.2 },
       { type: 'rock', density: 0.070, radius: 180, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.30, 1.05], tilt: 0.55, tint: [0x565450, 0x7e7b75] },
       { type: 'boulder', density: 0.0055, radius: 300, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.6, 1.4], tilt: 0.35, tint: [0x52504c, 0x7a7770], shadow: true },
 
       /* Polvere e crateri li ha anche Mercurio: quello che rende la Luna «la
        * Luna» e che ci siamo stati. Un solo sito, e non sempre in vista. */
-      { type: 'lander', density: 0.0060, radius: 420, slope: [0, 0.10], height: [-99, 999],
+      { type: 'lander', poi: { label: 'Il modulo', icon: '🚀' }, density: 0.0060, radius: 420, slope: [0, 0.10], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.1], tilt: 0.01, tint: [0xb0aca4, 0xd8d4cc],
         upright: true, cluster: { period: 780, radius: 13, jitter: 0.5 }, jitter: 0.5,
         shadow: true }
@@ -865,7 +902,9 @@ export const BIOMES = {
     fog: { density: 0.0024, heightFalloff: 0.0040, tint: [1.05, 0.94, 0.82] },
     ambience: { hemiSky: 0xa0bce0, hemiGround: 0x7a4626, bounce: 0.55 },
     scatter: [
-      { type: 'archRuin', density: 0.0020, radius: 280, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.2, 2.2], tint: [0x9a5a3a, 0xc07a4a], jitter: 0.7, cluster: { period: 360, radius: 36, jitter: 0.6 } },
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xe8dcc0, 0xf0e8d0], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ossa', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
+      { type: 'archRuin', poi: { label: 'Rovine', icon: '🏛️' }, density: 0.0020, radius: 280, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.2, 2.2], tint: [0x9a5a3a, 0xc07a4a], jitter: 0.7, cluster: { period: 360, radius: 36, jitter: 0.6 } },
       { type: 'cairn', density: 0.0050, radius: 240, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.4], tint: [0x9a6a4a, 0xc08a62], cluster: { period: 120, radius: 7, jitter: 0.6 } },
       { type: 'dryBush', density: 0.014, radius: 190, slope: [0, 0.5], height: [-999, 999], moisture: [0, 0.8], scale: [0.6, 1.5], tilt: 0.08, tint: [0x7a6b3c, 0x9a8850] },
       { type: 'saguaro', density: 0.0011, radius: 300, slope: [0, 0.28], height: [-999, 999], moisture: [0.3, 1], scale: [0.7, 1.25], tilt: 0.03, tint: [0x3f5a2c, 0x5a7438], shadow: true },
@@ -893,8 +932,10 @@ export const BIOMES = {
     fog: { density: 0.0052, heightFalloff: 0.0105, tint: [0.90, 1.00, 0.90] },
     ambience: { hemiSky: 0x8ab0a0, hemiGround: 0x24401a, bounce: 0.24 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1.1, 1.1], tilt: 0, tint: [0x2a6a2a, 0x4a9a3a], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ceiba', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
       { type: 'stiltHut', density: 0.0030, radius: 260, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a7050, 0xa89070], sink: 1.0, jitter: 0.6, cluster: { period: 300, radius: 28, jitter: 0.6 } },
-      { type: 'archRuin', density: 0.0020, radius: 260, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.6], tint: [0x6a7a5a, 0x8a9a70], jitter: 0.7, cluster: { period: 380, radius: 40, jitter: 0.6 } },
+      { type: 'archRuin', poi: { label: 'Tempio in rovina', icon: '🏛️' }, density: 0.0020, radius: 260, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.6], tint: [0x6a7a5a, 0x8a9a70], jitter: 0.7, cluster: { period: 380, radius: 40, jitter: 0.6 } },
       { type: 'broadleaf', density: 0.028, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.3, 1.8], tilt: 0.08, tint: [0x1f5a1c, 0x3f8a2c], shadow: true },
       { type: 'palm', density: 0.016, radius: 140, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.1, 1.8], tilt: 0.10, tint: [0x2a6a22, 0x4a9034], shadow: true },
       { type: 'broadleaf', density: 0.0180, radius: 260, slope: [0, 0.55], height: [-99, 999], moisture: [0.2, 1], scale: [0.8, 1.45], tilt: 0.06, tint: [0x1e5416, 0x3d7c26], shadow: true },
@@ -925,7 +966,9 @@ export const BIOMES = {
     fog: { density: 0.0055, heightFalloff: 0.011, tint: [0.88, 1.02, 0.86] },
     ambience: { hemiSky: 0x92b48c, hemiGround: 0x2e4020, bounce: 0.26 },
     scatter: [
-      { type: 'pagoda', density: 0.0030, radius: 320, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.3], tint: [0x8a4a30, 0xa85a3a], sink: 0.3, jitter: 0.5, cluster: { period: 420, radius: 18, jitter: 0.5 } },
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'torii', density: 0.002, radius: 320, slope: [0, 0.18], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xb8301e, 0xc84030], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Torii', icon: '⛩️' }, upright: true, shadow: true, evenColor: true, sink: 0.2 },
+      { type: 'pagoda', poi: { label: 'Pagoda', icon: '🏯' }, density: 0.0030, radius: 320, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.3], tint: [0x8a4a30, 0xa85a3a], sink: 0.3, jitter: 0.5, cluster: { period: 420, radius: 18, jitter: 0.5 } },
       { type: 'bamboo', density: 0.055, radius: 120, slope: [0, 0.26], height: [-99, 999], moisture: [0.3, 1], scale: [1.1, 1.7], tilt: 0.04, tint: [0x5a8a2a, 0x8ab84a], shadow: true },
       { type: 'bamboo', density: 0.0180, radius: 220, slope: [0, 0.55], height: [-99, 999], moisture: [0.2, 1], scale: [0.75, 1.35], tilt: 0.03, tint: [0x5e8a2c, 0x9ab84a], shadow: true },
       { type: 'broadleaf', density: 0.0016, radius: 260, slope: [0, 0.45], height: [-99, 999], moisture: [0.4, 1], scale: [0.7, 1.15], tilt: 0.05, tint: [0x2f5a1e, 0x4e7a28], shadow: true },
@@ -951,6 +994,8 @@ export const BIOMES = {
     fog: { density: 0.0016, heightFalloff: 0.0035, tint: [0.98, 0.99, 1.0] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0xc8c6bc, bounce: 0.92 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'shipwreck', density: 0.002, radius: 450, slope: [0, 0.30], height: [0.2, 5], moisture: [0, 1], scale: [0.6, 0.6], tilt: 0, tint: [0x6a5644, 0x8a7660], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Barca arenata', icon: '🛶' }, upright: true, shadow: true, evenColor: true, sink: 0.5 },
       { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.0, 1.3], tint: [0xe8e4dc, 0xffffff], sink: 0.2, emissive: 0.08, emissiveMask: true, jitter: 0.5, cluster: { period: 460, radius: 18, jitter: 0.5 } },
       { type: 'rock', density: 0.0016, radius: 200, slope: [0, 1], height: [-999, 999], moisture: [0, 1], scale: [0.4, 1.2], tilt: 0.5, tint: [0x8e8a80, 0xb4b0a4] }
     ]
@@ -974,8 +1019,10 @@ export const BIOMES = {
     ambience: { hemiSky: 0x88a8cc, hemiGround: 0x3a4030, bounce: 0.34 },
     water: { deep: 0x03151c, shallow: 0x0d4048, foam: 0xeaf6ff },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'shipwreck', density: 0.002, radius: 420, slope: [0, 0.30], height: [-0.5, 3.5], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x5a4634, 0x7a6650], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Relitto', icon: '⚓' }, upright: true, shadow: true, underwater: true, evenColor: true, sink: 0.6 },
       { type: 'cabin', density: 0.0030, radius: 320, slope: [0, 0.3], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x8a3a2e, 0xa84a3a], sink: 0.3, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 280, radius: 26, jitter: 0.6 } },
-      { type: 'lighthouse', density: 0.0040, radius: 500, slope: [0, 0.3], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 700, radius: 16, jitter: 0.5 } },
+      { type: 'lighthouse', poi: { label: 'Faro', icon: '🗼' }, density: 0.0040, radius: 500, slope: [0, 0.3], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xeeece6, 0xffffff], sink: 0.4, emissive: 0.22, emissiveMask: true, jitter: 0.5, cluster: { period: 700, radius: 16, jitter: 0.5 } },
       { type: 'conifer', density: 0.020, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.5], tilt: 0.03, tint: [0x1c3e1c, 0x2e5a2a], shadow: true },
       { type: 'conifer', density: 0.0075, radius: 320, slope: [0, 0.62], height: [2, 260], moisture: [0.2, 1], scale: [0.55, 1.10], tilt: 0.06, tint: [0x1e3418, 0x365224], shadow: true },
       { type: 'deadTree', density: 0.0010, radius: 260, slope: [0, 0.55], height: [2, 300], moisture: [0, 1], scale: [0.6, 1.0], tilt: 0.14, tint: [0x50483c, 0x6c6254], shadow: true },
@@ -1004,6 +1051,9 @@ export const BIOMES = {
     fog: { density: 0.0080, heightFalloff: 0.0060, tint: [1.15, 1.02, 0.72] },
     ambience: { hemiSky: 0xc0b070, hemiGround: 0x5c4c30, bounce: 0.42 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xd8ccb0, 0xe8dcc8], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ossa', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x7a7060, 0x9a9080], cluster: { period: 1100, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Bivacco', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
       { type: 'deadTree', density: 0.0060, radius: 300, slope: [0, 0.55], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.3], tilt: 0.14, tint: [0x4e4636, 0x6e6450], shadow: true },
       { type: 'ruinPillar', density: 0.0030, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.6], tilt: 0.10, tint: [0x8a8272, 0xaea593], shadow: true },
       { type: 'slabRock', density: 0.0035, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.4], tilt: 0.20, tint: [0x6e6654, 0x8e8674], shadow: true },
@@ -1011,7 +1061,7 @@ export const BIOMES = {
       { type: 'rock', density: 0.020, radius: 180, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.5, tint: [0x62594a, 0x847a68] },
       { type: 'grassTuft', density: 0.55, radius: 38, slope: [0, 0.55], height: [-99, 999], moisture: [0.3, 1], scale: [0.6, 1.1], tilt: 0.12, tint: [0x7a7040, 0x968a52], grass: true },
 
-      { type: 'archRuin', density: 0.0009, radius: 240, slope: [0, 0.24], height: [-99, 999],
+      { type: 'archRuin', poi: { label: 'Rovine', icon: '🏛️' }, density: 0.0009, radius: 240, slope: [0, 0.24], height: [-99, 999],
         moisture: [0, 1], scale: [0.8, 1.6], tilt: 0.05, tint: [0x7a7460, 0xa09a80],
         faceDownhill: true, faceJitter: 3.0, upright: true,
         cluster: { period: 360, radius: 56, jitter: 0.6 }, jitter: 0.8, shadow: true },
@@ -1063,6 +1113,8 @@ export const BIOMES = {
     fog: { density: 0.0065, heightFalloff: 0.020, tint: [0.98, 1.0, 1.02] },
     ambience: { hemiSky: 0x9cc0dc, hemiGround: 0x6a5c3c, bounce: 0.44 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-2, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x9a8a70, 0xc0b090], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Accampamento', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
       { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x6a5a48, 0x8a7a60], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 380, radius: 20, jitter: 0.6 } },
       { type: 'cairn', density: 0.0050, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.8, 1.2], tint: [0x9a9088, 0xc0b8ac], cluster: { period: 130, radius: 7, jitter: 0.6 } },
       { type: 'conifer', density: 0.0038, radius: 300, slope: [0, 0.55], height: [4, 999], moisture: [0.3, 1], scale: [0.6, 1.15], tilt: 0.05, tint: [0x24401c, 0x3f5f28], shadow: true },
@@ -1092,6 +1144,8 @@ export const BIOMES = {
     fog: { density: 0.0034, heightFalloff: 0.0055, tint: [0.84, 0.92, 1.06] },
     ambience: { hemiSky: 0xa4c8ec, hemiGround: 0x8494a4, bounce: 0.80 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'crystal', density: 0.002, radius: 500, slope: [0, 0.30], height: [-99, 999], moisture: [0, 1], scale: [8, 8], tilt: 0, tint: [0xa0e0ff, 0xe0f8ff], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'La guglia di cristallo', icon: '💎' }, upright: true, shadow: true, sink: 0.3 },
       { type: 'crystal', density: 0.0060, radius: 280, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [0.8, 3.0], tilt: 0.22, tint: [0x5aa8d8, 0xc0eaff], shadow: true, emissive: 0.06 },
       { type: 'iceRock', density: 0.012, radius: 240, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.30, tint: [0x9cc4d8, 0xd8ecf6], shadow: true },
       { type: 'spiralRock', density: 0.0014, radius: 320, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.4], tilt: 0.05, tint: [0x6a9cc0, 0xb8dcf0], shadow: true },
@@ -1117,6 +1171,9 @@ export const BIOMES = {
     fog: { density: 0.0028, heightFalloff: 0.0065, tint: [0.96, 1.0, 1.02] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x46521e, bounce: 0.40 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1.1, 1.1], tilt: 0, tint: [0x4a8a26, 0x74a83a], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'L Albero della Festa', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'windmill', density: 0.002, radius: 450, slope: [0, 0.18], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xcfc4a8, 0xe8dcc0], cluster: { period: 1100, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Mulino', icon: '🏠' }, upright: true, shadow: true, evenColor: true, sink: 0.3 },
       { type: 'broadleaf', density: 0.0042, radius: 320, slope: [0, 0.4], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.35], tilt: 0.04, tint: [0x3d7a24, 0x6ea23a], shadow: true, seasonal: true },
       { type: 'birch', density: 0.0016, radius: 280, slope: [0, 0.4], height: [-99, 999], moisture: [0.4, 1], scale: [0.75, 1.1], tilt: 0.05, tint: [0x76a03c, 0x9cbc4e], shadow: true, seasonal: true },
       { type: 'bush', density: 0.026, radius: 150, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [0.6, 1.4], tilt: 0.05, tint: [0x35661e, 0x5a8a2c], seasonal: true },
@@ -1128,7 +1185,7 @@ export const BIOMES = {
       /* Le case. Vanno scavate nel fianco delle colline e devono guardare a
        * valle: e la sola cosa che distingue la Contea da un prato qualsiasi.
        * L emissivo e mascherato, cosi di notte si accendono solo le finestre. */
-      { type: 'hobbitHole', density: 0.0044, radius: 320, slope: [0.02, 0.45], height: [2, 999],
+      { type: 'hobbitHole', poi: { label: 'Borgo', icon: '🏘️' }, density: 0.0044, radius: 320, slope: [0.02, 0.45], height: [2, 999],
         moisture: [0.2, 1], scale: [0.74, 0.98], tilt: 0, tint: [0x4a8a26, 0x74a83a],
         faceDownhill: true, faceJitter: 0.55, upright: true, sink: 0.12, jitter: 0.42,
         cluster: { period: 300, radius: 64, jitter: 0.55 },
@@ -1184,6 +1241,8 @@ export const BIOMES = {
     ambience: { hemiSky: 0x8a4030, hemiGround: 0x2e1408, bounce: 0.20 },
     motes: { amount: 0.30, color: [1.0, 0.42, 0.10] },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xc8c0b0, 0xe0d8c8], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ossa di drago', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
       { type: 'deadTree', density: 0.0030, radius: 280, slope: [0, 0.55], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.3], tilt: 0.18, tint: [0x1a1614, 0x2e2724], shadow: true },
       { type: 'ruinPillar', density: 0.0018, radius: 240, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.8], tilt: 0.14, tint: [0x2a2622, 0x453e38], shadow: true },
       { type: 'spiralRock', density: 0.0020, radius: 300, slope: [0, 0.85], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.4], tilt: 0.10, tint: [0x1c1917, 0x36302c], shadow: true },
@@ -1192,7 +1251,7 @@ export const BIOMES = {
       { type: 'boulder', density: 0.0040, radius: 320, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.85, 2.0], tilt: 0.35, tint: [0x1c1917, 0x38322e], shadow: true },
       /* Rade davvero: il grappolo largo trenta metri con periodo quattrocento
        * ne mette una ogni tanto, invece di riempire la piana di torri. */
-      { type: 'watchTower', density: 0.0012, radius: 400, slope: [0, 0.46], height: [-99, 999],
+      { type: 'watchTower', poi: { label: 'Torre', icon: '🗼' }, density: 0.0012, radius: 400, slope: [0, 0.46], height: [-99, 999],
         moisture: [0, 1], scale: [0.8, 1.4], tilt: 0.015, tint: [0x2a2622, 0x4a423a],
         faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.4,
         cluster: { period: 400, radius: 30, jitter: 0.6 }, jitter: 0.7, shadow: true }
@@ -1217,6 +1276,8 @@ export const BIOMES = {
     fog: { density: 0.0056, heightFalloff: 0.0090, tint: [0.98, 1.0, 0.92] },
     ambience: { hemiSky: 0x9ab494, hemiGround: 0x2c4418, bounce: 0.28 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xe8dcc0, 0xf0e8d0], cluster: { period: 1200, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ossa', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
       { type: 'conifer', density: 0.020, radius: 150, slope: [0, 0.26], height: [-99, 999], moisture: [0.2, 1], scale: [1.4, 2.4], tilt: 0.04, tint: [0x1e4a1a, 0x3a6a2a], shadow: true },
       { type: 'cycad', density: 0.030, radius: 120, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [1.0, 1.9], tilt: 0.06, tint: [0x2e6a24, 0x4f8a30], shadow: true },
       { type: 'conifer', density: 0.0085, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [0.9, 1.9], tilt: 0.04, tint: [0x1e3c18, 0x395c22], shadow: true },
@@ -1249,6 +1310,9 @@ export const BIOMES = {
     fog: { density: 0.0044, heightFalloff: 0.0060, tint: [0.86, 0.93, 1.02] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x7c8894, bounce: 0.78 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x8a7a60, 0xa89880], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Accampamento di cacciatori', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [0.6, 0.6], tilt: 0, tint: [0xe8dcc0, 0xf0e8d0], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Ossa di mammut', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
       { type: 'conifer', density: 0.0030, radius: 320, slope: [0, 0.5], height: [-99, 999], moisture: [0.35, 1], scale: [0.55, 1.10], tilt: 0.07, tint: [0x24361c, 0x374c22], shadow: true },
       { type: 'deadTree', density: 0.0016, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.1], tilt: 0.14, tint: [0x53493c, 0x6e6252], shadow: true },
       { type: 'iceRock', density: 0.0045, radius: 240, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.6, 1.6], tilt: 0.30, tint: [0x9cc4d8, 0xd8ecf6], shadow: true },
@@ -1275,6 +1339,8 @@ export const BIOMES = {
     fog: { density: 0.0030, heightFalloff: 0.0050, tint: [0.94, 0.99, 1.0] },
     ambience: { hemiSky: 0x8ecce0, hemiGround: 0x4a6a60, bounce: 0.55 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'shipwreck', density: 0.002, radius: 400, slope: [0, 0.30], height: [-40, -3], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x4a4a3a, 0x6a6a50], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Relitto', icon: '⚓' }, upright: true, shadow: true, underwater: true, evenColor: true, sink: 0.8 },
       { type: 'coral', density: 0.055, radius: 130, slope: [0, 0.7], height: [-99, -2.5], moisture: [0, 1], scale: [0.7, 2.4], tilt: 0.25, tint: [0xe0507a, 0xf0a050], underwater: true },
       { type: 'brainCoral', density: 0.020, radius: 120, slope: [0, 0.5], height: [-99, -2.5], moisture: [0, 1], scale: [0.7, 2.0], tilt: 0.20, tint: [0xd8a850, 0xa0d0c0], underwater: true },
       { type: 'kelp', density: 0.030, radius: 110, slope: [0, 0.5], height: [-99, -4], moisture: [0, 1], scale: [0.7, 1.6], tilt: 0.08, tint: [0x3a7a4a, 0x7ab060], underwater: true },
@@ -1301,6 +1367,8 @@ export const BIOMES = {
     fog: { density: 0.0034, heightFalloff: 0.0050, tint: [0.88, 0.95, 1.02] },
     ambience: { hemiSky: 0x74a8c0, hemiGround: 0x3e4e48, bounce: 0.44 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'shipwreck', density: 0.002, radius: 400, slope: [0, 0.30], height: [-60, -4], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x4a4a3a, 0x6a6a50], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Relitto', icon: '⚓' }, upright: true, shadow: true, underwater: true, evenColor: true, sink: 0.8 },
       { type: 'ruinPillar', density: 0.020, radius: 170, slope: [0, 0.35], height: [-99, -4], moisture: [0, 1], scale: [1.2, 3.6], tilt: 0.16, tint: [0x8a9080, 0xb0b6a0], shadow: true, underwater: true },
       { type: 'slabRock', density: 0.014, radius: 160, slope: [0, 0.7], height: [-99, -4], moisture: [0, 1], scale: [1.0, 3.2], tilt: 0.14, tint: [0x7e8478, 0xa2a898], shadow: true, underwater: true },
       { type: 'coral', density: 0.020, radius: 110, slope: [0, 0.7], height: [-99, -4], moisture: [0, 1], scale: [0.6, 1.8], tilt: 0.25, tint: [0xc06070, 0xe0a060], underwater: true },
@@ -1310,11 +1378,11 @@ export const BIOMES = {
 
       /* Colonne sparse dicono «rovina»; archi e statue dicono «qui c era una
        * citta», che e quello che il posto promette. */
-      { type: 'archRuin', density: 0.0014, radius: 220, slope: [0, 0.26], height: [-99, -4],
+      { type: 'archRuin', poi: { label: 'Rovine sommerse', icon: '🏛️' }, density: 0.0014, radius: 220, slope: [0, 0.26], height: [-99, -4],
         moisture: [0, 1], scale: [0.9, 1.8], tilt: 0.04, tint: [0x8a9484, 0xb4bca4],
         faceDownhill: true, faceJitter: 3.0, upright: true, underwater: true,
         cluster: { period: 330, radius: 52, jitter: 0.6 }, jitter: 0.8, shadow: true },
-      { type: 'statueRuin', density: 0.0005, radius: 200, slope: [0, 0.22], height: [-99, -5],
+      { type: 'statueRuin', poi: { label: 'Il colosso', icon: '🗿' }, density: 0.0005, radius: 200, slope: [0, 0.22], height: [-99, -5],
         moisture: [0, 1], scale: [0.9, 1.7], tilt: 0.03, tint: [0x94a094, 0xc0c8b4],
         faceDownhill: true, faceJitter: 3.0, upright: true, underwater: true,
         cluster: { period: 330, radius: 52, jitter: 0.6 }, jitter: 0.8, shadow: true }
@@ -1351,6 +1419,9 @@ export const BIOMES = {
     fog: { density: 0.0011, heightFalloff: 0.0022, tint: [1.06, 0.96, 0.78] },
     ambience: { hemiSky: 0xd8b878, hemiGround: 0x40521e, bounce: 0.45 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x3a6a2a, 0x6a9a3a], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'L albero antico', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
+      { type: 'cabin', density: 0.002, radius: 400, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x8a6a44, 0xa8885a], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Rifugio', icon: '🛖' }, upright: true, shadow: true, emissive: 0.08, emissiveMask: true, evenColor: true, sink: 0.4 },
       { type: 'conifer', density: 0.0060, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.4], tilt: 0.04, tint: [0x24461c, 0x40682a], shadow: true },
       { type: 'broadleaf', density: 0.0075, radius: 280, slope: [0, 0.5], height: [-99, 999], moisture: [0.3, 1], scale: [0.8, 1.4], tilt: 0.05, tint: [0x3a7a24, 0x63a034], shadow: true },
       { type: 'cycad', density: 0.0060, radius: 200, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.4], tilt: 0.05, tint: [0x2e6a24, 0x4f8a30], shadow: true },
@@ -1391,7 +1462,7 @@ export const BIOMES = {
       { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.7], tilt: 0.45, tint: [0x7e7050, 0xa89670] },
       { type: 'grassTuft', density: 2.0, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x3f9c68, 0x78c890], grass: true },
 
-      { type: 'archRuin', density: 0.0018, radius: 230, slope: [0, 0.24], height: [-99, 999],
+      { type: 'archRuin', poi: { label: 'Rovine', icon: '🏛️' }, density: 0.0018, radius: 230, slope: [0, 0.24], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.9], tilt: 0.03, tint: [0xa8b4c0, 0xd0dce8],
         faceDownhill: true, faceJitter: 3.0, upright: true,
         cluster: { period: 280, radius: 64, jitter: 0.6 }, jitter: 0.8, shadow: true },
@@ -1421,6 +1492,8 @@ export const BIOMES = {
     fog: { density: 0.0110, heightFalloff: 0.0030, tint: [1.35, 0.94, 0.46] },
     ambience: { hemiSky: 0xc08840, hemiGround: 0x3e3020, bounce: 0.40 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'probe', density: 0.002, radius: 300, slope: [0, 0.15], height: [8, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xc8a040, 0xd8b050], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'La sonda', icon: '🛰️' }, upright: true, shadow: true, evenColor: true, sink: 0.15 },
       { type: 'rock', density: 0.020, radius: 180, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.4, 1.4], tilt: 0.5, tint: [0x3e3224, 0x685440] },
       { type: 'boulder', density: 0.0026, radius: 280, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.7], tilt: 0.3, tint: [0x3a2e22, 0x60503c], shadow: true },
       { type: 'slabRock', density: 0.0020, radius: 240, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.8, 2.0], tilt: 0.2, tint: [0x40342a, 0x6a5644], shadow: true }
@@ -1455,7 +1528,7 @@ export const BIOMES = {
       /* Una guglia alta quaranta metri non va seminata come l erba: il
        * grappolo strettissimo con periodo lunghissimo ne fa comparire una
        * ogni tanto, ed e cosi che diventa un punto di riferimento. */
-      { type: 'darkSpire', density: 0.0011, radius: 900, slope: [0, 0.22], height: [-99, 999],
+      { type: 'darkSpire', poi: { label: 'La Torre', icon: '🗼', first: true, range: 2200 }, density: 0.0011, radius: 900, slope: [0, 0.22], height: [-99, 999],
         moisture: [0, 1], scale: [0.75, 1.5], tilt: 0.01, tint: [0x1a1618, 0x342c34],
         upright: true, sink: 1.2, emissive: 0.30, emissiveMask: true,
         cluster: { period: 1150, radius: 20, jitter: 0.5 }, jitter: 0.6, shadow: true },
@@ -1498,6 +1571,8 @@ export const BIOMES = {
     fog: { density: 0.0020, heightFalloff: 0.0038, tint: [1.04, 0.96, 0.94] },
     ambience: { hemiSky: 0xb0c0d8, hemiGround: 0x8a6c40, bounce: 0.60 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'giantBones', density: 0.002, radius: 360, slope: [0, 0.15], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xe8dcc0, 0xf0e8d0], cluster: { period: 1000, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Scheletro di drago krayt', icon: '🦴' }, upright: true, shadow: true, sink: 0.2, evenColor: true },
       { type: 'vaporator', density: 0.00070, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], scale: [0.9, 1.4], tilt: 0.02, tint: [0x8a8478, 0xb0aa9c], shadow: true },
       { type: 'dryBush', density: 0.010, radius: 190, slope: [0, 0.5], height: [-99, 999], moisture: [0, 0.75], scale: [0.5, 1.2], tilt: 0.10, tint: [0x8a7a48, 0xa89a60] },
       { type: 'rock', density: 0.016, radius: 190, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.45, 1.6], tilt: 0.5, tint: [0x8e6a44, 0xb89070] },
@@ -1506,7 +1581,7 @@ export const BIOMES = {
 
       /* Le cupole non stanno sparse: una fattoria e due o tre corpi vicini,
        * ed e per questo che il grappolo ha raggio venticinque metri. */
-      { type: 'domeHut', density: 0.0030, radius: 300, slope: [0, 0.13], height: [-99, 999],
+      { type: 'domeHut', poi: { label: 'Fattoria', icon: '🛖' }, density: 0.0030, radius: 300, slope: [0, 0.13], height: [-99, 999],
         moisture: [0, 1], scale: [0.85, 1.25], tilt: 0, tint: [0xd8c4a0, 0xefe2c4],
         faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.30, jitter: 0.7,
         cluster: { period: 330, radius: 25, jitter: 0.6 },
@@ -1536,6 +1611,8 @@ export const BIOMES = {
     fog: { density: 0.00010, heightFalloff: 0.001, tint: [0.72, 0.80, 1.0] },
     ambience: { hemiSky: 0x3a4658, hemiGround: 0x242a32, bounce: 0.35 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'probe', density: 0.002, radius: 300, slope: [0, 0.20], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xc8a040, 0xd8b050], cluster: { period: 1200, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'La sonda', icon: '🛰️' }, upright: true, shadow: true, evenColor: true, sink: 0.15 },
       { type: 'iceRock', density: 0.016, radius: 130, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.5, 2.0], tilt: 0.4, tint: [0x54687e, 0x9ab4c8] },
       { type: 'crystal', density: 0.0060, radius: 130, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.6, 2.2], tilt: 0.3, tint: [0x88b8d8, 0xd8f0ff], emissive: 0.04 },
       { type: 'slabRock', density: 0.0055, radius: 150, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [1.0, 4.5], tilt: 0.5, tint: [0x323a44, 0x606c7a], yOffset: [12, 70] },
@@ -1560,6 +1637,8 @@ export const BIOMES = {
     fog: { density: 0.0062, heightFalloff: 0.0105, tint: [1.0, 0.96, 0.88] },
     ambience: { hemiSky: 0x8aa8b8, hemiGround: 0x2e4018, bounce: 0.22 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'conifer', density: 0.002, radius: 600, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [6.5, 6.5], tilt: 0, tint: [0x2a4a2a, 0x3a6a34], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'La sequoia madre', icon: '🌲' }, upright: true, shadow: true, sink: 0.2 },
       { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.2], tint: [0x7a5a3a, 0x9a7a50], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.6, cluster: { period: 340, radius: 22, jitter: 0.6 } },
       { type: 'conifer', density: 0.0090, radius: 160, slope: [0, 0.26], height: [-99, 999], moisture: [0.25, 1], scale: [3.2, 5.0], tilt: 0.02, tint: [0x1c3c1a, 0x2e5a26], shadow: true },
       { type: 'conifer', density: 0.0038, radius: 340, slope: [0, 0.55], height: [-99, 999], moisture: [0.25, 1], scale: [2.6, 4.3], tilt: 0.015, tint: [0x1e3a18, 0x35561f], shadow: true },
@@ -1590,6 +1669,8 @@ export const BIOMES = {
     fog: { density: 0.0030, heightFalloff: 0.0060, tint: [1.0, 0.98, 1.0] },
     ambience: { hemiSky: 0x9cb8e0, hemiGround: 0x6a6440, bounce: 0.48 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'windmill', density: 0.002, radius: 450, slope: [0, 0.18], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xcfc4a8, 0xe8dcc0], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Mulino', icon: '🏠' }, upright: true, shadow: true, evenColor: true, sink: 0.3 },
       { type: 'cabin', density: 0.0030, radius: 300, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [1.0, 1.4], tint: [0xd8c8a8, 0xeee0c0], sink: 0.25, emissive: 0.08, emissiveMask: true, jitter: 0.5, cluster: { period: 320, radius: 20, jitter: 0.6 } },
       { type: 'well', density: 0.0030, radius: 240, slope: [0, 0.22], height: [-99, 999], moisture: [0, 1], tilt: 0, upright: true, shadow: true, faceDownhill: true, faceJitter: 2.6, scale: [0.9, 1.1], tint: [0xa89878, 0xc8b898], jitter: 0.7, cluster: { period: 320, radius: 28, jitter: 0.6 } },
       { type: 'tallGrass', density: 3.4, radius: 46, slope: [0, 0.4], height: [-99, 999], moisture: [0, 1], scale: [0.45, 0.85], tilt: 0.04, tint: [0x6a5a9a, 0xa88fd0], grass: true, rows: { period: 2.4, width: 0.16, angle: 0.5 } },
@@ -1636,6 +1717,9 @@ export const BIOMES = {
     fog: { density: 0.0055, heightFalloff: 0.0085, tint: [0.94, 0.99, 1.02] },
     ambience: { hemiSky: 0x8fb4d4, hemiGround: 0x36461f, bounce: 0.32 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'cabin', density: 0.002, radius: 400, slope: [0, 0.22], height: [4, 330], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x8a6a44, 0xa8885a], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Baita', icon: '🛖' }, upright: true, shadow: true, emissive: 0.08, emissiveMask: true, evenColor: true, sink: 0.4 },
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [4, 220], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0x3a6a2a, 0x6a9a3a], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'L albero antico', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
       { type: 'conifer', density: 0.0090, radius: 320, slope: [0, 0.62], height: [4, 330], moisture: [0.25, 1], scale: [0.6, 1.35], tilt: 0.05, tint: [0x22401a, 0x3c6024], shadow: true },
       { type: 'broadleaf', density: 0.0042, radius: 280, slope: [0, 0.5], height: [4, 220], moisture: [0.4, 1], scale: [0.7, 1.2], tilt: 0.05, tint: [0x2f6a22, 0x568c30], shadow: true },
       { type: 'fern', density: 0.055, radius: 90, slope: [0, 0.62], height: [3, 260], moisture: [0.35, 1], scale: [0.8, 1.7], tilt: 0.10, tint: [0x1e4a16, 0x376e22] },
@@ -1694,6 +1778,8 @@ export const BIOMES = {
     water: { deep: 0x122008, shallow: 0x2c4418, foam: 0x93a274, waveAmp: 0.05, waveScale: 2.0, reflect: 0.70 },
     motes: { amount: 0.30, color: [0.86, 1.0, 0.72] },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'lycopod', density: 0.002, radius: 500, slope: [0, 0.30], height: [-1.2, 999], moisture: [0, 1], scale: [2.2, 2.2], tilt: 0, tint: [0x3a6a3a, 0x5a8a4a], cluster: { period: 700, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Licopodio gigante', icon: '🌴' }, upright: true, shadow: true, sink: 0.2 },
       { type: 'lycopod', density: 0.020, radius: 150, slope: [0, 0.35], height: [-1.2, 999], moisture: [0.25, 1], scale: [1.0, 1.7], tilt: 0.05, tint: [0x3a5a22, 0x62864a], shadow: true },
       { type: 'lycopod', density: 0.0070, radius: 340, slope: [0, 0.30], height: [-1.2, 999], moisture: [0.25, 1], scale: [0.7, 1.5], tilt: 0.05, tint: [0x3a5a22, 0x62864a], shadow: true },
       { type: 'calamite', density: 0.020, radius: 200, slope: [0, 0.35], height: [-1.6, 999], moisture: [0.35, 1], scale: [0.7, 1.6], tilt: 0.07, tint: [0x4a7a2c, 0x86ac4a], shadow: true },
@@ -1724,6 +1810,9 @@ export const BIOMES = {
     fog: { density: 0.0044, heightFalloff: 0.0060, tint: [1.02, 1.0, 0.94] },
     ambience: { hemiSky: 0x9cc0e8, hemiGround: 0x60602c, bounce: 0.44 },
     scatter: [
+      /* Punti di interesse: una per chilometro, la bussola le segnala. */
+      { type: 'camp', density: 0.002, radius: 320, slope: [0, 0.12], height: [-99, 999], moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xb89868, 0xd8b888], cluster: { period: 800, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Accampamento', icon: '⛺' }, upright: true, shadow: true, emissive: 0.09, emissiveMask: true, evenColor: true, sink: 0.1 },
+      { type: 'ancientTree', density: 0.002, radius: 500, slope: [0, 0.25], height: [-99, 999], moisture: [0, 1], scale: [0.8, 0.8], tilt: 0, tint: [0x6a8a3a, 0x9ab050], cluster: { period: 900, jitter: 0.5, slots: [[0, 0, 1]] }, poi: { label: 'Acacia madre', icon: '🌳' }, upright: true, shadow: true, sink: 0.3 },
       { type: 'acacia', density: 0.0022, radius: 380, slope: [0, 0.35], height: [-99, 999], moisture: [0.15, 1], scale: [0.9, 1.6], tilt: 0.05, tint: [0x4a6a26, 0x7a9440], shadow: true },
       { type: 'palm', density: 0.0016, radius: 240, slope: [0, 0.3], height: [-99, 8], moisture: [0.45, 1], scale: [0.9, 1.5], tilt: 0.09, tint: [0x3a7a2e, 0x6aa848], shadow: true },
       { type: 'bush', density: 0.020, radius: 160, slope: [0, 0.5], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.5], tilt: 0.06, tint: [0x5a7a2a, 0x8a9c44] },
@@ -1853,7 +1942,7 @@ export const BIOMES = {
     water: { deep: 0xff3a04, shallow: 0xff9020, foam: 0xffc860, waveAmp: 0.22, waveScale: 5.0, reflect: 0.26 },
     motes: { amount: 0.70, color: [1.0, 0.48, 0.18] },
     scatter: [
-      { type: 'darkSpire', density: 0.0022, radius: 700, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.1], tilt: 0.02, tint: [0x141010, 0x2e2422], upright: true, sink: 1.0, emissive: 0.34, emissiveMask: true, cluster: { period: 620, radius: 34, jitter: 0.55 }, jitter: 0.6, shadow: true },
+      { type: 'darkSpire', poi: { label: 'La torre', icon: '🗼' }, density: 0.0022, radius: 700, slope: [0, 0.35], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.1], tilt: 0.02, tint: [0x141010, 0x2e2422], upright: true, sink: 1.0, emissive: 0.34, emissiveMask: true, cluster: { period: 620, radius: 34, jitter: 0.55 }, jitter: 0.6, shadow: true },
       { type: 'watchTower', density: 0.0014, radius: 420, slope: [0, 0.42], height: [-99, 999], moisture: [0, 1], scale: [0.8, 1.5], tilt: 0.02, tint: [0x181212, 0x362a26], faceDownhill: true, faceJitter: 2.4, upright: true, sink: 0.5, cluster: { period: 440, radius: 30, jitter: 0.6 }, jitter: 0.7, shadow: true },
       { type: 'ruinPillar', density: 0.0035, radius: 260, slope: [0, 0.45], height: [-99, 999], moisture: [0, 1], scale: [0.9, 2.4], tilt: 0.18, tint: [0x1e1816, 0x3a2e2a], shadow: true },
       { type: 'deadTree', density: 0.0022, radius: 260, slope: [0, 0.5], height: [-99, 999], moisture: [0, 1], scale: [0.7, 1.5], tilt: 0.22, tint: [0x120e0c, 0x281f1c], shadow: true },
@@ -1889,7 +1978,7 @@ giza: {
        * d arco. Le postazioni qui sotto sono la pianta vera del sito: Cheope
        * all origine, Chefren a sud-ovest, Micerino piu in la e alto meno di
        * meta, piu le tre piramidi delle regine in fila. */
-      { type: 'pyramid', density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
+      { type: 'pyramid', poi: { label: 'Le piramidi', icon: '🔺', first: true, range: 2800 }, density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
         moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xf0ead8, 0xfaf4e4],
         fixedYaw: 0, upright: true, sink: 2.0, shadow: true,
         cluster: { period: 2600, radius: 900, jitter: 0.4, slots: [
@@ -1901,7 +1990,7 @@ giza: {
 
       /* La Sfinge guarda a est, verso il sorgere del sole. Il modello guarda
        * verso -Z, quindi per puntarlo a +X serve mezzo giro all indietro. */
-      { type: 'sphinx', density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
+      { type: 'sphinx', poi: { label: 'La Sfinge', icon: '🗿', first: true, range: 2800 }, density: 0.00040, radius: 1400, slope: [0, 0.30], height: [-99, 999],
         moisture: [0, 1], scale: [1, 1], tilt: 0, tint: [0xd8bf94, 0xe8d4ac],
         fixedYaw: -1.5708, upright: true, sink: 1.2, shadow: true,
         cluster: { period: 2600, radius: 900, jitter: 0.4, slots: [[385, 300, 1.0]] } },
@@ -1946,7 +2035,7 @@ giza: {
         upright: true, sink: 0.4, jitter: 0.5, emissive: 0.07, emissiveMask: true, shadow: true,
         cluster: { period: 620, radius: 210, jitter: 0.5 } },
 
-      { type: 'romanTemple', density: 0.0016, radius: 300, slope: [0, 0.16], height: [1, 999],
+      { type: 'romanTemple', poi: { label: 'Il tempio', icon: '🏛️' }, density: 0.0016, radius: 300, slope: [0, 0.16], height: [1, 999],
         moisture: [0, 1], scale: [0.9, 1.5], tilt: 0, tint: [0xe4dcc8, 0xf0ead8],
         fixedYaw: 0.35, faceJitter: 0.12, upright: true, sink: 0.5, shadow: true,
         cluster: { period: 620, radius: 90, jitter: 0.5 }, jitter: 0.7 },
@@ -1985,7 +2074,7 @@ giza: {
        * mezzo di raggio, e dentro il ferro di cavallo dei triliti. E la
        * disposizione a fare Stonehenge — un grappolo darebbe un mucchio di
        * sassi, che e esattamente cio che Stonehenge non e. */
-      { type: 'trilithon', density: 0.024, radius: 320, slope: [0, 0.20], height: [-99, 999],
+      { type: 'trilithon', poi: { label: 'Il cerchio', icon: '🪨', first: true }, density: 0.024, radius: 320, slope: [0, 0.20], height: [-99, 999],
         moisture: [0, 1], scale: [0.95, 1.12], tilt: 0.015, tint: [0x8a8578, 0xa8a294],
         faceCenter: true, faceJitter: 0.10, upright: true, sink: 0.3, jitter: 0.35, shadow: true,
         cluster: { period: 620, radius: 40, ring: 16.5, ringWidth: 2.6, jitter: 0.5 } },
@@ -2091,12 +2180,12 @@ export const FAUNA = {
   foresta: [
     { type: 'bird', count: 24, radius: 300, y: [28, 70], scale: [0.9, 1.3], tint: UCCELLO },
     { type: 'deer', count: 9, radius: 170, scale: [0.85, 1.15], tint: CERVO, speed: [1.1, 2.0], shadow: true },
-    { type: 'bear', count: 2, radius: 200, scale: [0.9, 1.15], tint: ORSO, speed: [0.6, 1.2], shadow: true },
+    { type: 'bear', count: 2, poi: { label: 'Orso', icon: '🐻' }, radius: 200, scale: [0.9, 1.15], tint: ORSO, speed: [0.6, 1.2], shadow: true },
     { type: 'butterfly', count: 60, radius: 42, y: [0.5, 2.4], scale: [0.8, 1.4], tint: [0xe8a83a, 0xf2d86a] }
   ],
   deserto: [
     { type: 'raptor', count: 6, radius: 340, y: [60, 130], scale: [0.9, 1.3], tint: RAPACE },
-    { type: 'camel', count: 6, radius: 300, herd: 22, scale: [0.9, 1.1], tint: CAMMELLO, speed: [0.8, 1.4], shadow: true }
+    { type: 'camel', count: 6, poi: { label: 'Carovana', icon: '🐫' }, radius: 300, herd: 22, scale: [0.9, 1.1], tint: CAMMELLO, speed: [0.8, 1.4], shadow: true }
   ],
   vulcanico: [
     { type: 'bird', count: 8, radius: 320, y: [20, 70], scale: [0.9, 1.3], tint: GABBIANO }
@@ -2115,11 +2204,11 @@ export const FAUNA = {
   ],
   artico: [
     { type: 'bird', count: 10, radius: 300, y: [25, 60], scale: [0.9, 1.2], tint: GABBIANO },
-    { type: 'bear', count: 2, radius: 280, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
+    { type: 'bear', count: 2, poi: { label: 'Orso', icon: '🐻' }, radius: 280, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
   ],
   savana: [
     { type: 'bird', count: 18, radius: 320, y: [35, 90], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'antelope', count: 16, radius: 280, herd: 34, scale: [0.85, 1.15], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'antelope', count: 16, poi: { label: 'Branco di antilopi', icon: '🦌' }, radius: 280, herd: 34, scale: [0.85, 1.15], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
     { type: 'butterfly', count: 26, radius: 40, y: [0.4, 1.8], scale: [0.8, 1.2], tint: [0xe0c050, 0xf0e090] }
   ],
   palude: [
@@ -2129,7 +2218,7 @@ export const FAUNA = {
   ],
   canyonrosso: [
     { type: 'raptor', count: 7, radius: 380, y: [80, 170], scale: [1.0, 1.4], tint: RAPACE },
-    { type: 'antelope', count: 6, radius: 260, herd: 24, scale: [0.85, 1.1], tint: [0xa8784a, 0xd8b088], speed: [1.3, 2.4], shadow: true }
+    { type: 'antelope', count: 6, poi: { label: 'Antilopi', icon: '🦌' }, radius: 260, herd: 24, scale: [0.85, 1.1], tint: [0xa8784a, 0xd8b088], speed: [1.3, 2.4], shadow: true }
   ],
   giungla: [
     { type: 'bird', count: 34, radius: 240, y: [18, 48], scale: [0.8, 1.2], tint: [0x2a8a3a, 0xe06a2a] },
@@ -2154,7 +2243,7 @@ export const FAUNA = {
   boscostregato: [
     /* Il branco di lupi e la cosa che ci si aspetta da un bosco stregato; i
        pipistrelli escono solo al buio. */
-    { type: 'wolf', count: 6, radius: 150, herd: 18, scale: [0.9, 1.15], tint: LUPO, speed: [1.3, 2.3], shadow: true },
+    { type: 'wolf', count: 6, radius: 150, herd: 18, poi: { label: 'Branco di lupi', icon: '🐺' }, scale: [0.9, 1.15], tint: LUPO, speed: [1.3, 2.3], shadow: true },
     { type: 'bat', count: 22, radius: 120, y: [2, 12], scale: [0.8, 1.3], tint: [0x2a2220, 0x4a3e38], night: true },
     { type: 'bird', count: 14, radius: 240, y: [18, 44], scale: [0.9, 1.3], tint: CORVO },
     { type: 'butterfly', count: 26, radius: 36, y: [0.4, 2.0], scale: [0.8, 1.3], tint: [0x2a3a2a, 0x6a8a5a] }
@@ -2164,7 +2253,7 @@ export const FAUNA = {
        altezza d occhio e brillano, i fuochi fatui pure. I nove spiriti a
        trenta metri di quota di prima non li aveva visti nessuno. */
     { type: 'fairy', count: 24, radius: 60, y: [0.8, 3.2], scale: [1.0, 1.5], tint: [0xa0ffe0, 0xffb0f0], emissive: 0.9 },
-    { type: 'unicorn', count: 3, radius: 160, herd: 25, scale: [0.95, 1.08], tint: [0xf0eef6, 0xffffff], speed: [0.8, 1.5], shadow: true, emissive: 0.05 },
+    { type: 'unicorn', count: 3, poi: { label: 'Unicorni', icon: '🦄' }, radius: 160, herd: 25, scale: [0.95, 1.08], tint: [0xf0eef6, 0xffffff], speed: [0.8, 1.5], shadow: true, emissive: 0.05 },
     { type: 'jelly', count: 8, radius: 120, y: [2.5, 12], scale: [0.45, 1.0], tint: [0x80e0ff, 0xe0c0ff], emissive: 0.32 },
     { type: 'jelly', count: 5, radius: 200, y: [12, 30], scale: [0.9, 1.8], tint: [0x70d8ff, 0xd8b0ff], emissive: 0.22 },
     { type: 'butterfly', count: 70, radius: 44, y: [0.4, 3.4], scale: [0.9, 1.8], tint: [0x60f0c0, 0xd0a0ff], emissive: 0.30 },
@@ -2191,8 +2280,8 @@ export const FAUNA = {
     /* Gli ikran a quattro ali sono la fauna di Pandora; uno solo, rosso e
        grande il doppio, e il Toruk, e vola piu in alto di tutti. */
     { type: 'banshee', count: 7, radius: 380, y: [40, 130], scale: [0.85, 1.15], tint: [0x2a8ab0, 0x40c0a0] },
-    { type: 'banshee', count: 1, radius: 520, y: [150, 260], scale: [2.0, 2.0], tint: [0xc03020, 0xe08a30] },
-    { type: 'hexapod', count: 5, radius: 260, herd: 22, scale: [0.9, 1.1], tint: [0x34405a, 0x6a7a94], speed: [1.2, 2.2], shadow: true },
+    { type: 'banshee', count: 1, poi: { label: 'Il Toruk', icon: '🦅' }, radius: 520, y: [150, 260], scale: [2.0, 2.0], tint: [0xc03020, 0xe08a30] },
+    { type: 'hexapod', count: 5, poi: { label: 'Branco di esapodi', icon: '🐎' }, radius: 260, herd: 22, scale: [0.9, 1.1], tint: [0x34405a, 0x6a7a94], speed: [1.2, 2.2], shadow: true },
     { type: 'jelly', count: 16, radius: 240, y: [12, 46], scale: [0.9, 2.2], tint: [0x40d0ff, 0xc060ff], emissive: 0.26 },
     { type: 'butterfly', count: 80, radius: 46, y: [0.5, 3.6], scale: [1.0, 2.0], tint: [0x50f0d0, 0xff70d0], emissive: 0.30 },
     { type: 'bird', count: 12, radius: 300, y: [26, 80], scale: [1.0, 1.6], tint: [0x2060a0, 0xe0a040] },
@@ -2201,14 +2290,14 @@ export const FAUNA = {
   desolata: [
     { type: 'raptor', count: 6, radius: 340, y: [55, 120], scale: [0.9, 1.3], tint: CORVO },
     // cani inselvatichiti: quello che resta dopo
-    { type: 'wolf', count: 4, radius: 220, herd: 16, scale: [0.8, 1.0], tint: [0x8a7a5a, 0xb8a888], speed: [1.2, 2.2], shadow: true }
+    { type: 'wolf', count: 4, radius: 220, herd: 16, poi: { label: 'Cani randagi', icon: '🐕' }, scale: [0.8, 1.0], tint: [0x8a7a5a, 0xb8a888], speed: [1.2, 2.2], shadow: true }
   ],
   neon: [
     { type: 'bird', count: 18, radius: 240, y: [30, 90], scale: [0.8, 1.1], tint: [0x2a2e36, 0x60646c] }
   ],
   ghiaccio: [
     { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO },
-    { type: 'bear', count: 2, radius: 300, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
+    { type: 'bear', count: 2, poi: { label: 'Orso', icon: '🐻' }, radius: 300, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
   ],
   giza: [
     { type: 'raptor', count: 6, radius: 340, y: [50, 140], scale: [0.9, 1.3], tint: RAPACE },
@@ -2233,7 +2322,7 @@ export const FAUNA = {
   ],
   saharaverde: [
     { type: 'bird', count: 22, radius: 320, y: [30, 80], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'antelope', count: 22, radius: 300, herd: 36, scale: [0.85, 1.2], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'antelope', count: 22, poi: { label: 'Branco di antilopi', icon: '🦌' }, radius: 300, herd: 36, scale: [0.85, 1.2], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
     { type: 'deer', count: 8, radius: 240, scale: [0.9, 1.2], tint: CERVO, speed: [1.0, 1.9], shadow: true },
     { type: 'butterfly', count: 40, radius: 44, y: [0.4, 2.0], scale: [0.9, 1.4], tint: [0xe0c050, 0xf4e890] }
   ],
@@ -2260,29 +2349,29 @@ export const FAUNA = {
   ],
   ombra: [
     { type: 'raptor', count: 7, radius: 320, y: [50, 120], scale: [0.9, 1.4], tint: CORVO },
-    { type: 'warg', count: 5, radius: 240, herd: 22, scale: [0.9, 1.15], tint: [0x2a2420, 0x5a4a3a], speed: [1.3, 2.4], shadow: true }
+    { type: 'warg', count: 5, poi: { label: 'Branco di warg', icon: '🐺' }, radius: 240, herd: 22, scale: [0.9, 1.15], tint: [0x2a2420, 0x5a4a3a], speed: [1.3, 2.4], shadow: true }
   ],
   giurassico: [
-    { type: 'sauropod', count: 5, radius: 420, scale: [0.85, 1.25], tint: [0x4e5a44, 0x8a9068], speed: [0.5, 1.0], shadow: true },
-    { type: 'biped', count: 4, radius: 340, scale: [0.85, 1.20], tint: [0x6a4a2c, 0xa8804a], speed: [1.6, 3.2], shadow: true },
+    { type: 'sauropod', count: 5, radius: 420, poi: { label: 'Sauropodi', icon: '🦕' }, herd: 60, scale: [0.85, 1.25], tint: [0x4e5a44, 0x8a9068], speed: [0.5, 1.0], shadow: true },
+    { type: 'biped', count: 4, poi: { label: 'Teropode', icon: '🦖' }, radius: 340, scale: [0.85, 1.20], tint: [0x6a4a2c, 0xa8804a], speed: [1.6, 3.2], shadow: true },
     { type: 'pterosaur', count: 11, radius: 380, y: [40, 110], scale: [1.6, 3.0], tint: [0x5c5044, 0x9a8a70] },
     { type: 'bird', count: 12, radius: 260, y: [16, 40], scale: [0.9, 1.3], tint: [0x2a5a34, 0x7a9a48] },
     { type: 'butterfly', count: 45, radius: 42, y: [0.4, 3.0], scale: [1.1, 2.0], tint: [0x50c060, 0xe8d060] }
   ],
   glaciale: [
-    { type: 'mammoth', count: 7, radius: 340, herd: 30, scale: [0.85, 1.20], tint: [0x5c4028, 0x8e6a44], speed: [0.7, 1.4], shadow: true },
-    { type: 'wolf', count: 5, radius: 300, herd: 20, scale: [0.95, 1.15], tint: [0x8a8a86, 0xd8d6d0], speed: [1.3, 2.4], shadow: true },
+    { type: 'mammoth', count: 7, radius: 340, herd: 30, poi: { label: 'Mammut', icon: '🦣' }, scale: [0.85, 1.20], tint: [0x5c4028, 0x8e6a44], speed: [0.7, 1.4], shadow: true },
+    { type: 'wolf', count: 5, radius: 300, herd: 20, poi: { label: 'Lupi', icon: '🐺' }, scale: [0.95, 1.15], tint: [0x8a8a86, 0xd8d6d0], speed: [1.3, 2.4], shadow: true },
     { type: 'deer', count: 9, radius: 280, scale: [0.9, 1.2], tint: [0x6e6250, 0x9c8f76], speed: [1.2, 2.4], shadow: true },
     { type: 'bird', count: 9, radius: 300, y: [30, 80], scale: [0.9, 1.3], tint: [0x3a3e44, 0x7c8288] }
   ],
   barriera: [
     { type: 'fish', count: 130, radius: 90, scale: [0.6, 1.8], tint: [0xf0a030, 0x40b0d0] },
-    { type: 'bigFish', count: 6, radius: 150, scale: [0.8, 1.6], tint: [0x40607a, 0x9ab0c0] },
+    { type: 'bigFish', count: 6, poi: { label: 'Squalo', icon: '🦈' }, radius: 150, scale: [0.8, 1.6], tint: [0x40607a, 0x9ab0c0] },
     { type: 'jelly', count: 7, radius: 120, y: [6, 20], scale: [0.5, 1.1], tint: [0xd8b0f0, 0xf0e0ff], emissive: 0.10 }
   ],
   atlantide: [
     { type: 'fish', count: 80, radius: 90, scale: [0.6, 1.5], tint: [0x8aa060, 0x50a0b0] },
-    { type: 'bigFish', count: 5, radius: 160, scale: [0.9, 1.8], tint: [0x3a4e5c, 0x8090a0] },
+    { type: 'bigFish', count: 5, radius: 160, poi: { label: 'Squalo', icon: '🦈' }, scale: [0.9, 1.8], tint: [0x3a4e5c, 0x8090a0] },
     { type: 'jelly', count: 9, radius: 130, y: [8, 24], scale: [0.6, 1.4], tint: [0x90d8f0, 0xe0f8ff], emissive: 0.14 }
   ],
   terracava: [
@@ -2301,13 +2390,13 @@ export const FAUNA = {
   tatooine: [
     /* Bantha in carovana, dewback sparsi, e in cielo qualcosa che gira. */
     { type: 'raptor', count: 5, radius: 340, y: [70, 150], scale: [0.9, 1.3], tint: RAPACE },
-    { type: 'bantha', count: 5, radius: 280, herd: 26, scale: [0.9, 1.1], tint: [0x6a5a48, 0x9a8a70], speed: [0.5, 1.0], shadow: true },
+    { type: 'bantha', count: 5, poi: { label: 'Carovana di bantha', icon: '🐂' }, radius: 280, herd: 26, scale: [0.9, 1.1], tint: [0x6a5a48, 0x9a8a70], speed: [0.5, 1.0], shadow: true },
     { type: 'dewback', count: 3, radius: 220, scale: [0.9, 1.15], tint: [0x5a6a3a, 0x8a9a5a], speed: [0.8, 1.5], shadow: true }
   ],
   sequoie: [
     { type: 'bird', count: 26, radius: 260, y: [26, 70], scale: [0.9, 1.3], tint: UCCELLO },
     { type: 'deer', count: 8, radius: 170, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
-    { type: 'bear', count: 2, radius: 200, scale: [0.95, 1.2], tint: ORSO, speed: [0.6, 1.2], shadow: true },
+    { type: 'bear', count: 2, poi: { label: 'Orso', icon: '🐻' }, radius: 200, scale: [0.95, 1.2], tint: ORSO, speed: [0.6, 1.2], shadow: true },
     { type: 'butterfly', count: 40, radius: 40, y: [0.4, 2.4], scale: [0.9, 1.5], tint: [0xe8a83a, 0xf2d86a] }
   ],
   lavanda: [
@@ -2322,7 +2411,7 @@ export const FAUNA = {
   mareaperto: [
     { type: 'bird', count: 34, radius: 340, y: [6, 40], scale: [1.0, 1.5], tint: GABBIANO },
     { type: 'fish', count: 40, radius: 80, scale: [0.7, 1.4], tint: [0x2e6a80, 0x9ac0d0] },
-    { type: 'bigFish', count: 5, radius: 180, scale: [1.0, 2.2], tint: [0x24404e, 0x7a8e9c] }
+    { type: 'bigFish', count: 5, radius: 180, poi: { label: 'Balena', icon: '🐋' }, scale: [1.0, 2.2], tint: [0x24404e, 0x7a8e9c] }
   ]
 };
 

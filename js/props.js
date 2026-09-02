@@ -3191,7 +3191,337 @@ function cairn(rnd, tint) {
   return B.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * Punti di interesse
+ *
+ * Strutture rare, una per chilometro o giu di li, che la bussola segnala.
+ * Sono quello che trasforma un paesaggio in un posto dove andare: la
+ * capanna in fondo al bosco, il relitto sulla spiaggia, l albero piu grande
+ * di tutti. Come tutti gli edifici, il fronte guarda -Z.
+ * ------------------------------------------------------------------ */
+
+/* Capanna della strega: su pali storti, tetto a punta che pende, una
+ * finestra accesa e il calderone davanti alla porta. */
+function witchHut(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x4a3a2c), 0.5), scuro = scale(legno, 0.55), chiaro = scale(legno, 1.25);
+  const W = 2.0, D = 2.2, H0 = 2.1, H = 2.5;
+  // pali storti, ognuno piantato dove capita
+  for (const [sx, sz] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    const x = sx * W * 0.8, z = sz * D * 0.8;
+    tube(B, [x + (rnd() - 0.5) * 0.7, -0.3, z + (rnd() - 0.5) * 0.7], [x, H0 + 0.1, z], 0.17, 0.13, scuro, legno, 6, 0, 0);
+  }
+  // scala a pioli davanti
+  tube(B, [-0.55, 0, -D - 1.6], [-0.55, H0, -D - 0.2], 0.06, 0.06, scuro, legno, 4, 0, 0);
+  tube(B, [0.05, 0, -D - 1.6], [0.05, H0, -D - 0.2], 0.06, 0.06, scuro, legno, 4, 0, 0);
+  for (let k = 1; k < 6; k++) {
+    const t = k / 6;
+    tube(B, [-0.55, H0 * t, -D - 1.6 + 1.4 * t], [0.05, H0 * t, -D - 1.6 + 1.4 * t], 0.04, 0.04, legno, legno, 4, 0, 0);
+  }
+  // pavimento e due corpi di parete, il secondo piu largo e spostato: storta
+  box(B, [0, H0, 0], W + 0.35, 0.12, D + 0.35, scuro, legno);
+  box(B, [0, H0 + H * 0.30, 0], W, H * 0.30, D, scuro, legno);
+  box(B, [0.18, H0 + H * 0.78, -0.10], W * 1.12, H * 0.24, D * 1.10, legno, chiaro);
+  // porta e finestra sul fronte (-Z): la finestra si accende
+  face(B, [-0.6, H0 + 0.95, -D - 0.02], [-0.40, 0, 0], [0, 0.92, 0], lin(0x1a1410), lin(0x2a2018));
+  const vetro = lin(0xc8ff90);
+  const nV = B.f.length;
+  face(B, [0.95, H0 + H * 0.80, -D * 1.10 - 0.12], [-0.34, 0, 0], [0, 0.30, 0], vetro, scale(vetro, 0.8));
+  face(B, [W * 1.12 + 0.12, H0 + H * 0.80, 0.4], [0, 0, 0.34], [0, 0.30, 0], vetro, scale(vetro, 0.8));
+  for (let i = nV; i < B.f.length; i++) B.f[i] = 1;
+  // tetto a punta, a quattro falde, che si torce e pende da un lato
+  const yT = H0 + H * 1.02;
+  const rT = (W * 1.12 + 0.6) * 1.42;
+  prism(B, { y0: yT, y1: yT + 3.4, r0: rT, r1: 0.04, seg: 4, twist: 0.35, lean: [0.9, 0.5], colBot: scale(lin(0x3a2e26), 0.9), colTop: lin(0x2a2220) });
+  // gronda: un anello scuro sotto il tetto
+  prism(B, { y0: yT - 0.16, y1: yT + 0.02, r0: rT * 1.02, r1: rT, seg: 4, colBot: lin(0x241c16), colTop: lin(0x3a2e26) });
+  // comignolo storto con la lanterna appesa alla porta
+  tube(B, [1.1, yT + 1.2, 0.8], [1.5, yT + 2.6, 1.0], 0.22, 0.18, lin(0x4a4640), lin(0x6a6660), 6, 0, 0);
+  const nL = B.f.length;
+  blob(B, { cx: -1.15, cy: H0 + 1.6, cz: -D - 0.25, rx: 0.12, ry: 0.16, rz: 0.12, level: 0, rough: 0, rnd, colTop: lin(0xffd070), colBot: lin(0xff9030), flex: 0 });
+  for (let i = nL; i < B.f.length; i++) B.f[i] = 1;
+  // calderone su tre gambe, con il bagliore verde dentro
+  const ferro = lin(0x1e1c1a);
+  const cx = 2.4, cz = -D - 1.4;
+  prism(B, { cx, cz, y0: 0.35, y1: 1.05, r0: 0.42, r1: 0.55, seg: 9, colBot: ferro, colTop: scale(ferro, 1.8) });
+  prism(B, { cx, cz, y0: 1.05, y1: 1.15, r0: 0.55, r1: 0.60, seg: 9, colBot: scale(ferro, 1.8), colTop: ferro });
+  for (let k = 0; k < 3; k++) {
+    const a = k / 3 * 6.283;
+    tube(B, [cx + Math.cos(a) * 0.35, 0.45, cz + Math.sin(a) * 0.35], [cx + Math.cos(a) * 0.5, 0, cz + Math.sin(a) * 0.5], 0.05, 0.04, ferro, ferro, 4, 0, 0);
+  }
+  const nC = B.f.length;
+  discO(B, [cx, 1.16, cz], [0, 1, 0], 0.52, lin(0xa0ff80), lin(0x40c040), 0, 12);
+  for (let i = nC; i < B.f.length; i++) B.f[i] = 1;
+  return B.toGeometry();
+}
+
+/* Albero madre: un tronco che ci vogliono dieci persone ad abbracciare,
+ * radici a contrafforte, rami grossi come alberi. */
+function ancientTree(rnd, tint) {
+  const B = new Builder();
+  const h = 20;
+  const bark = mixc(BARK_DARK, BARK_LIGHT, 0.35);
+  trunk(B, {
+    r0: h * 0.105, r1: h * 0.052, h: h * 0.56, seg: 10, rings: 5, bulge: 0.22, twist: 0.35,
+    colBot: scale(bark, 0.5), colTop: bark, flexTop: 0.04
+  });
+  for (let k = 0; k < 7; k++) {
+    const a = k / 7 * 6.283 + rnd() * 0.5;
+    const r = h * (0.16 + rnd() * 0.09);
+    tube(B, [Math.cos(a) * h * 0.06, h * 0.11, Math.sin(a) * h * 0.06],
+      [Math.cos(a) * r, -0.1, Math.sin(a) * r], h * 0.034, h * 0.012, bark, scale(bark, 0.6), 5, 0, 0);
+  }
+  const arms = [];
+  const nb = 6;
+  for (let k = 0; k < nb; k++) {
+    const a = k / nb * 6.283 + rnd() * 0.6;
+    const reach = h * (0.24 + rnd() * 0.12), up = h * (0.16 + rnd() * 0.12);
+    const y0 = h * (0.40 + rnd() * 0.12);
+    const mid = [Math.cos(a) * reach * 0.55, y0 + up * 0.5, Math.sin(a) * reach * 0.55];
+    tube(B, [Math.cos(a) * h * 0.04, y0, Math.sin(a) * h * 0.04], mid, h * 0.034, h * 0.022, bark, bark, 6, 0, 0.08);
+    tube(B, mid, [Math.cos(a) * reach, y0 + up, Math.sin(a) * reach], h * 0.022, h * 0.010, bark, scale(bark, 1.1), 5, 0.08, 0.3);
+    arms.push({ x: Math.cos(a) * reach, y: y0 + up, z: Math.sin(a) * reach });
+  }
+  const top = mixc(tint, [1, 1, 1], 0.2), bot = scale(tint, 0.34);
+  const cr = h * 0.34;
+  blob(B, { cx: 0, cy: h * 0.72, cz: 0, rx: cr * 1.1, ry: cr * 0.55, rz: cr * 1.1, level: 1, rough: 0.4, rnd, colTop: top, colBot: bot, flex: 0.7 });
+  for (const a of arms) {
+    blob(B, {
+      cx: a.x * 1.05, cy: a.y + h * 0.03, cz: a.z * 1.05, rx: cr * 0.62, ry: cr * 0.46, rz: cr * 0.62,
+      level: 1, rough: 0.45, rnd, colTop: jitterC(top, rnd, 0.15), colBot: bot, flex: 0.9
+    });
+  }
+  for (let k = 0; k < 5; k++) {
+    const a = rnd() * 6.283, d = cr * (0.2 + rnd() * 0.5), r = cr * (0.3 + rnd() * 0.25);
+    blob(B, {
+      cx: Math.cos(a) * d, cy: h * 0.76 + cr * (0.15 + rnd() * 0.3), cz: Math.sin(a) * d,
+      rx: r, ry: r * 0.8, rz: r, level: 1, rough: 0.5, rnd,
+      colTop: jitterC(top, rnd, 0.12), colBot: mixc(bot, top, 0.3), flex: 1.0
+    });
+  }
+  return B.toGeometry();
+}
+
+/* Obelisco: basamento a gradini, fusto rastremato, piramidione. */
+function obelisk(rnd, tint) {
+  const B = new Builder();
+  const pietra = mixc(tint, lin(0xb8a888), 0.5), scuro = scale(pietra, 0.6), chiaro = scale(pietra, 1.15);
+  prism(B, { y0: 0, y1: 0.7, r0: 2.3, r1: 2.1, seg: 4, colBot: scuro, colTop: pietra });
+  prism(B, { y0: 0.7, y1: 1.3, r0: 1.55, r1: 1.45, seg: 4, colBot: scuro, colTop: pietra });
+  prism(B, { y0: 1.3, y1: 10.6, r0: 1.0, r1: 0.62, seg: 4, colBot: pietra, colTop: chiaro });
+  prism(B, { y0: 10.6, y1: 11.5, r0: 0.62, r1: 0.02, seg: 4, colBot: chiaro, colTop: lin(0xe8d8a0) });
+  return B.toGeometry();
+}
+
+/* Monolite: una lastra nera con i lati in rapporto 1:4:9. */
+function monolith(rnd, tint) {
+  const B = new Builder();
+  const nero = lin(0x07080a), n2 = lin(0x15171b);
+  box(B, [0, 4.5, 0], 0.5, 4.5, 2.0, nero, n2);
+  return B.toGeometry();
+}
+
+/* Torii: due pilastri rossi e le due travi, quella in cima con le punte in su. */
+function torii(rnd, tint) {
+  const B = new Builder();
+  const rosso = mixc(tint, lin(0xb8301e), 0.6), rossoS = scale(rosso, 0.6), nero = lin(0x1a1614), neroC = scale(nero, 1.8);
+  const W = 2.6, H = 5.2;
+  for (const s of [-1, 1]) {
+    tube(B, [s * W, 0.3, 0], [s * W * 0.96, H, 0], 0.22, 0.18, rossoS, rosso, 8, 0, 0);
+    prism(B, { cx: s * W, cz: 0, y0: 0, y1: 0.35, r0: 0.36, r1: 0.30, seg: 8, colBot: nero, colTop: neroC });
+  }
+  box(B, [0, H * 0.80, 0], W * 1.22, 0.13, 0.13, rossoS, rosso);          // nuki
+  box(B, [0, H * 0.95, 0], W * 1.30, 0.11, 0.18, nero, neroC);            // shimaki
+  box(B, [0, H * 1.04, 0], W * 1.42, 0.14, 0.24, nero, neroC);            // kasagi
+  for (const s of [-1, 1]) box(B, [s * W * 1.42, H * 1.04 + 0.16, 0], 0.22, 0.16, 0.24, nero, neroC);   // le punte
+  box(B, [0, H * 0.875, 0], 0.20, 0.13, 0.07, nero, neroC);              // tavoletta
+  return B.toGeometry();
+}
+
+/* Accampamento: tre tende coniche attorno a un fuoco che brilla. */
+function camp(rnd, tint) {
+  const B = new Builder();
+  const tela = mixc(tint, lin(0xc8b088), 0.5), telaS = scale(tela, 0.62), legno = lin(0x5a4430);
+  for (let k = 0; k < 3; k++) {
+    const a = k / 3 * 6.283 + 0.5 + rnd() * 0.4, d = 4.4 + rnd() * 1.2;
+    const cx = Math.cos(a) * d, cz = Math.sin(a) * d, r = 1.7 + rnd() * 0.5, h = 2.4 + rnd() * 0.6;
+    prism(B, { cx, cz, y0: 0, y1: h, r0: r, r1: 0.06, seg: 7, colBot: telaS, colTop: tela });
+    tube(B, [cx, h - 0.2, cz], [cx + 0.1, h + 0.6, cz], 0.05, 0.03, legno, legno, 4, 0, 0);
+  }
+  const sasso = lin(0x6a6660);
+  for (let k = 0; k < 9; k++) {
+    const a = k / 9 * 6.283;
+    blob(B, { cx: Math.cos(a) * 0.75, cy: 0.12, cz: Math.sin(a) * 0.75, rx: 0.16, ry: 0.12, rz: 0.16, level: 0, rough: 0.3, rnd, colTop: sasso, colBot: scale(sasso, 0.6), flex: 0 });
+  }
+  for (let k = 0; k < 4; k++) {
+    const a = k / 4 * 6.283 + 0.3;
+    tube(B, [Math.cos(a) * 0.45, 0.10, Math.sin(a) * 0.45], [-Math.cos(a) * 0.45, 0.32, -Math.sin(a) * 0.45], 0.07, 0.06, lin(0x3a2a1a), lin(0x2a1a10), 4, 0, 0);
+  }
+  const nF = B.f.length;
+  const fuoco = lin(0xffa030), fuocoC = lin(0xffe080);
+  blob(B, { cx: 0, cy: 0.45, cz: 0, rx: 0.32, ry: 0.42, rz: 0.32, level: 1, rough: 0.35, rnd, colTop: fuocoC, colBot: fuoco, flex: 0 });
+  blob(B, { cx: 0.05, cy: 0.85, cz: 0, rx: 0.16, ry: 0.28, rz: 0.16, level: 0, rough: 0.4, rnd, colTop: fuocoC, colBot: fuoco, flex: 0 });
+  for (let i = nF; i < B.f.length; i++) B.f[i] = 1;   // la fiamma brilla
+  // un tronco per sedersi
+  tube(B, [1.4, 0.22, 1.6], [3.0, 0.22, 0.6], 0.22, 0.20, legno, scale(legno, 0.7), 6, 0, 0);
+  return B.toGeometry();
+}
+
+/* Rover: sei ruote, pannello solare, albero con la camera, braccio. */
+function rover(rnd, tint) {
+  const B = new Builder();
+  const bianco = lin(0xd8d6cc), grigio = lin(0x8a8880), scuro = lin(0x3a3a38), blu = lin(0x1a2a5a);
+  box(B, [0, 1.05, 0], 1.1, 0.30, 1.5, grigio, bianco);
+  box(B, [0, 1.38, 0], 1.35, 0.03, 1.7, scuro, blu);
+  for (const s of [-1, 1]) for (let k = 0; k < 3; k++) {
+    const z = (k - 1) * 1.35, x = s * 1.45;
+    tube(B, [x - s * 0.18, 0.42, z], [x + s * 0.18, 0.42, z], 0.42, 0.42, scuro, scuro, 10, 0, 0);
+    discO(B, [x + s * 0.18, 0.42, z], [s, 0, 0], 0.42, grigio, scuro, 0, 10);
+    discO(B, [x - s * 0.18, 0.42, z], [-s, 0, 0], 0.42, grigio, scuro, 0, 10);
+    tube(B, [s * 0.9, 0.95, z * 0.6], [x, 0.55, z], 0.06, 0.05, grigio, scuro, 5, 0, 0);
+  }
+  tube(B, [0.4, 1.3, -1.0], [0.4, 2.55, -1.0], 0.06, 0.05, grigio, grigio, 6, 0, 0);
+  box(B, [0.4, 2.65, -1.0], 0.22, 0.12, 0.16, scuro, grigio);
+  discO(B, [-0.6, 1.75, 0.9], [0, 0.6, -0.8], 0.32, bianco, grigio, 0, 12);
+  tube(B, [-0.6, 1.38, 0.9], [-0.6, 1.72, 0.9], 0.04, 0.03, grigio, grigio, 5, 0, 0);
+  tube(B, [0, 0.95, -1.5], [0.5, 0.6, -2.4], 0.06, 0.05, grigio, scuro, 5, 0, 0);
+  tube(B, [0.5, 0.6, -2.4], [0.9, 0.25, -2.9], 0.05, 0.04, grigio, scuro, 5, 0, 0);
+  return B.toGeometry();
+}
+
+/* Sonda: un bus a dieci lati, la parabola grande, il braccio del generatore. */
+function probe(rnd, tint) {
+  const B = new Builder();
+  const oro = lin(0xc8a040), grigio = lin(0x9a9a92), scuro = lin(0x3a3a38), bianco = lin(0xe0e0d8);
+  prism(B, { y0: 0.3, y1: 1.3, r0: 0.9, r1: 0.9, seg: 10, colBot: scuro, colTop: oro });
+  const n = [0.25, 0.92, -0.3];
+  discO(B, [0.2, 2.2, -0.3], n, 1.9, bianco, grigio, 0, 18);
+  discO(B, [0.2, 2.15, -0.3], [-n[0], -n[1], -n[2]], 1.9, grigio, scuro, 0, 18);
+  tube(B, [0, 1.3, 0], [0.2, 2.15, -0.3], 0.10, 0.08, grigio, grigio, 6, 0, 0);
+  tube(B, [0.8, 0.9, 0.4], [3.2, 0.6, 1.6], 0.06, 0.05, grigio, scuro, 5, 0, 0);
+  prism(B, { cx: 3.3, cz: 1.65, y0: 0.2, y1: 1.1, r0: 0.22, r1: 0.22, seg: 6, colBot: scuro, colTop: scuro });
+  tube(B, [-0.8, 1.0, 0.2], [-3.6, 1.6, -0.4], 0.04, 0.03, grigio, grigio, 4, 0, 0);
+  for (let k = 0; k < 3; k++) {
+    const a = k / 3 * 6.283;
+    tube(B, [Math.cos(a) * 0.8, 0.5, Math.sin(a) * 0.8], [Math.cos(a) * 1.5, -0.1, Math.sin(a) * 1.5], 0.05, 0.04, grigio, scuro, 4, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* Ossa di un drago: cranio, colonna vertebrale, costole ad arco. Lungo, non
+ * alto: si misura sulla lunghezza. Il cranio sta a -Z. */
+function giantBones(rnd, tint) {
+  const B = new Builder();
+  const osso = mixc(lin(0xe8dcc0), tint, 0.25), ossoS = scale(osso, 0.62);
+  const L = 24, nV = 22;
+  const pts = [];
+  for (let i = 0; i < nV; i++) {
+    const t = i / (nV - 1);
+    const z = -L * 0.35 + t * L;
+    const y = 1.6 - 0.9 * Math.pow(t, 1.4) + 0.5 * Math.sin(t * 3.1);
+    const r = 0.55 * (1 - 0.75 * t) + 0.08;
+    const x = (rnd() - 0.5) * 0.15;
+    pts.push([x, y, z, r]);
+    blob(B, { cx: x, cy: y, cz: z, rx: r * 0.9, ry: r, rz: r * 0.7, level: 0, rough: 0.15, rnd, colTop: osso, colBot: ossoS, flex: 0 });
+  }
+  for (let i = 1; i < 11; i++) {
+    const [x, y, z, r] = pts[i];
+    const len = 3.4 * (1 - Math.pow((i - 5) / 6, 2) * 0.55);
+    for (const s of [-1, 1]) {
+      const a = [x + s * r * 0.8, y, z];
+      const b = [x + s * len * 0.85, y - len * 0.35, z + 0.1];
+      const c = [x + s * len * 0.95, Math.max(-0.2, y - len * 0.95), z + 0.25];
+      tube(B, a, b, 0.12, 0.10, osso, osso, 5, 0, 0);
+      tube(B, b, c, 0.10, 0.07, osso, ossoS, 5, 0, 0);
+    }
+  }
+  const sz = -L * 0.35 - 0.5;
+  blob(B, { cx: 0, cy: 1.7, cz: sz - 1.6, rx: 1.15, ry: 1.0, rz: 2.3, level: 1, rough: 0.12, rnd, colTop: osso, colBot: ossoS, flex: 0 });
+  blob(B, { cx: 0, cy: 1.0, cz: sz - 2.6, rx: 0.7, ry: 0.35, rz: 1.9, level: 1, rough: 0.1, rnd, colTop: ossoS, colBot: ossoS, flex: 0 });
+  for (const s of [-1, 1]) {
+    blob(B, { cx: s * 0.62, cy: 1.95, cz: sz - 1.2, rx: 0.36, ry: 0.36, rz: 0.30, level: 0, rough: 0, rnd, colTop: lin(0x2a2420), colBot: lin(0x1a1410), flex: 0 });
+    // due corna all indietro
+    tube(B, [s * 0.7, 2.3, sz - 0.6], [s * 1.6, 3.2, sz + 1.2], 0.18, 0.05, osso, ossoS, 5, 0, 0);
+  }
+  for (let k = 0; k < 4; k++) {
+    const a = rnd() * 6.283, d = 3 + rnd() * 4;
+    tube(B, [Math.cos(a) * d, 0.15, Math.sin(a) * d + 2], [Math.cos(a) * d + (rnd() - 0.5) * 3, 0.2, Math.sin(a) * d + 2 + (rnd() - 0.5) * 3], 0.16, 0.12, osso, ossoS, 5, 0, 0);
+  }
+  return B.toGeometry();
+}
+
+/* Croce di vetta su un ometto di sassi. */
+function summitCross(rnd, tint) {
+  const B = new Builder();
+  const legno = lin(0x6a5238), scuro = scale(legno, 0.6), sasso = lin(0x7a766e);
+  for (let k = 0; k < 14; k++) {
+    const a = rnd() * 6.283, d = rnd() * 0.9;
+    blob(B, { cx: Math.cos(a) * d, cy: 0.25 + rnd() * 0.35, cz: Math.sin(a) * d, rx: 0.32, ry: 0.22, rz: 0.30, level: 0, rough: 0.3, rnd, colTop: sasso, colBot: scale(sasso, 0.55), flex: 0 });
+  }
+  box(B, [0, 2.6, 0], 0.11, 2.0, 0.11, scuro, legno);
+  box(B, [0, 3.7, 0], 0.85, 0.10, 0.10, scuro, legno);
+  return B.toGeometry();
+}
+
+/* Relitto: uno scafo lofted per stazioni, sbandato, con l albero spezzato.
+ * Lungo, non alto: si misura sulla lunghezza. */
+function shipwreck(rnd, tint) {
+  const B = new Builder();
+  const legno = mixc(tint, lin(0x5a4634), 0.55), scuro = scale(legno, 0.5), chiaro = scale(legno, 1.2);
+  const L = 18, nS = 10, nR = 6;
+  const ring = (t) => {
+    const w = 2.6 * Math.sin(Math.PI * (0.06 + 0.88 * t)) + 0.25 * (1 - t);
+    const h = 2.4 + 0.9 * Math.pow(Math.abs(t - 0.5) * 2, 2);
+    const z = L * 0.5 - t * L;
+    const out = [];
+    for (let k = 0; k <= nR; k++) {
+      const a = Math.PI * (k / nR);
+      out.push([-Math.cos(a) * w, h - Math.sin(a) * (h + 0.3), z]);
+    }
+    return out;
+  };
+  let prev = ring(0);
+  for (let i = 1; i <= nS; i++) {
+    const t = i / nS;
+    const cur = ring(t);
+    for (let k = 0; k < nR; k++) {
+      // a prua lo scafo e sfondato: restano le costole
+      const buco = t > 0.72 && k >= 1 && k <= nR - 2 && (k + i) % 2 === 0;
+      const col = (k < 1 || k > nR - 2) ? chiaro : (k < 2 || k > nR - 3 ? legno : scuro);
+      if (!buco) {
+        B.quad(prev[k], cur[k], cur[k + 1], prev[k + 1], col, col, col, col, 0, 0, 0, 0);
+        B.quad(prev[k + 1], cur[k + 1], cur[k], prev[k], scuro, scuro, scuro, scuro, 0, 0, 0, 0);
+      }
+    }
+    // costola
+    if (i % 2 === 0) for (let k = 0; k < nR; k++) tube(B, cur[k], cur[k + 1], 0.09, 0.09, scuro, scuro, 4, 0, 0);
+    prev = cur;
+  }
+  // ponte di poppa, a tavole
+  for (let k = 0; k < 6; k++) {
+    const z = L * 0.42 - k * 0.55;
+    const w = 2.6 * Math.sin(Math.PI * (0.06 + 0.88 * (0.5 - z / L)));
+    box(B, [0, 2.3, z], w * 0.92, 0.05, 0.22, scuro, legno);
+  }
+  // albero spezzato e moncone
+  tube(B, [0, 2.2, 1.5], [0.6, 8.0, 1.2], 0.20, 0.13, scuro, legno, 6, 0, 0);
+  tube(B, [0.6, 8.0, 1.2], [2.6, 9.6, 0.4], 0.13, 0.04, legno, chiaro, 5, 0, 0);
+  tube(B, [0, 2.3, -4.5], [0.2, 4.6, -4.6], 0.18, 0.14, scuro, legno, 6, 0, 0);
+  // sbandato: rotazione attorno all asse Z, poi si affonda un po
+  const rl = 0.34, c = Math.cos(rl), s = Math.sin(rl);
+  for (let i = 0; i < B.p.length; i += 3) {
+    const x = B.p[i], y = B.p[i + 1];
+    B.p[i] = x * c - y * s;
+    B.p[i + 1] = x * s + y * c - 0.4;
+    const nx = B.n[i], ny = B.n[i + 1];
+    B.n[i] = nx * c - ny * s;
+    B.n[i + 1] = nx * s + ny * c;
+  }
+  return B.toGeometry();
+}
+
 export const PROPS = {
+  witchHut, ancientTree, obelisk, monolith, torii, camp, rover, probe, giantBones, summitCross, shipwreck,
   conifer, broadleaf, birch, swampTree, palm, acacia,
   saguaro, barrelCactus, bush, dryBush, fern,
   grassTuft, tallGrass, reed,
@@ -3239,7 +3569,10 @@ export const PROP_HEIGHT = {
   pyramid: 146.0, sphinx: 73.0, romanTemple: 12.5, insula: 13.0,
   trilithon: 7.4, statue: 3.6,
   volcanoCone: 1.5, rose: 0.9,
-  cabin: 4.0, lighthouse: 19.5, well: 2.9, pagoda: 10.5, stiltHut: 6.4, cairn: 1.3
+  cabin: 4.0, lighthouse: 19.5, well: 2.9, pagoda: 10.5, stiltHut: 6.4, cairn: 1.3,
+  // punti di interesse
+  witchHut: 9.5, ancientTree: 26.0, obelisk: 12.0, monolith: 9.0, torii: 6.0, camp: 14.0,
+  rover: 2.7, probe: 4.2, giantBones: 26.0, summitCross: 4.6, shipwreck: 22.0
 };
 
 /* Su quale asse si misura. Un tronco caduto e lungo, non alto: normalizzarlo
@@ -3250,7 +3583,8 @@ const PROP_AXIS = { log: 'xz', hobbitHole: 'xz', fence: 'xz', gardenPatch: 'xz',
                     domeHut: 'xz', cloudPuff: 'xz',
                     /* Misurate sulla lunghezza: la Sfinge e lunga settantatre metri
                      * e alta venti, e normalizzarla in altezza la triplicherebbe. */
-                    sphinx: 'xz' };
+                    sphinx: 'xz',
+                    camp: 'xz', giantBones: 'xz', shipwreck: 'xz' };
 
 export function buildProp(type, rnd, tint) {
   const fn = PROPS[type];

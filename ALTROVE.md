@@ -39,6 +39,12 @@ fatato, i cerchi di pietre del bosco stregato, gli archi e i colossi sommersi
 di Atlantide, le torri della Terra d'ombra, la guglia nera del Monte Fato, il
 modulo lunare, il lampione del pianetino, i mulini delle isole nel cielo.
 
+**Punti di interesse e bussola**: ogni luogo ha mete per cui vale la pena
+camminare — la capanna della strega, il relitto sulla spiaggia, l'albero più
+grande, il branco di lupi — e la bussola in cima allo schermo le segnala con
+un simbolo che scorre insieme al nastro. Allineare la stanghetta al simbolo e
+andare dritti porta lì; sotto compaiono nome e distanza. Vedi «Le mete».
+
 **Sott'acqua**: si nuota davvero. Caustiche sul fondo, luce che vira al blu con
 la profondità, nevischio marino, e la nebbia che diventa l'acqua stessa.
 
@@ -212,6 +218,7 @@ di nuvole, specchio salino, pozze termali.
 | `js/weather.js` | pioggia, neve, polvere, spore |
 | `js/city.js` | edifici, lampioni, auto, insegne al neon |
 | `js/fauna.js` | animali: sagome, andature, stormi |
+| `js/poi.js` | punti di interesse: ritrova strutture e branchi, li dà alla bussola |
 | `js/waterfall.js` | cascate trovate dal rilievo |
 | `js/library.js` | la Biblioteca esagonale infinita |
 | `js/castle.js` | il castello del collegio |
@@ -219,6 +226,7 @@ di nuvole, specchio salino, pozze termali.
 | `dev/shots.js` | strumento di collaudo: molte vedute in un foglio solo |
 | `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro (`?only=wolf,bear&pose=0.15`) |
 | `dev/oggetti.html` | banco di prova delle geometrie di `props.js`, con un piano d'appoggio |
+| `dev/bussola.html` | banco di prova della bussola con mete finte, senza WebGL |
 | `window.__frame(n)` | orologio pilotabile: fa avanzare l'app di n fotogrammi anche a scheda nascosta |
 | `joystick.html` | pagina di diagnosi del controller (assi e tasti dal vivo) |
 | `servi.py` | server di sviluppo che vieta la cache |
@@ -317,6 +325,50 @@ Invalid or unexpected token`), mentre `node --check` puo dire OK lo stesso.
 Per trovare il file colpevole: `node --input-type=module -e "await
 import('./js/fog.js')"`, o nel browser `import('/js/x.js?chk=...')` a uno a uno.
 
+### Le mete e la bussola (build 29)
+
+Un paesaggio si guarda, un luogo si esplora: servono mete, e un modo per
+sapere da che parte stanno. Il sistema sta in `js/poi.js` e non piazza
+niente: **ritrova** quello che lo scatter e la fauna hanno già messo.
+
+- **Da dove vengono le posizioni.** I centri dei grappoli sono un hash della
+  cella di periodo (`clusterCenter` in `scatter.js`, la stessa formula
+  chiamata da due posti). Per le regole a postazioni (`slots`, una struttura
+  per cella) la bussola applica nel punto esatto gli stessi filtri dello
+  scatter (`passesRule`: quota, acqua, pendenza, umidità), quindi il
+  verdetto coincide per forza. Perché coincida, le regole a postazioni
+  **non subiscono più il diradamento casuale** (il 14% delle celle) né il
+  rifiuto probabilistico sull'umidità, e i filtri si valutano nel punto
+  della postazione e non dove è nato il candidato. Vale anche per Giza e il
+  modulo lunare, che prima potevano mancare senza motivo.
+- **Borghi e cerchi** (grappoli a macchia o ad anello) espongono il centro,
+  con un filtro grossolano (terra ferma, quota): le case si sistemano da
+  sole.
+- **Gli animali** sono mete che si muovono: il centro del branco se c'è
+  (`herd`), altrimenti l'esemplare più vicino. Si dichiarano con `poi` sulla
+  regola della fauna come sulle regole dello scatter.
+- **Mete fisse** con `pois: [{x, z, label, icon}]` sul bioma: il castello
+  del collegio sta all'origine.
+- **La bussola** (`updatePois` in `main.js`): una fila di simboli sopra il
+  nastro, alla stessa scala (4 px per grado). Fuori dal campo il simbolo si
+  aggancia al bordo e si smorza, così si sa da che parte girarsi. Entro sei
+  gradi dalla stanghetta compaiono nome e distanza. Al massimo **due mete per
+  tipo e dieci in tutto**, dalla più vicina: dodici igloo coprirebbero
+  l'unica capanna della strega più in là. Il raggio è 900 m, ma una regola
+  può dichiararne uno suo (`poi.range`: le piramidi si vedono da tre
+  chilometri).
+- **I generatori nuovi** in `props.js`: capanna della strega, albero madre
+  (con contrafforti), obelisco, monolite 1:4:9, torii, accampamento col
+  fuoco, rover, sonda, ossa di drago, croce di vetta, relitto (scafo lofted
+  per stazioni, sbandato, sfondato a prua). Le finestre e il fuoco brillano
+  con la maschera emissiva (`aFlex = 1`).
+- **Banco della bussola**: `dev/bussola.html?yaw=20` — l'HUD vero sopra un
+  fondo finto, senza WebGL, perché lo screenshot del pannello scade sulla
+  scena vera.
+
+Regola generale per i nuovi luoghi: una meta rara ogni chilometro
+(`period` 700–1300), e la firma del posto prima del realismo.
+
 ### La fauna dei luoghi (build 28)
 
 Tutta la tabella sta in `FAUNA` in `js/biomes.js`; i modelli in `js/fauna.js`.
@@ -361,6 +413,11 @@ si finisce dentro un masso.
 
 ## Trappole già pagate
 
+- **Una meta sulla bussola che nel mondo non c'è è peggio di nessuna meta.**
+  Il candidato di una postazione nasceva in una cella diradata a caso nel 14%
+  dei casi: la struttura mancava e la bussola la prometteva lo stesso. Per le
+  regole a postazioni il diradamento è spento e i filtri si valutano nel
+  punto esatto, con la stessa funzione che usa la bussola.
 - **Un quadrupede con la testa a filo del corpo sembra una foca.** Il collo
   deve portare la testa *davanti* al muso dell'ellissoide (`neckFwd` ≥ 0,6),
   o a trenta metri lupo e cervo sono la stessa salsiccia con le zampe.
