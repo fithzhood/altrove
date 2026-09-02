@@ -597,7 +597,7 @@ export class Engine {
            * Sommati in HDR, prima della curva tonale, cosi si comportano come
            * luce vera e non come un velo bianco. */
           if (uRays > 0.001 && uSunScreen.z > 0.0){
-            col += texture2D(tRays, uv).rgb * uSunColor * uRays * 0.055;
+            col += texture2D(tRays, uv).rgb * uSunColor * uRays * 0.080;
           }
 
           /* Bagliore del sole: solo se il disco non e coperto da qualcosa.

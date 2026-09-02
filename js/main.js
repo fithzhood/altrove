@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=24';
-import { Fauna } from './fauna.js?v=24';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=25';
+import { Fauna } from './fauna.js?v=25';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,21 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=24';
-import { SkySystem } from './sky.js?v=24';
-import { FogSystem } from './fog.js?v=24';
-import { Engine } from './engine.js?v=24';
-import { Terrain } from './terrain.js?v=24';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=24';
-import { FirstPersonControls } from './controls.js?v=24';
-import { Scatter } from './scatter.js?v=24';
-import { Water } from './water.js?v=24';
-import { Precipitation } from './weather.js?v=24';
-import { City } from './city.js?v=24';
-import { Castle } from './castle.js?v=24';
-import { Waterfalls } from './waterfall.js?v=24';
-import { Library } from './library.js?v=24';
-import { clamp, lerp, saturate } from './noise.js?v=24';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=25';
+import { SkySystem } from './sky.js?v=25';
+import { FogSystem } from './fog.js?v=25';
+import { Engine } from './engine.js?v=25';
+import { Terrain } from './terrain.js?v=25';
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=25';
+import { FirstPersonControls } from './controls.js?v=25';
+import { Scatter } from './scatter.js?v=25';
+import { Water } from './water.js?v=25';
+import { Precipitation } from './weather.js?v=25';
+import { City } from './city.js?v=25';
+import { Castle } from './castle.js?v=25';
+import { Waterfalls } from './waterfall.js?v=25';
+import { Library } from './library.js?v=25';
+import { clamp, lerp, saturate } from './noise.js?v=25';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -286,8 +286,13 @@ function biomeSwatch(b) {
   if (b.extraSuns) strati.push(`radial-gradient(circle at 46% 30%, rgba(255,240,210,.9) 0 2.4%, rgba(255,225,170,.35) 5%, transparent 14%)`);
   if (b.extraSuns > 1) strati.push(`radial-gradient(circle at 84% 12%, rgba(255,240,210,.9) 0 2%, transparent 12%)`);
   if (b.planet) strati.push(`radial-gradient(circle at 28% 22%, ${hex(tint(0xc8d0d8))} 0 ${Math.round(b.planet.size * 60)}%, transparent ${Math.round(b.planet.size * 60) + 1}%)`);
+  /* Il colore dell acqua segue il tipo: una lama blu su un luogo di lava o
+   * di metano racconta la cosa sbagliata. */
+  const ACQUE = { lava: 0xff7a20, methane: 0x3a5a7a, ice: 0xcfe8f4, swamp: 0x3a4a2c, cloudsea: 0xe8ecf2,
+                  mirror: 0xd8dce4, hotspring: 0x6ab8c8, emerald: 0x2f9c58, tropical: 0x38b8c8 };
   const acqua = (b.waterLevel !== null && b.waterLevel !== undefined && b.waterLevel > -12 && !b.underwater)
-    ? (b.water && b.water.shallow !== undefined ? hex(b.water.shallow) : hex(tint(0x3f6f9a))) : null;
+    ? (b.water && b.water.shallow !== undefined ? hex(b.water.shallow)
+       : (ACQUE[b.waterKind] !== undefined ? hex(ACQUE[b.waterKind]) : hex(tint(0x3f6f9a)))) : null;
   const orizz = hex(tint(0xe8ecee));
   strati.push(`linear-gradient(180deg, ${hex(skyTop)} 0%, ${hex(skyBot)} 36%, ${orizz} 41%, ${acc} 43%, ${g1} 52%,` +
               (acqua ? ` ${g2} 64%, ${acqua} 66%, ${acqua} 78%, ${g2} 80%,` : '') + ` ${g2} 100%)`);
@@ -944,7 +949,12 @@ function frame(now) {
   requestAnimationFrame(frame);
   let dt = (now - last) / 1000;
   last = now;
+  /* Mai negativo: un fotogramma chiamato con un orologio indietro (succede
+   * col collaudo a mano, quando i fotogrammi sintetici si intrecciano con
+   * quelli veri) dava un dt negativo, exp(-26*dt) esplodeva e il giocatore
+   * finiva a 10^27 metri sotto il mondo. */
   if (dt > 0.25) dt = 0.25;
+  if (!(dt >= 0)) dt = 0;
   state.time += dt;
 
   controls.pollPad(dt);

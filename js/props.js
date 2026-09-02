@@ -324,13 +324,30 @@ function broadleaf(rnd, tint) {
   const top = mixc(tint, [1, 1, 1], 0.20);
   const bot = scale(tint, 0.34);
   const cr = h * 0.30;
-  blob(B, { cx: 0, cy: th + h * 0.30, cz: 0, rx: cr, ry: cr * 0.80, rz: cr, level: 1, rough: 0.30, rnd, colTop: top, colBot: bot, flex: 0.75 });
+  /* La chioma non e una palla: e un ammasso di masse fogliari di taglie
+   * diverse, con vuoti fra l una e l altra. Una massa centrale piu bassa e
+   * larga, le masse sui rami, e sopra a tutto qualche ciuffo piccolo che
+   * spezza il profilo. E il profilo spezzato, non il numero di poligoni, a
+   * far leggere «albero» invece di «lecca-lecca». */
+  blob(B, { cx: 0, cy: th + h * 0.26, cz: 0, rx: cr * 1.05, ry: cr * 0.62, rz: cr * 1.05, level: 1, rough: 0.40, rnd, colTop: top, colBot: bot, flex: 0.75 });
   for (const a of arms) {
-    const r = cr * (0.55 + rnd() * 0.30);
+    const r = cr * (0.55 + rnd() * 0.32);
     blob(B, {
       cx: a.x * 1.15, cy: a.y * 0.99 + h * 0.02, cz: a.z * 1.15,
-      rx: r, ry: r * 0.82, rz: r, level: 1, rough: 0.34, rnd,
-      colTop: jitterC(top, rnd, 0.16), colBot: bot, flex: 0.95
+      rx: r, ry: r * 0.78, rz: r, level: 1, rough: 0.46, rnd,
+      colTop: jitterC(top, rnd, 0.18), colBot: bot, flex: 0.95
+    });
+  }
+  // ciuffi alti che spezzano il profilo
+  const nc = 3 + Math.floor(rnd() * 3);
+  for (let k = 0; k < nc; k++) {
+    /* Dentro la massa, non sopra: a galleggiare staccati sembravano acini
+     * d uva. Un ciuffo spezza il profilo solo se e per meta immerso. */
+    const a = rnd() * 6.283, d = cr * (0.15 + rnd() * 0.45), r = cr * (0.36 + rnd() * 0.26);
+    blob(B, {
+      cx: Math.cos(a) * d, cy: th + h * 0.30 + cr * (0.12 + rnd() * 0.32), cz: Math.sin(a) * d,
+      rx: r, ry: r * 0.8, rz: r, level: 1, rough: 0.5, rnd,
+      colTop: jitterC(mixc(top, [1, 1, 1], 0.08), rnd, 0.14), colBot: mixc(bot, top, 0.3), flex: 1.0
     });
   }
   return B.toGeometry();

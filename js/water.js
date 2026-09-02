@@ -17,8 +17,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=24';
-import { GLSL_FOG_DECL } from './fog.js?v=24';
+import { GLSL_NOISE } from './noise.js?v=25';
+import { GLSL_FOG_DECL } from './fog.js?v=25';
 
 const DEPTH_RES = 128;
 const DEPTH_SPAN = 620;      // metri coperti dalla mappa di profondita

@@ -278,6 +278,10 @@ C salva immagine · Esc liberare il mouse
   scompare visto da sotto, e nella Biblioteca infinita si vede il cielo.
 - **Due piani complanari sfarfallano.** Il pavimento della Biblioteca sta cinque
   centimetri sopra il terreno, o si riempie di bande.
+- **Un dt negativo fa esplodere la fisica.** I fotogrammi sintetici di
+  `__frame` si intrecciano con quelli veri, il tempo torna indietro di qualche
+  millisecondo, e `exp(-26·dt)` con dt negativo manda il giocatore a 10²⁷
+  metri sotto il mondo. Il dt ora è chiuso in [0, 0,25].
 - **Nelle schede nascoste il browser sospende `requestAnimationFrame`.** Il
   riquadro d'anteprima si nasconde da solo, e da lì in poi l'app *sembra*
   rotta: la barra di caricamento resta a zero, nessun mondo si costruisce, e
@@ -350,8 +354,6 @@ C salva immagine · Esc liberare il mouse
 - Niente audio.
 - Le andature dei quadrupedi sono cicliche, non c'è appoggio del piede vero
   (nessuna cinematica inversa): a passo lento si nota un filo di slittamento.
-- Nessuna occlusione ambientale a schermo (SSAO): sotto le chiome manca un po'
-  di ombra di contatto.
 - Le nuvole sono uno strato piatto in parallasse, non volumetriche vere.
 - Il buco nero non integra le geodetiche: mette in scena quello che la lente
   *produce* (ombra, anello di fotoni, ellisse schiacciato, arco sollevato,

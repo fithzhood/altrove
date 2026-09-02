@@ -13,7 +13,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=24';
+import { GLSL_NOISE } from './noise.js?v=25';
 
 const DIV = 32;          // celle per lato di un chunk
 const LEVELS = 5;
