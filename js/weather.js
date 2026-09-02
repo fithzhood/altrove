@@ -11,8 +11,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE, mulberry32 } from './noise.js?v=21';
-import { GLSL_FOG_DECL } from './fog.js?v=21';
+import { GLSL_NOISE, mulberry32 } from './noise.js?v=22';
+import { GLSL_FOG_DECL } from './fog.js?v=22';
 
 const BOX = new THREE.Vector3(46, 34, 46);
 const SPLASH_MAX = 220;

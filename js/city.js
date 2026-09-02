@@ -12,10 +12,10 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, mulberry32, clamp, lerp, saturate } from './noise.js?v=21';
-import { GLSL_NOISE } from './noise.js?v=21';
-import { CITY } from './world.js?v=21';
-import { lin } from './props.js?v=21';
+import { hash2i, mulberry32, clamp, lerp, saturate } from './noise.js?v=22';
+import { GLSL_NOISE } from './noise.js?v=22';
+import { CITY } from './world.js?v=22';
+import { lin } from './props.js?v=22';
 
 const P = CITY.block;
 

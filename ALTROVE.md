@@ -261,6 +261,14 @@ C salva immagine · Esc liberare il mouse
   nero il «sole» esiste solo per illuminare la scena e sta dentro il buco nero:
   la post-produzione ci disegnava attorno i raggi, e ne usciva una stella di
   Natale. `sunDisk: 0` spegne disco e bagliore insieme.
+- **Un luogo tratto da una fonte va verificato sulla fonte, non a memoria.**
+  Namecc aveva `extraSuns: 2` — tre dischi in cielo — ma i dischi sono solo
+  disegnati: il ciclo giorno/notte continuava a girare, e alle 23:30 faceva
+  buio. I tre soli *sono* la caratteristica del pianeta, e servono a una cosa
+  sola: che non sia mai notte. Ora `minSunAlt` impedisce al sole di scendere
+  sotto una soglia — continua a girare per il cielo, semplicemente non
+  tramonta. Stessa storia per i colori: acqua verde, terra e piante azzurre,
+  cielo giallo-verde, che non è la tavolozza che verrebbe da sé.
 - **Un parametro del terreno dimenticato non dà errore: dà NaN**, e NaN si
   propaga a tutto il campo di altezze. Il risultato è un mondo invisibile con
   il giocatore a quota NaN e la console pulita — il modo peggiore di rompersi.

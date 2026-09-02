@@ -549,38 +549,65 @@ export const BIOMES = {
     /* Si chiama col suo nome: «Mondo di smeraldo» lo nascondeva, ed e un
      * luogo preciso che era stato chiesto per nome. */
     label: 'Namecc',
-    blurb: 'Cielo verde, erba turchese, tre soli, guglie che si avvitano e case tonde.',
+    blurb: 'Tre soli, e per questo non e mai notte. Cielo giallo-verde, mare verde, erba e rocce azzurre, pianure larghe rotte da altopiani a cima piatta, e case tonde.',
     fantasy: true,
-    terrain: 'hills',
+    /* Pianure larghe con altopiani isolati, non colline: e la forma del
+     * terreno di Namecc. Il generatore della savana fa esattamente questo —
+     * una base quasi piatta piu affioramenti rari e a fianchi ripidi — e qui
+     * gli affioramenti sono alti centoventi metri. */
+    terrain: 'savanna',
     seed: 1404,
     seaLevel: 0,
-    waterLevel: -20,
+    /* Misurato: col livello a -16 il punto piu basso del terreno stava a
+     * -10, e l acqua non si vedeva mai. Namecc e un arcipelago — il mare
+     * verde e meta di quello che si guarda. */
+    waterLevel: -1.5,
     waterKind: 'emerald',
     startHeightOffset: 1.7,
-    hills: { amp: 58, freq: 0.0015, oct: 6, medAmp: 6.0, medFreq: 0.011, microAmp: 0.8 },
+    /* L esponente sotto 1 e la chiave: con `pow(k, 2.8)` gli affioramenti
+     * salgono piano e finiscono a punta — vengono cupole. Con 0,55 salgono
+     * subito e poi si appiattiscono, cioe fianchi ripidi e cima piatta, che e
+     * un altopiano. Misurato prima: solo lo 0,1% del terreno stava sopra i
+     * quaranta metri, e di altopiani non se ne vedeva nessuno. */
+    savanna: { amp: 12, freq: 0.0012, oct: 4, kopjeAmp: 92, kopjeFreq: 0.0024, kopjePow: 0.55, kopjeCut: 0.30, medAmp: 2.4, medFreq: 0.010, microAmp: 0.45 },
     snowLine: 9999,
     seasonal: false,
-    skyTint: [0.62, 1.12, 0.80],
+    skyTint: [0.80, 1.20, 0.56],   // giallo-verde, non verde-azzurro
     sunTint: [0.96, 1.02, 0.86],
     nightSky: [0.0012, 0.0026, 0.0018],
-    moonBright: 1.6,
+    /* Niente luna e niente notte: il sole non scende mai sotto i quindici
+     * gradi, e gli altri due sono altrove nel cielo. */
+    moonBright: 0,
+    minSunAlt: 15,
     extraSuns: 2,
     ambientBoost: 1.1,
     palette: {
-      grassLow: 0x14584c, grassHigh: 0x2f8068, grassDry: 0x54907a,
-      dirt: 0x7a6238, rock: 0x9a7a44, rockDark: 0x6c5530,
-      sand: 0xb49a5c, snow: 0xeafaf0, underwater: 0x134a38
+      grassLow: 0x175f80, grassHigh: 0x3494b8, grassDry: 0x63bed0,
+      dirt: 0x3d6478, rock: 0x4c7c94, rockDark: 0x35566a,
+      sand: 0x6a9aac, snow: 0xeafaf0, underwater: 0x0f4a58
     },
     sky: { turbidity: 2.2, rayleigh: 1.15, mie: 0.0048, mieG: 0.79, groundAlbedo: [0.14, 0.28, 0.20] },
-    fog: { density: 0.0030, heightFalloff: 0.0055, tint: [0.86, 1.06, 0.92] },
-    ambience: { hemiSky: 0x7ad8a0, hemiGround: 0x4a5a30, bounce: 0.42 },
+    /* Poca foschia: il senso di una piana e vedere fin dove arriva, e gli
+     * altopiani si leggono solo da lontano. */
+    /* Poca nebbia e tinta meno gialla: con quella di prima il cielo
+     * giallo-verde tingeva tutta la distanza della stessa tinta, e acqua,
+     * terra e altopiani si fondevano in una macchia sola. */
+    fog: { density: 0.00070, heightFalloff: 0.0030, tint: [0.82, 1.02, 0.94] },
+    farFade: 3600,
+    ambience: { hemiSky: 0x9ce0a0, hemiGround: 0x3e5a62, bounce: 0.46 },
+    /* Su Namecc il mare e VERDE, non blu ne verde scuro: e la cosa che
+     * spiazza di piu guardando il pianeta, insieme al cielo. */
+    /* Riflesso basso: con un cielo giallo-verde e la riflessione a 0,72
+     * l acqua restituiva il cielo invece del proprio colore, e da verde
+     * diventava gialla. Qui deve vincere la tinta dell acqua. */
+    water: { deep: 0x0e6f33, shallow: 0x3cbc59, foam: 0xd8f4bc, waveAmp: 0.10, waveScale: 11, reflect: 0.30 },
     scatter: [
-      { type: 'ajisaTree', density: 0.0050, radius: 320, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.30], tilt: 0.05, tint: [0x2a8a6a, 0x5ec49a], shadow: true },
-      { type: 'spiralRock', density: 0.0028, radius: 300, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.7, 2.1], tilt: 0.06, tint: [0x8a6c3c, 0xc0a068], shadow: true },
-      { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0x7a6238, 0xa8895a] },
-      { type: 'boulder', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.85, 1.9], tilt: 0.3, tint: [0x7a6238, 0xa8895a], shadow: true },
-      { type: 'bush', density: 0.012, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x1f6a4e, 0x3a9068] },
-      { type: 'grassTuft', density: 2.1, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x2f9c74, 0x64c8a0], grass: true },
+      { type: 'ajisaTree', density: 0.0050, radius: 320, slope: [0, 0.5], height: [-99, 999], moisture: [0.2, 1], scale: [0.7, 1.30], tilt: 0.05, tint: [0x1f6f9e, 0x46a8cc], shadow: true },
+      { type: 'spiralRock', density: 0.0028, radius: 300, slope: [0, 0.8], height: [-99, 999], moisture: [0, 1], scale: [0.7, 2.1], tilt: 0.06, tint: [0x44708a, 0x6c9cb0], shadow: true },
+      { type: 'rock', density: 0.012, radius: 170, slope: [0, 1], height: [-99, 999], moisture: [0, 1], scale: [0.5, 1.6], tilt: 0.45, tint: [0x40687e, 0x6890a4] },
+      { type: 'boulder', density: 0.0018, radius: 260, slope: [0, 0.9], height: [-99, 999], moisture: [0, 1], scale: [0.85, 1.9], tilt: 0.3, tint: [0x3c6478, 0x64889c], shadow: true },
+      { type: 'bush', density: 0.012, radius: 140, slope: [0, 0.6], height: [-99, 999], moisture: [0.2, 1], scale: [0.6, 1.3], tilt: 0.07, tint: [0x1a6a86, 0x3a96ac] },
+      { type: 'grassTuft', density: 2.1, radius: 38, slope: [0, 0.6], height: [-99, 999], moisture: [0.1, 1], scale: [0.7, 1.2], tilt: 0.08, tint: [0x2f96c0, 0x62c4dc], grass: true },
 
       { type: 'domeHut', density: 0.0017, radius: 300, slope: [0, 0.16], height: [-99, 999],
         moisture: [0, 1], scale: [0.9, 1.3], tilt: 0, tint: [0xe4efe2, 0xcfe8dc],

@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=21';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=21';
+} from './sky.js?v=22';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=22';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
@@ -132,6 +132,24 @@ export class Atmosphere {
       this.sunDir.set(Math.sin(az) * Math.cos(al), Math.sin(al), -Math.cos(az) * Math.cos(al)).normalize();
     } else {
       sunDirection(st.hour, st.latitude, st.dayOfYear, this.sunDir);
+    }
+
+    /* Certi cieli non conoscono la notte. Su Namecc ci sono tre soli in punti
+     * diversi del cielo, e quando uno tramonta gli altri sono ancora alti:
+     * il pianeta e illuminato sempre. E LA caratteristica del posto, non un
+     * dettaglio — un Namecc con la notte e un altro pianeta.
+     *
+     * Si poteva inchiodare il sole con `fixedSun`, ma cosi l ora del giorno
+     * non vorrebbe piu dire niente. Meglio impedire alla sua altezza di
+     * scendere sotto una soglia: il sole continua a girare per il cielo e a
+     * cambiare la luce, semplicemente non arriva mai all orizzonte. */
+    if (biome.minSunAlt !== undefined) {
+      const minY = Math.sin(biome.minSunAlt * Math.PI / 180);
+      if (this.sunDir.y < minY) {
+        const hl = Math.hypot(this.sunDir.x, this.sunDir.z) || 1;
+        const k = Math.sqrt(Math.max(0, 1 - minY * minY));
+        this.sunDir.set(this.sunDir.x / hl * k, minY, this.sunDir.z / hl * k);
+      }
     }
     moonDirection(st.hour, st.latitude, st.dayOfYear, st.moonPhase, this.moonDir);
 
@@ -306,10 +324,13 @@ export class Atmosphere {
     su.uExtraSuns.value = extra;
     if (extra > 0) {
       _v3.copy(this.sunDir);
-      su.uSun2.value.copy(_v3).applyAxisAngle(_yAxis, 0.34);
-      su.uSun2.value.y += 0.10; su.uSun2.value.normalize();
-      su.uSun3.value.copy(_v3).applyAxisAngle(_yAxis, -0.27);
-      su.uSun3.value.y -= 0.07; su.uSun3.value.normalize();
+      /* Distanziati davvero: a venti gradi l uno dall altro sembravano un
+       * sole sfocato in tre pezzi. Devono leggersi come tre soli distinti in
+       * tre punti del cielo, che e il motivo per cui non fa mai notte. */
+      su.uSun2.value.copy(_v3).applyAxisAngle(_yAxis, 0.95);
+      su.uSun2.value.y += 0.26; su.uSun2.value.normalize();
+      su.uSun3.value.copy(_v3).applyAxisAngle(_yAxis, -0.78);
+      su.uSun3.value.y -= 0.14; su.uSun3.value.normalize();
     }
 
     // quanto e notte: serve a chi deve accendere le luci

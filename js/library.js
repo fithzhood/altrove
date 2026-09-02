@@ -13,9 +13,9 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, mulberry32, lerp } from './noise.js?v=21';
-import { GLSL_NOISE } from './noise.js?v=21';
-import { lin } from './props.js?v=21';
+import { hash2i, mulberry32, lerp } from './noise.js?v=22';
+import { GLSL_NOISE } from './noise.js?v=22';
+import { lin } from './props.js?v=22';
 
 /* Geometria del reticolo esagonale. R e il raggio del centro-vertice. */
 export const HEX = { R: 8.2, H: 5.4, wall: 0.55, door: 3.0 };
