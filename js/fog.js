@@ -12,8 +12,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_SKY_LUT } from './sky.js?v=25';
-import { GLSL_NOISE } from './noise.js?v=25';
+import { GLSL_SKY_LUT } from './sky.js?v=26';
+import { GLSL_NOISE } from './noise.js?v=26';
 
 export class FogSystem {
   constructor() {
@@ -40,7 +40,14 @@ export class FogSystem {
       altCaustics: { value: 0.0 },
       altUnderwater: { value: 0.0 },
       altDeepColor: { value: new THREE.Color(0.02, 0.10, 0.14) },
-      altTime: { value: 0.0 }
+      altTime: { value: 0.0 },
+      /* Ombre delle nuvole: la stessa funzione di densita dello strato in
+       * cielo, valutata nel punto in cui il raggio del sole che passa per il
+       * frammento buca lo strato. E cio che fa «passare» una nuvola sul prato. */
+      altCloudCover: { value: 0.0 },
+      altCloudDensity: { value: 1.0 },
+      altCloudHeight: { value: 1800.0 },
+      altCloudScroll: { value: new THREE.Vector2(0, 0) }
     };
     this.materials = new Set();
   }
@@ -75,7 +82,15 @@ export class FogSystem {
           gl_Position = projectionMatrix * mvPosition;
         `);
 
+      /* Il chunk delle luci di three viene espanso qui e ritoccato: subito
+       * dopo aver letto la luce direzionale, la si attenua con l ombra della
+       * nuvola. Non c e altro punto in cui la luce diretta sia gia un valore
+       * e non ancora sommata al resto. */
+      const luci = THREE.ShaderChunk.lights_fragment_begin.replace(
+        'getDirectionalLightInfo( directionalLight, directLight );',
+        'getDirectionalLightInfo( directionalLight, directLight );\n\t\tdirectLight.color *= altCloudShadow(vAltWorld);');
       shader.fragmentShader = shader.fragmentShader
+        .replace('#include <lights_fragment_begin>', luci)
         .replace('#include <common>', `#include <common>
           in vec3 vAltWorld;
           uniform sampler2D altSkyLut;
@@ -83,8 +98,33 @@ export class FogSystem {
           uniform float altFogOverrideMix, altFarFade;
           uniform vec3 altFogTint, altFogOverride, altSunDir, altSunColor, altDeepColor;
           uniform float altWaterY, altCaustics, altUnderwater, altTime;
+          uniform float altCloudCover, altCloudDensity, altCloudHeight;
+          uniform vec2 altCloudScroll;
           ${GLSL_SKY_LUT}
           ${GLSL_NOISE}
+
+          /* Quanto sole arriva a terra sotto lo strato di nuvole. La formula
+           * della densita e la stessa di clouds() in sky.js, con lo stesso
+           * scorrimento: cosi l ombra sta esattamente sotto la nuvola che si
+           * vede, e si muove con lei. */
+          float altCloudShadow(vec3 wp){
+            if (altCloudCover < 0.005) return 1.0;
+            float sy = max(altSunDir.y, 0.06);
+            /* Lo strato in cielo sta a altCloudHeight SOPRA LA CAMERA, non
+             * sul livello del mare: la stessa quota va usata qui, o l ombra
+             * non sta sotto la nuvola che si vede. */
+            float quota = cameraPosition.y + altCloudHeight;
+            vec2 p = wp.xz + altSunDir.xz / sy * (quota - wp.y);
+            vec2 uv = p * 0.00023 + altCloudScroll;
+            /* Stesso domain warp e stesse ottave del cielo: quando il sole
+             * entra in una nuvola, la luce a terra deve calare in quel momento. */
+            vec2 w = vec2(alt_fbm2(uv * 2.1 + 5.2, 3), alt_fbm2(uv * 2.1 - 3.7, 3)) - 0.5;
+            float shape = alt_fbm2(uv + w * 0.55, 5);
+            float detail = alt_fbm2(uv * 5.5 + altCloudScroll * 2.3, 4);
+            float d = shape + detail * 0.22 - (1.0 - altCloudCover) * 0.92;
+            d = smoothstep(0.0, 0.30, d) * altCloudDensity;
+            return 1.0 - d * 0.82;
+          }
 
           /* Caustiche: la superficie increspata concentra la luce in reticoli
            * che scorrono. Due campi di rumore che si inseguono, la loro
@@ -188,6 +228,10 @@ export class FogSystem {
     if (params.underwater !== undefined) u.altUnderwater.value = params.underwater;
     if (params.deepColor) u.altDeepColor.value.setRGB(params.deepColor[0], params.deepColor[1], params.deepColor[2]);
     if (params.time !== undefined) u.altTime.value = params.time;
+    if (params.cloudCover !== undefined) u.altCloudCover.value = params.cloudCover;
+    if (params.cloudDensity !== undefined) u.altCloudDensity.value = params.cloudDensity;
+    if (params.cloudHeight !== undefined) u.altCloudHeight.value = params.cloudHeight;
+    if (params.cloudScroll) u.altCloudScroll.value.copy(params.cloudScroll);
   }
 }
 

@@ -12,8 +12,8 @@
 import * as THREE from '../vendor/three.module.js';
 import {
   sunDirection, moonDirection, transmittanceJS, atmosphereJS, SUN_INTENSITY
-} from './sky.js?v=25';
-import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=25';
+} from './sky.js?v=26';
+import { clamp, lerp, saturate, mulberry32 } from './noise.js?v=26';
 
 /* Campi meteo che vanno interpolati quando si cambia condizione */
 const BLEND_KEYS = [
@@ -358,7 +358,11 @@ export class Atmosphere {
       start: 2.5,
       sunDir: this.sunDir,
       sunColor: [this.sunColor.x, this.sunColor.y, this.sunColor.z],
-      farFade: st.farFade || 2600
+      farFade: st.farFade || 2600,
+      /* Le ombre delle nuvole usano gli stessi numeri dello strato in cielo,
+       * scorrimento compreso: l ombra sta sotto la nuvola che si vede. */
+      cloudCover: wx.cloudCover, cloudDensity: wx.cloudDensity,
+      cloudHeight: wx.cloudHeight, cloudScroll: this.cloudScroll
     });
 
     /* --- posizione del sole a schermo, per il bagliore --- */

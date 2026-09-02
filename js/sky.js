@@ -16,7 +16,7 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=25';
+import { GLSL_NOISE } from './noise.js?v=26';
 
 /* ------------------------------------------------------------------ *
  * Costanti fisiche condivise

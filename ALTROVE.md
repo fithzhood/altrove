@@ -230,6 +230,37 @@ C salva immagine · Esc liberare il mouse
 
 ---
 
+### Esposizione pesata verso il basso (build 26)
+
+La misurazione della luminanza media (`lumMat` in `engine.js`) pesa i pixel
+in alto meno di quelli in basso (peso 1 sotto il 45% dello schermo, 0,28
+sopra l 82%, rampa in mezzo), come la misurazione a matrice di una macchina
+fotografica. Prima la media semplice sul fotogramma intero era dominata dal
+cielo, e una savana a mezzogiorno usciva scura come al crepuscolo. Il peso
+viaggia nel canale verde della catena 64→16→4→1 e `adaptMat` divide
+`exp(r/g)`. La chiave e passata da 0,148 a 0,17. I limiti dell esposizione
+(`autoMin`/`autoMax`) sono gli stessi: la notte resta notte.
+
+### Ombre delle nuvole (build 26)
+
+Le nuvole dello strato in cielo proiettano l ombra sul terreno e su tutto
+cio che e illuminato dal sole. Non e una shadow map: `fog.js` inietta in ogni
+materiale `altCloudShadow(wp)`, che proietta il punto lungo `altSunDir` fino
+alla quota delle nuvole e ricampiona LO STESSO fbm dello strato in cielo
+(`uv = p*0.00023 + altCloudScroll`, stessa copertura e densita), poi moltiplica
+`directLight.color` nel chunk `lights_fragment_begin`. I quattro uniform li
+passa `atmosphere.js` in `fog.set()` insieme alla nebbia, cosi l ombra scorre
+con la nuvola che si vede. Con cielo sereno (`cloudCover` 0) la funzione
+restituisce 1 e non costa nulla di visibile.
+
+Trappola: la sostituzione del chunk e una stringa JS a singoli apici. Se la
+scrivi da Python con `
+		` dentro una stringa normale, Python mette a
+capo davvero e il file non si carica piu in nessun browser (`SyntaxError:
+Invalid or unexpected token`), mentre `node --check` puo dire OK lo stesso.
+Per trovare il file colpevole: `node --input-type=module -e "await
+import('./js/fog.js')"`, o nel browser `import('/js/x.js?chk=...')` a uno a uno.
+
 ## Trappole già pagate
 
 - **`texture2D` non esiste in GLSL ES 3.00.** Nei materiali di three c'è un

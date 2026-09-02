@@ -60,7 +60,7 @@ export class Engine {
        * scena notturna veniva amplificata al punto che qualunque cosa emettesse
        * luce propria diventava una sfera bianca sfocata. Nove stop di margine
        * bastano, e la notte resta notte. */
-      exposure: 1.0, autoExposure: true, autoKey: 0.148, autoSpeed: 1.6,
+      exposure: 1.0, autoExposure: true, autoKey: 0.17, autoSpeed: 1.6,
       autoMin: 0.05, autoMax: 20.0,
       vignette: 0.42, grain: 0.030, chromatic: 0.55,
       contrast: 1.0, saturation: 1.0, lift: 0.0,
@@ -151,8 +151,15 @@ export class Engine {
             c += texture2D(tSrc, vUv + vec2(float(i), float(j)) * uTexel * 5.0).rgb;
           c /= 9.0;
           float l = dot(c, vec3(0.2126, 0.7152, 0.0722));
+          /* Misurazione pesata verso il basso, come la matrice di una macchina
+           * fotografica: il cielo occupa mezza inquadratura ed e molto piu
+           * chiaro di tutto il resto, e con la media semplice trascinava
+           * l esposizione al punto che una savana a mezzogiorno usciva come
+           * al crepuscolo. Il peso e nel canale verde; la catena di riduzione
+           * fa la media di entrambi e l adattamento divide. */
+          float w = mix(1.0, 0.28, smoothstep(0.45, 0.82, vUv.y));
           // il logaritmo evita che una singola sorgente accecante domini la media
-          fragColor = vec4(log(max(l, 1e-5)), 0.0, 0.0, 1.0);
+          fragColor = vec4(log(max(l, 1e-5)) * w, w, 0.0, 1.0);
         }`
     });
     this.lumScene = this._mkQuad(this.lumMat);
@@ -187,7 +194,8 @@ export class Engine {
         in vec2 vUv; out vec4 fragColor;
         uniform sampler2D tLum, tPrev; uniform float uRate, uPrime;
         void main(){
-          float target = exp(texture2D(tLum, vec2(0.5)).r);
+          vec2 lw = texture2D(tLum, vec2(0.5)).rg;
+          float target = exp(lw.r / max(lw.g, 1e-4));
           float prev = texture2D(tPrev, vec2(0.5)).r;
           if (uPrime > 0.5) { fragColor = vec4(target, 0.0, 0.0, 1.0); return; }
           // l occhio si adatta al buio piu lentamente che alla luce
