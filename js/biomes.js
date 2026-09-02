@@ -2065,6 +2065,14 @@ export const BIOME_ORDER = [
  *
  * count = quanti individui vivi attorno al giocatore; radius = entro quale
  * distanza restano (usciti, ricompaiono dall altra parte).
+ * herd = raggio del branco: gli individui restano entro quel raggio da un
+ * centro che vaga lentamente. Senza, ognuno va per conto suo.
+ * night = escono solo al buio e se ne vanno all alba.
+ * Nessuno nasce mai davanti agli occhi del giocatore: vicino, solo alle spalle.
+ *
+ * Nei boschi fitti il raggio degli animali di terra sta sotto i 200 m: piu
+ * in la non si vedono comunque, e un cervo a 180 m fra i tronchi e un cervo
+ * che non c e.
  * ------------------------------------------------------------------ */
 
 const UCCELLO = [0x2a2622, 0x5c5248];
@@ -2074,15 +2082,24 @@ const RAPACE = [0x382c20, 0x6e5c44];
 const CERVO = [0x7c5730, 0xb08a5a];
 const ANTILOPE = [0xb8834a, 0xe0b47a];
 const PESCE = [0x35657c, 0x8fb8cc];
+const LUPO = [0x3a3230, 0x6e6052];   // piu scuro e caldo dei sassi, o fra i massi non si distingue
+const ORSO = [0x4a3222, 0x7a5a3a];
+const ORSOBIANCO = [0xe6e4da, 0xf6f4ee];
+const CAMMELLO = [0xb08a58, 0xd8b888];
 
 export const FAUNA = {
   foresta: [
     { type: 'bird', count: 24, radius: 300, y: [28, 70], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'deer', count: 9, radius: 220, scale: [0.85, 1.15], tint: CERVO, speed: [1.1, 2.0], shadow: true },
+    { type: 'deer', count: 9, radius: 170, scale: [0.85, 1.15], tint: CERVO, speed: [1.1, 2.0], shadow: true },
+    { type: 'bear', count: 2, radius: 200, scale: [0.9, 1.15], tint: ORSO, speed: [0.6, 1.2], shadow: true },
     { type: 'butterfly', count: 60, radius: 42, y: [0.5, 2.4], scale: [0.8, 1.4], tint: [0xe8a83a, 0xf2d86a] }
   ],
   deserto: [
-    { type: 'raptor', count: 6, radius: 340, y: [60, 130], scale: [0.9, 1.3], tint: RAPACE }
+    { type: 'raptor', count: 6, radius: 340, y: [60, 130], scale: [0.9, 1.3], tint: RAPACE },
+    { type: 'camel', count: 6, radius: 300, herd: 22, scale: [0.9, 1.1], tint: CAMMELLO, speed: [0.8, 1.4], shadow: true }
+  ],
+  vulcanico: [
+    { type: 'bird', count: 8, radius: 320, y: [20, 70], scale: [0.9, 1.3], tint: GABBIANO }
   ],
   citta: [
     { type: 'bird', count: 26, radius: 260, y: [22, 55], scale: [0.8, 1.1], tint: [0x4a4e56, 0x8a8e96] }
@@ -2097,11 +2114,12 @@ export const FAUNA = {
     { type: 'butterfly', count: 26, radius: 40, y: [0.5, 2.2], scale: [0.9, 1.5], tint: [0x40b0d0, 0xf0f0a0] }
   ],
   artico: [
-    { type: 'bird', count: 10, radius: 300, y: [25, 60], scale: [0.9, 1.2], tint: GABBIANO }
+    { type: 'bird', count: 10, radius: 300, y: [25, 60], scale: [0.9, 1.2], tint: GABBIANO },
+    { type: 'bear', count: 2, radius: 280, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
   ],
   savana: [
     { type: 'bird', count: 18, radius: 320, y: [35, 90], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'antelope', count: 16, radius: 280, scale: [0.85, 1.15], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'antelope', count: 16, radius: 280, herd: 34, scale: [0.85, 1.15], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
     { type: 'butterfly', count: 26, radius: 40, y: [0.4, 1.8], scale: [0.8, 1.2], tint: [0xe0c050, 0xf0e090] }
   ],
   palude: [
@@ -2110,7 +2128,8 @@ export const FAUNA = {
     { type: 'butterfly', count: 46, radius: 40, y: [0.3, 1.6], scale: [0.8, 1.3], tint: [0x8ac04a, 0xd8e070] }
   ],
   canyonrosso: [
-    { type: 'raptor', count: 7, radius: 380, y: [80, 170], scale: [1.0, 1.4], tint: RAPACE }
+    { type: 'raptor', count: 7, radius: 380, y: [80, 170], scale: [1.0, 1.4], tint: RAPACE },
+    { type: 'antelope', count: 6, radius: 260, herd: 24, scale: [0.85, 1.1], tint: [0xa8784a, 0xd8b088], speed: [1.3, 2.4], shadow: true }
   ],
   giungla: [
     { type: 'bird', count: 34, radius: 240, y: [18, 48], scale: [0.8, 1.2], tint: [0x2a8a3a, 0xe06a2a] },
@@ -2133,13 +2152,23 @@ export const FAUNA = {
     { type: 'deer', count: 7, radius: 220, scale: [0.9, 1.2], tint: CERVO, speed: [1.1, 2.0], shadow: true }
   ],
   boscostregato: [
+    /* Il branco di lupi e la cosa che ci si aspetta da un bosco stregato; i
+       pipistrelli escono solo al buio. */
+    { type: 'wolf', count: 6, radius: 150, herd: 18, scale: [0.9, 1.15], tint: LUPO, speed: [1.3, 2.3], shadow: true },
+    { type: 'bat', count: 22, radius: 120, y: [2, 12], scale: [0.8, 1.3], tint: [0x2a2220, 0x4a3e38], night: true },
     { type: 'bird', count: 14, radius: 240, y: [18, 44], scale: [0.9, 1.3], tint: CORVO },
     { type: 'butterfly', count: 26, radius: 36, y: [0.4, 2.0], scale: [0.8, 1.3], tint: [0x2a3a2a, 0x6a8a5a] }
   ],
   boscofatato: [
-    { type: 'butterfly', count: 110, radius: 44, y: [0.4, 3.4], scale: [0.9, 1.8], tint: [0x60f0c0, 0xd0a0ff], emissive: 0.30 },
-    { type: 'jelly', count: 9, radius: 180, y: [10, 34], scale: [0.8, 1.8], tint: [0x70d8ff, 0xd8b0ff], emissive: 0.22 },
-    { type: 'bird', count: 14, radius: 240, y: [22, 55], scale: [0.8, 1.2], tint: [0x9ad0f0, 0xf0d8ff] }
+    /* Le creature magiche vanno incontrate, non intuite: le fate stanno ad
+       altezza d occhio e brillano, i fuochi fatui pure. I nove spiriti a
+       trenta metri di quota di prima non li aveva visti nessuno. */
+    { type: 'fairy', count: 24, radius: 60, y: [0.8, 3.2], scale: [1.0, 1.5], tint: [0xa0ffe0, 0xffb0f0], emissive: 0.9 },
+    { type: 'unicorn', count: 3, radius: 160, herd: 25, scale: [0.95, 1.08], tint: [0xf0eef6, 0xffffff], speed: [0.8, 1.5], shadow: true, emissive: 0.05 },
+    { type: 'jelly', count: 8, radius: 120, y: [2.5, 12], scale: [0.45, 1.0], tint: [0x80e0ff, 0xe0c0ff], emissive: 0.32 },
+    { type: 'jelly', count: 5, radius: 200, y: [12, 30], scale: [0.9, 1.8], tint: [0x70d8ff, 0xd8b0ff], emissive: 0.22 },
+    { type: 'butterfly', count: 70, radius: 44, y: [0.4, 3.4], scale: [0.9, 1.8], tint: [0x60f0c0, 0xd0a0ff], emissive: 0.30 },
+    { type: 'bird', count: 12, radius: 240, y: [22, 55], scale: [0.8, 1.2], tint: [0x9ad0f0, 0xf0d8ff] }
   ],
   isolecielo: [
     { type: 'bird', count: 40, radius: 360, y: [20, 90], scale: [0.9, 1.4], tint: GABBIANO },
@@ -2151,7 +2180,7 @@ export const FAUNA = {
   ],
   collegio: [
     { type: 'bird', count: 24, radius: 300, y: [26, 75], scale: [0.9, 1.3], tint: CORVO },
-    { type: 'deer', count: 9, radius: 230, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 2.0], shadow: true },
+    { type: 'deer', count: 9, radius: 190, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 2.0], shadow: true },
     { type: 'fish', count: 26, radius: 70, scale: [0.6, 1.1], tint: [0x2e4a3a, 0x7a8a5a] }
   ],
   pianetino: [
@@ -2159,19 +2188,27 @@ export const FAUNA = {
     { type: 'bird', count: 8, radius: 120, y: [14, 30], scale: [0.9, 1.2], tint: UCCELLO }
   ],
   pandora: [
+    /* Gli ikran a quattro ali sono la fauna di Pandora; uno solo, rosso e
+       grande il doppio, e il Toruk, e vola piu in alto di tutti. */
+    { type: 'banshee', count: 7, radius: 380, y: [40, 130], scale: [0.85, 1.15], tint: [0x2a8ab0, 0x40c0a0] },
+    { type: 'banshee', count: 1, radius: 520, y: [150, 260], scale: [2.0, 2.0], tint: [0xc03020, 0xe08a30] },
+    { type: 'hexapod', count: 5, radius: 260, herd: 22, scale: [0.9, 1.1], tint: [0x34405a, 0x6a7a94], speed: [1.2, 2.2], shadow: true },
     { type: 'jelly', count: 16, radius: 240, y: [12, 46], scale: [0.9, 2.2], tint: [0x40d0ff, 0xc060ff], emissive: 0.26 },
-    { type: 'butterfly', count: 100, radius: 46, y: [0.5, 3.6], scale: [1.0, 2.0], tint: [0x50f0d0, 0xff70d0], emissive: 0.30 },
-    { type: 'bird', count: 26, radius: 300, y: [26, 80], scale: [1.0, 1.6], tint: [0x2060a0, 0xe0a040] },
+    { type: 'butterfly', count: 80, radius: 46, y: [0.5, 3.6], scale: [1.0, 2.0], tint: [0x50f0d0, 0xff70d0], emissive: 0.30 },
+    { type: 'bird', count: 12, radius: 300, y: [26, 80], scale: [1.0, 1.6], tint: [0x2060a0, 0xe0a040] },
     { type: 'fish', count: 26, radius: 70, scale: [0.7, 1.3], tint: [0x30a0a0, 0xc0f0e0] }
   ],
   desolata: [
-    { type: 'raptor', count: 6, radius: 340, y: [55, 120], scale: [0.9, 1.3], tint: CORVO }
+    { type: 'raptor', count: 6, radius: 340, y: [55, 120], scale: [0.9, 1.3], tint: CORVO },
+    // cani inselvatichiti: quello che resta dopo
+    { type: 'wolf', count: 4, radius: 220, herd: 16, scale: [0.8, 1.0], tint: [0x8a7a5a, 0xb8a888], speed: [1.2, 2.2], shadow: true }
   ],
   neon: [
     { type: 'bird', count: 18, radius: 240, y: [30, 90], scale: [0.8, 1.1], tint: [0x2a2e36, 0x60646c] }
   ],
   ghiaccio: [
-    { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO }
+    { type: 'bird', count: 10, radius: 320, y: [40, 110], scale: [0.9, 1.3], tint: GABBIANO },
+    { type: 'bear', count: 2, radius: 300, scale: [1.0, 1.2], tint: ORSOBIANCO, speed: [0.6, 1.2], shadow: true }
   ],
   giza: [
     { type: 'raptor', count: 6, radius: 340, y: [50, 140], scale: [0.9, 1.3], tint: RAPACE },
@@ -2196,7 +2233,7 @@ export const FAUNA = {
   ],
   saharaverde: [
     { type: 'bird', count: 22, radius: 320, y: [30, 80], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'antelope', count: 22, radius: 300, scale: [0.85, 1.2], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
+    { type: 'antelope', count: 22, radius: 300, herd: 36, scale: [0.85, 1.2], tint: ANTILOPE, speed: [1.4, 2.6], shadow: true },
     { type: 'deer', count: 8, radius: 240, scale: [0.9, 1.2], tint: CERVO, speed: [1.0, 1.9], shadow: true },
     { type: 'butterfly', count: 40, radius: 44, y: [0.4, 2.0], scale: [0.9, 1.4], tint: [0xe0c050, 0xf4e890] }
   ],
@@ -2222,7 +2259,8 @@ export const FAUNA = {
     { type: 'butterfly', count: 90, radius: 44, y: [0.4, 2.2], scale: [0.9, 1.5], tint: [0xf0d850, 0xf8f8f0] }
   ],
   ombra: [
-    { type: 'raptor', count: 7, radius: 320, y: [50, 120], scale: [0.9, 1.4], tint: CORVO }
+    { type: 'raptor', count: 7, radius: 320, y: [50, 120], scale: [0.9, 1.4], tint: CORVO },
+    { type: 'warg', count: 5, radius: 240, herd: 22, scale: [0.9, 1.15], tint: [0x2a2420, 0x5a4a3a], speed: [1.3, 2.4], shadow: true }
   ],
   giurassico: [
     { type: 'sauropod', count: 5, radius: 420, scale: [0.85, 1.25], tint: [0x4e5a44, 0x8a9068], speed: [0.5, 1.0], shadow: true },
@@ -2232,7 +2270,8 @@ export const FAUNA = {
     { type: 'butterfly', count: 45, radius: 42, y: [0.4, 3.0], scale: [1.1, 2.0], tint: [0x50c060, 0xe8d060] }
   ],
   glaciale: [
-    { type: 'mammoth', count: 7, radius: 340, scale: [0.85, 1.20], tint: [0x5c4028, 0x8e6a44], speed: [0.7, 1.4], shadow: true },
+    { type: 'mammoth', count: 7, radius: 340, herd: 30, scale: [0.85, 1.20], tint: [0x5c4028, 0x8e6a44], speed: [0.7, 1.4], shadow: true },
+    { type: 'wolf', count: 5, radius: 300, herd: 20, scale: [0.95, 1.15], tint: [0x8a8a86, 0xd8d6d0], speed: [1.3, 2.4], shadow: true },
     { type: 'deer', count: 9, radius: 280, scale: [0.9, 1.2], tint: [0x6e6250, 0x9c8f76], speed: [1.2, 2.4], shadow: true },
     { type: 'bird', count: 9, radius: 300, y: [30, 80], scale: [0.9, 1.3], tint: [0x3a3e44, 0x7c8288] }
   ],
@@ -2260,11 +2299,15 @@ export const FAUNA = {
     { type: 'raptor', count: 6, radius: 340, y: [70, 160], scale: [1.0, 1.5], tint: CORVO }
   ],
   tatooine: [
-    { type: 'raptor', count: 5, radius: 340, y: [70, 150], scale: [0.9, 1.3], tint: RAPACE }
+    /* Bantha in carovana, dewback sparsi, e in cielo qualcosa che gira. */
+    { type: 'raptor', count: 5, radius: 340, y: [70, 150], scale: [0.9, 1.3], tint: RAPACE },
+    { type: 'bantha', count: 5, radius: 280, herd: 26, scale: [0.9, 1.1], tint: [0x6a5a48, 0x9a8a70], speed: [0.5, 1.0], shadow: true },
+    { type: 'dewback', count: 3, radius: 220, scale: [0.9, 1.15], tint: [0x5a6a3a, 0x8a9a5a], speed: [0.8, 1.5], shadow: true }
   ],
   sequoie: [
     { type: 'bird', count: 26, radius: 260, y: [26, 70], scale: [0.9, 1.3], tint: UCCELLO },
-    { type: 'deer', count: 8, radius: 230, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'deer', count: 8, radius: 170, scale: [0.85, 1.15], tint: CERVO, speed: [1.0, 1.9], shadow: true },
+    { type: 'bear', count: 2, radius: 200, scale: [0.95, 1.2], tint: ORSO, speed: [0.6, 1.2], shadow: true },
     { type: 'butterfly', count: 40, radius: 40, y: [0.4, 2.4], scale: [0.9, 1.5], tint: [0xe8a83a, 0xf2d86a] }
   ],
   lavanda: [

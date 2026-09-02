@@ -28,7 +28,7 @@ const ONLY = q.get('only');
 const POSE = parseFloat(q.get('pose') || '0');     // 0..1 fase del battito
 const TW = parseInt(q.get('w') || '300', 10), TH = parseInt(q.get('h') || '230', 10);
 
-const names = Object.keys(CREATURES).filter(n => !ONLY || n === ONLY);
+const names = Object.keys(CREATURES).filter(n => !ONLY || ONLY.split(',').includes(n));   // ?only=a,b,c
 const TUTTE_VISTE = [
   { name: 'fianco', dir: [1, 0.12, 0] },
   { name: 'alto', dir: [0.15, 1, 0.15] },

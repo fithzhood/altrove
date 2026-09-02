@@ -23,8 +23,13 @@ di "Marte".
 
 **Fauna**: stormi di uccelli a boids, branchi che pascolano, banchi di pesci,
 farfalle, meduse fluttuanti, la megafauna (sauropodi, teropodi, pterosauri,
-mammut) e gli hobbit della Contea. La CPU muove gli agenti, la GPU anima le
-membra.
+mammut), gli hobbit della Contea, e la fauna «firma» dei luoghi immaginari:
+lupi e pipistrelli nel bosco stregato, fate e unicorni in quello fatato, ikran
+a quattro ali ed esapodi su Pandora, bantha e dewback su Tatooine, warg nella
+Terra d'ombra. Nei luoghi reali orsi, cammelli, antilopi dove ci stanno. La
+CPU muove gli agenti, la GPU anima le membra. Restano senza animali solo i
+posti dove non c'è vita: Adeano, Marte, Luna, Titano, Oort, la Biblioteca, il
+buco nero.
 
 **Le firme dei luoghi**: un paesaggio si riconosce dal terreno e dalla flora,
 un *luogo* da cosa ci hanno costruito sopra. Le case hobbit della Contea
@@ -193,7 +198,7 @@ di nuvole, specchio salino, pozze termali.
 |---|---|
 | `altrove.html` / `altrove.css` | guscio e interfaccia |
 | `js/main.js` | stato, interfaccia, ciclo di disegno |
-| `js/biomes.js` | i 44 luoghi, gli 8 meteo, le stagioni, la fauna |
+| `js/biomes.js` | i 54 luoghi, gli 8 meteo, le stagioni, la tabella della fauna |
 | `js/world.js` | campo di altezze, pendenze, superfici |
 | `js/noise.js` | rumore condiviso CPU/GPU |
 | `js/sky.js` | scattering atmosferico, sole, luna, stelle, nuvole, aurora, buco nero |
@@ -212,7 +217,7 @@ di nuvole, specchio salino, pozze termali.
 | `js/castle.js` | il castello del collegio |
 | `js/controls.js` | camera in prima persona |
 | `dev/shots.js` | strumento di collaudo: molte vedute in un foglio solo |
-| `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro |
+| `dev/bestiario.html` | banco di prova dei modelli degli animali, fermi e su fondo neutro (`?only=wolf,bear&pose=0.15`) |
 | `dev/oggetti.html` | banco di prova delle geometrie di `props.js`, con un piano d'appoggio |
 | `window.__frame(n)` | orologio pilotabile: fa avanzare l'app di n fotogrammi anche a scheda nascosta |
 | `joystick.html` | pagina di diagnosi del controller (assi e tasti dal vivo) |
@@ -312,8 +317,57 @@ Invalid or unexpected token`), mentre `node --check` puo dire OK lo stesso.
 Per trovare il file colpevole: `node --input-type=module -e "await
 import('./js/fog.js')"`, o nel browser `import('/js/x.js?chk=...')` a uno a uno.
 
+### La fauna dei luoghi (build 28)
+
+Tutta la tabella sta in `FAUNA` in `js/biomes.js`; i modelli in `js/fauna.js`.
+Il quadrupede è uno solo, parametrico: muso (`snout`), orecchie (`ear`), gobba
+posizionabile (`hump`, `humpZ`, `humpPlain`), cresta dorsale (`spines`), corno
+(`horn`), corna a spirale (`horns: 'curl'`), criniera (`mane`), coda con
+rastremazione (`tailTaper`), sei zampe (`legs: 6` — il paio in più sta subito
+dietro le anteriori e riusa i loro codici, lo shader non cambia). Lupo, warg,
+orso, cammello, bantha, dewback, unicorno ed esapode sono tutti quel generatore
+con numeri diversi. Da zero solo pipistrello, fata e banshee.
+
+Tre comportamenti nuovi, dichiarati nella regola del bioma:
+
+- **`herd: R`** — branco. La specie ha un centro che vaga piano attorno al
+  giocatore (mai in acqua, mai su un pendio), e ogni individuo sceglie le mete
+  entro R metri da lì. Senza, dieci animali che si ignorano non sono un branco.
+- **`night: true`** — notturni. Escono con `nightness > 0.45`; all'alba la
+  meta dello stormo va a due raggi e mezzo dietro al giocatore, se ne vanno e
+  muoiono fuori raggio. Nessuno sparisce sotto gli occhi.
+- **Nessuno nasce davanti agli occhi.** `_spawn` scarta i candidati entro
+  0,75 R nel cono di vista (coseno > 0,45): vicino si nasce solo alle spalle.
+  Per questo i raggi dei boschi sono scesi a 150–190 m senza comparse.
+
+**Gli animali di terra evitano le pareti** (`slopeAt > 0,2`, cioè oltre ~37°),
+sia nascendo che scegliendo le mete: prima un dewback saliva una duna a
+picco e ci affondava con mezzo corpo.
+
+**Perché le creature magiche «non si incontravano».** Nel bosco fatato c'erano
+nove spiriti a 10–34 m di quota e cento farfalle di dodici centimetri: sotto
+una volta di alberi non li vedeva nessuno. Ora fate (trenta centimetri,
+emissivo 0,9), fuochi fatui a 2–12 m e unicorni stanno tutti ad altezza
+d'occhio, entro 60–160 m. La regola generale: un animale va messo dove il
+giocatore guarda, non dove sarebbe realistico.
+
+**Collaudo in-app senza pannello.** Lo screenshot del pannello scade sulla
+scena pesante. Il ripiego: `renderer.domElement.toDataURL()` subito dopo
+`__frame()` (stesso task, quindi il buffer c'è ancora) e un `fetch` POST
+`no-cors` verso un ricevitore Python locale che scrive il file. Per inquadrare
+un animale conviene scegliere il punto di ripresa fra dodici direzioni
+attorno a lui, scartando quelle bloccate, e stare 2–3 m più in alto: a terra
+si finisce dentro un masso.
+
 ## Trappole già pagate
 
+- **Un quadrupede con la testa a filo del corpo sembra una foca.** Il collo
+  deve portare la testa *davanti* al muso dell'ellissoide (`neckFwd` ≥ 0,6),
+  o a trenta metri lupo e cervo sono la stessa salsiccia con le zampe.
+- **`__frame` in blocchi: 900 fotogrammi superano i 45 s del tool.** Duecento
+  per chiamata; e la costruzione del mondo avanza solo se qualcuno chiama i
+  fotogrammi, quindi a pannello nascosto `__rebuild()` va spinto con un ciclo
+  `while (loading non hidden) __frame(1)`.
 - **`texture2D` non esiste in GLSL ES 3.00.** Nei materiali di three c'è un
   `#define` che lo traduce; nei RawShaderMaterial GLSL3 va aggiunto a mano.
 - **Sotto l'orizzonte il raggio entra nel pianeta** e la densità atmosferica

@@ -29,8 +29,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { mulberry32, clamp, lerp } from './noise.js?v=27';
-import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=27';
+import { mulberry32, clamp, lerp } from './noise.js?v=28';
+import { Builder, blob, blade, lin, mixc, scale as cscale } from './props.js?v=28';
 
 /* Codici delle parti: il vertex shader li legge come numeri, quindi devono
  * restare identici fra geometria e shader. */
@@ -326,16 +326,37 @@ function quadrupedMesh(rnd, tint, opts = {}) {
   const bodyR = H * (opts.bodyR || 0.19);
   const bodyL = H * (opts.bodyL || 0.58);
 
+  const mixp = (a, b, t) => [lerp(a[0], b[0], t), lerp(a[1], b[1], t), lerp(a[2], b[2], t)];
+  const rough = opts.rough !== undefined ? opts.rough : 0.08;
+
   R.begin(P_BODY);
-  blob(B, { cx: 0, cy: bodyY, cz: 0, rx: bodyR, ry: bodyR * 0.98, rz: bodyL, level: 1, rough: 0.08, rnd, colTop: body, colBot: dark, flex: 0 });
+  blob(B, { cx: 0, cy: bodyY, cz: 0, rx: bodyR, ry: bodyR * 0.98, rz: bodyL, level: 1, rough, rnd, colTop: body, colBot: dark, flex: 0 });
   if (opts.hump) {
+    /* La gobba: sulle spalle (mammut, orso, bantha) o in mezzo alla schiena
+     * (cammello). humpZ e la posizione lungo il corpo, negativo = davanti. */
     blob(B, {
-      cx: 0, cy: bodyY + bodyR * opts.hump, cz: -bodyL * 0.26,
-      rx: bodyR * 0.84, ry: bodyR * 0.62, rz: bodyL * 0.48, level: 0, rough: 0.17, rnd,
-      colTop: light, colBot: body, flex: 0
+      cx: 0, cy: bodyY + bodyR * opts.hump, cz: bodyL * (opts.humpZ !== undefined ? opts.humpZ : -0.26),
+      rx: bodyR * (opts.humpRx || 0.84), ry: bodyR * (opts.humpRy || 0.62), rz: bodyL * (opts.humpRz || 0.48),
+      level: 0, rough: 0.17 + rough, rnd,
+      colTop: opts.humpPlain ? body : light, colBot: opts.humpPlain ? dark : body, flex: 0
     });
   } else {
     blob(B, { cx: 0, cy: bodyY + H * 0.025, cz: bodyL * 0.40, rx: bodyR * 0.90, ry: bodyR * 0.84, rz: bodyL * 0.36, level: 0, rough: 0.10, rnd, colTop: body, colBot: dark, flex: 0 });
+  }
+  if (opts.spines) {
+    /* Cresta dorsale: una fila di punte lungo la schiena, come su un varano. */
+    const sc = cscale(tint, 0.42), scL = cscale(tint, 0.62);
+    const n = 9;
+    for (let i = 0; i < n; i++) {
+      const t = i / (n - 1);
+      const z = lerp(-bodyL * 0.62, bodyL * 0.88, t);
+      const u = z / bodyL;
+      const top = bodyY + bodyR * 0.98 * Math.sqrt(Math.max(0, 1 - u * u)) - H * 0.012;
+      const hs = H * opts.spines * (0.6 + 0.4 * Math.sin(t * Math.PI));
+      const a = [0, top, z - H * 0.022], b = [0, top, z + H * 0.022], c = [0, top + hs, z + H * 0.004];
+      B.tri(a, b, c, sc, sc, scL, 0, 0, 0);
+      B.tri(c, b, a, scL, sc, sc, 0, 0, 0);
+    }
   }
 
   const neckBase = [0, bodyY + H * 0.02, -bodyL * 0.60];
@@ -349,10 +370,58 @@ function quadrupedMesh(rnd, tint, opts = {}) {
     rx: H * (opts.headR || 0.066), ry: H * (opts.headR || 0.070), rz: H * (opts.headR || 0.066) * 1.9,
     level: 1, rough: 0.07, rnd, colTop: light, colBot: body, flex: 0
   });
-  for (const s of [-1, 1]) {
+  if (opts.snout) {
+    /* Il muso: e quello che distingue un lupo da un cervo a trenta metri. */
+    const hr = H * (opts.headR || 0.066);
+    blob(B, {
+      cx: 0, cy: headP[1] + H * 0.002, cz: headP[2] - H * 0.04 - hr * 1.9 * 0.62,
+      rx: hr * 0.66, ry: hr * 0.62, rz: hr * 1.05 * opts.snout,
+      level: 1, rough: 0.05, rnd, colTop: mixc(light, body, 0.4), colBot: dark, flex: 0
+    });
+  }
+  const ear = opts.ear !== undefined ? opts.ear : 1;
+  if (ear > 0) for (const s of [-1, 1]) {
     B.tri([s * H * 0.050, headP[1] + H * 0.065, headP[2] + H * 0.010],
-      [s * H * 0.110, headP[1] + H * 0.135, headP[2] + H * 0.045],
-      [s * H * 0.042, headP[1] + H * 0.105, headP[2] - H * 0.035], light, body, body, 0, 0, 0);
+      [s * H * (0.050 + 0.060 * ear), headP[1] + H * (0.065 + 0.070 * ear), headP[2] + H * 0.045],
+      [s * H * 0.042, headP[1] + H * (0.065 + 0.040 * ear), headP[2] - H * 0.035], light, body, body, 0, 0, 0);
+  }
+  if (opts.horn) {
+    // corno unico sulla fronte, dritto in avanti e in alto
+    const hc = opts.hornColor || lin(0xf0e6c8);
+    const base = [0, headP[1] + H * 0.062, headP[2] - H * 0.055];
+    const tip = [0, base[1] + H * opts.horn * 0.86, base[2] - H * opts.horn * 0.50];
+    chain(B, [base, mixp(base, tip, 0.5), tip], H * 0.017, H * 0.002, hc, mixc(hc, [1, 1, 1], 0.4), 5);
+  }
+  if (opts.horns === 'curl') {
+    /* Corna a spirale, come un ariete ma enormi: partono sopra la testa,
+     * girano all indietro, in basso, poi in avanti e in su, allargandosi. */
+    const hc = opts.hornColor || lin(0x8a7a60);
+    for (const s of [-1, 1]) {
+      const pts = [];
+      const c = [s * H * 0.085, headP[1] - H * 0.01, headP[2] + H * 0.03];
+      const r = H * 0.175;
+      for (let i = 0; i <= 9; i++) {
+        const t = i / 9, a = t * 4.4;
+        const rr = r * (1 - 0.28 * t);
+        pts.push([c[0] + s * (H * 0.02 + t * H * 0.17), c[1] + rr * Math.cos(a) + H * 0.05, c[2] + rr * Math.sin(a)]);
+      }
+      chain(B, pts, H * 0.046, H * 0.010, hc, cscale(hc, 0.7), 6);
+    }
+  }
+  if (opts.mane) {
+    // criniera: ciuffi separati lungo il collo, non una lama continua
+    const mc = opts.maneColor || light;
+    const mid = [0, bodyY + H * nk * 0.62, -bodyL * (0.60 + nf * 0.55)];
+    const nr = H * (opts.neckR || 0.072);
+    for (let i = 0; i <= 6; i++) {
+      const t = i / 6;
+      const p = t < 0.5 ? mixp(neckBase, mid, t * 2) : mixp(mid, headP, (t - 0.5) * 2);
+      blob(B, {
+        cx: 0, cy: p[1] + nr * 0.72, cz: p[2] + H * 0.01,
+        rx: H * 0.030, ry: H * 0.045, rz: H * 0.055,
+        level: 0, rough: 0.35, rnd, colTop: mc, colBot: cscale(mc, 0.7), flex: 0
+      });
+    }
   }
   if (opts.antlers) {
     const ac = lin(0x8a7050);
@@ -396,7 +465,7 @@ function quadrupedMesh(rnd, tint, opts = {}) {
         const t = i / n;
         pts.push([0, bodyY + H * (0.05 - t * tl * (tl > 0.5 ? 0.30 : 1.0)), bodyL * 0.86 + H * tl * t * (tl > 0.5 ? 1.6 : 0.6)]);
       }
-      chain(B, pts, H * (opts.tailR || 0.026), H * (opts.tailR || 0.026) * 0.18, body, light, 6);
+      chain(B, pts, H * (opts.tailR || 0.026), H * (opts.tailR || 0.026) * (opts.tailTaper || 0.18), body, light, 6);
     }
   }
 
@@ -413,6 +482,13 @@ function quadrupedMesh(rnd, tint, opts = {}) {
     [P_LEG_BL, P_SHIN_BL, -bodyR * 0.66, bodyL * 0.54],
     [P_LEG_BR, P_SHIN_BR, bodyR * 0.66, bodyL * 0.54]
   ];
+  if (opts.legs === 6) {
+    /* Esapode alla maniera di Pandora: il paio in piu sta subito dietro
+     * le anteriori e si muove con loro. Riusa i codici delle anteriori,
+     * quindi lo shader non deve sapere niente. */
+    legs.push([P_LEG_FL, P_SHIN_FL, -bodyR * 0.68, -bodyL * 0.18],
+              [P_LEG_FR, P_SHIN_FR, bodyR * 0.68, -bodyL * 0.18]);
+  }
   if (opts.bipedal) {
     for (const s of [-1, 1]) {
       R.begin(s < 0 ? P_LEG_FL : P_LEG_FR, [s * bodyR * 0.55, bodyY - bodyR * 0.10, -bodyL * 0.42]);
@@ -683,6 +759,140 @@ function hobbitMesh(rnd, tint) {
   return R.toGeometry();
 }
 
+/* ------------------------------------------------------------------ *
+ * PIPISTRELLO — membrana tesa fra tre dita, orecchie grandi
+ * ------------------------------------------------------------------ */
+function batMesh(rnd, tint) {
+  const R = new Rig(0.006, 0);
+  const B = R.B;
+  const S = 1.0;
+  const body = tint, dark = cscale(tint, 0.45), light = mixc(tint, [1, 1, 1], 0.18);
+  const memb = cscale(mixc(tint, lin(0x3a2a2a), 0.5), 0.9);
+  R.begin(P_BODY);
+  blob(B, { cx: 0, cy: 0, cz: S * 0.01, rx: S * 0.042, ry: S * 0.040, rz: S * 0.075, level: 1, rough: 0.12, rnd, colTop: body, colBot: dark, flex: 0 });
+  R.begin(P_HEAD, [0, S * 0.005, -S * 0.06]);
+  blob(B, { cx: 0, cy: S * 0.010, cz: -S * 0.085, rx: S * 0.030, ry: S * 0.028, rz: S * 0.034, level: 1, rough: 0.08, rnd, colTop: light, colBot: body, flex: 0 });
+  for (const s of [-1, 1]) {
+    B.tri([s * S * 0.012, S * 0.030, -S * 0.085], [s * S * 0.032, S * 0.075, -S * 0.080], [s * S * 0.030, S * 0.026, -S * 0.100], light, body, body, 0, 0, 0);
+    B.tri([s * S * 0.030, S * 0.026, -S * 0.100], [s * S * 0.032, S * 0.075, -S * 0.080], [s * S * 0.012, S * 0.030, -S * 0.085], body, body, light, 0, 0, 0);
+  }
+  for (const s of [-1, 1]) chain(B, [[s * S * 0.02, -S * 0.01, S * 0.07], [s * S * 0.035, -S * 0.03, S * 0.12]], S * 0.006, S * 0.003, dark, dark, 4);
+  for (const side of [-1, 1]) {
+    const sh = [side * S * 0.03, S * 0.012, -S * 0.02];
+    R.begin(side < 0 ? P_WING_L : P_WING_R, sh);
+    const wrist = [side * S * 0.24, S * 0.05, -S * 0.06];
+    const f1 = [side * S * 0.50, S * 0.02, -S * 0.02];
+    const f2 = [side * S * 0.44, S * 0.02, S * 0.10];
+    const f3 = [side * S * 0.29, S * 0.012, S * 0.18];
+    const hip = [side * S * 0.03, 0, S * 0.11];
+    const mid = (a, b, k) => [lerp(a[0], b[0], k), lerp(a[1], b[1], k), lerp(a[2], b[2], k)];
+    // il bordo d uscita rientra verso il polso fra un dito e l altro: e lo smerlo a fare il pipistrello
+    const notch = mid(mid(f3, f2, 0.5), wrist, 0.30);
+    const notch2 = mid(mid(f2, f1, 0.5), wrist, 0.22);
+    membrane(B, [sh, wrist, mid(wrist, f1, 0.55), f1], [hip, f3, notch, notch2], memb, cscale(memb, 0.8), S * 0.006);
+    B.tri(f1, notch2, f2, memb, memb, cscale(memb, 0.8), 0, 0, 0);
+    B.tri(f2, notch2, f1, cscale(memb, 0.8), memb, memb, 0, 0, 0);
+    chain(B, [sh, wrist, f1], S * 0.010, S * 0.003, body, dark, 4);
+    chain(B, [wrist, f2], S * 0.005, S * 0.002, dark, dark, 4);
+    chain(B, [wrist, f3], S * 0.005, S * 0.002, dark, dark, 4);
+  }
+  return R.toGeometry();
+}
+
+/* ------------------------------------------------------------------ *
+ * FATA — un corpicino in piedi con due paia di ali. Quello che si vede da
+ * lontano e un punto di luce che sfarfalla: le ali e l emissivo fanno tutto.
+ * ------------------------------------------------------------------ */
+function fairyMesh(rnd, tint) {
+  const R = new Rig(0.010, 0.004);
+  const B = R.B;
+  const H = 1.0;
+  const dress = tint, dressD = cscale(tint, 0.55);
+  const pelle = lin(0xf2dcc8), pelleD = cscale(pelle, 0.78);
+  const capelli = mixc(tint, lin(0xf8f0d0), 0.6);
+  const wing = mixc(tint, [1, 1, 1], 0.55);
+  R.begin(P_BODY);
+  tube(B, [0, H * 0.50, 0], [0, H * 0.22, 0], H * 0.075, H * 0.15, dress, dressD, 8);
+  blob(B, { cx: 0, cy: H * 0.56, cz: 0, rx: H * 0.085, ry: H * 0.11, rz: H * 0.07, level: 1, rough: 0.05, rnd, colTop: dress, colBot: dressD, flex: 0 });
+  for (const s of [-1, 1]) tube(B, [s * H * 0.04, H * 0.26, 0], [s * H * 0.045, 0, -H * 0.01], H * 0.03, H * 0.022, pelle, pelleD, 5);
+  for (const s of [-1, 1]) chain(B, [[s * H * 0.07, H * 0.63, 0], [s * H * 0.17, H * 0.52, -H * 0.05]], H * 0.026, H * 0.016, pelle, pelleD, 5);
+  R.begin(P_HEAD, [0, H * 0.70, 0]);
+  tube(B, [0, H * 0.66, 0], [0, H * 0.72, 0], H * 0.03, H * 0.026, pelleD, pelle, 6);
+  blob(B, { cx: 0, cy: H * 0.82, cz: 0, rx: H * 0.10, ry: H * 0.105, rz: H * 0.10, level: 1, rough: 0.04, rnd, colTop: pelle, colBot: pelleD, flex: 0 });
+  blob(B, { cx: 0, cy: H * 0.87, cz: H * 0.02, rx: H * 0.105, ry: H * 0.085, rz: H * 0.10, level: 1, rough: 0.2, rnd, colTop: capelli, colBot: cscale(capelli, 0.7), flex: 0 });
+  for (const s of [-1, 1]) {
+    R.begin(s < 0 ? P_WING_L : P_WING_R, [0, H * 0.62, H * 0.06]);
+    feather(B, [s * H * 0.01, H * 0.62, H * 0.06], [s * H * 0.46, H * 0.98, H * 0.12], H * 0.11, wing, mixc(wing, [1, 1, 1], 0.5));
+    feather(B, [s * H * 0.01, H * 0.58, H * 0.07], [s * H * 0.36, H * 0.42, H * 0.14], H * 0.085, wing, mixc(wing, [1, 1, 1], 0.5));
+  }
+  return R.toGeometry();
+}
+
+/* ------------------------------------------------------------------ *
+ * BANSHEE (ikran) — due paia di ali a membrana, collo lungo, cresta, coda
+ * con la pinna. Il paio posteriore usa gli stessi codici del paio davanti e
+ * batte con lui; e la sagoma a quattro ali a dire «Pandora» da lontano.
+ * ------------------------------------------------------------------ */
+function bansheeMesh(rnd, tint) {
+  const R = new Rig(0.004, 0);
+  const B = R.B;
+  const S = 1.0;
+  const body = tint, dark = cscale(tint, 0.45), light = mixc(tint, [1, 1, 1], 0.28);
+  // la membrana e calda, in contrasto col corpo: le ali degli ikran sono a strisce
+  const memb = mixc(tint, lin(0xe07a30), 0.55);
+  const membB = mixc(tint, lin(0x8a40a0), 0.45);
+
+  R.begin(P_BODY);
+  chain(B, [[0, S * 0.010, -S * 0.17], [0, S * 0.022, -S * 0.04], [0, S * 0.014, S * 0.10], [0, S * 0.004, S * 0.16]],
+    S * 0.028, S * 0.014, light, body, 8);
+
+  R.begin(P_HEAD, [0, S * 0.014, -S * 0.16]);
+  chain(B, [[0, S * 0.014, -S * 0.16], [0, S * 0.034, -S * 0.25], [0, S * 0.036, -S * 0.31]], S * 0.024, S * 0.017, body, light, 6);
+  blob(B, { cx: 0, cy: S * 0.038, cz: -S * 0.345, rx: S * 0.022, ry: S * 0.024, rz: S * 0.045, level: 1, rough: 0.05, rnd, colTop: light, colBot: body, flex: 0 });
+  const cr = [[0, S * 0.052, -S * 0.36], [0, S * 0.115, -S * 0.31], [0, S * 0.10, -S * 0.25], [0, S * 0.048, -S * 0.30]];
+  B.quad(cr[0], cr[1], cr[2], cr[3], dark, light, body, dark, 0, 0, 0, 0);
+  B.quad(cr[3], cr[2], cr[1], cr[0], dark, body, light, dark, 0, 0, 0, 0);
+  chain(B, [[0, S * 0.028, -S * 0.37], [0, S * 0.020, -S * 0.44]], S * 0.016, S * 0.004, body, dark, 5);
+
+  R.begin(P_TAIL, [0, S * 0.004, S * 0.16]);
+  chain(B, [[0, S * 0.004, S * 0.16], [0, -S * 0.002, S * 0.32], [0, -S * 0.008, S * 0.46]], S * 0.013, S * 0.004, body, dark, 5);
+  const finC = mixc(memb, dark, 0.3);
+  B.tri([0, -S * 0.006, S * 0.37], [0, S * 0.045, S * 0.47], [0, -S * 0.055, S * 0.47], finC, memb, memb, 0, 0, 0);
+  B.tri([0, -S * 0.055, S * 0.47], [0, S * 0.045, S * 0.47], [0, -S * 0.006, S * 0.37], memb, memb, finC, 0, 0, 0);
+
+  for (const side of [-1, 1]) {
+    R.begin(side < 0 ? P_WING_L : P_WING_R, [side * S * 0.026, S * 0.016, -S * 0.07]);
+    const half = S * 0.5;
+    const st = [0.05, 0.30, 0.60, 0.99];
+    const sweep = [-0.02, -0.05, -0.03, 0.05].map(v => v * S);
+    const rise = [0.012, 0.036, 0.034, 0.006].map(v => v * S);
+    const lead = [], trail = [];
+    for (let i = 0; i < st.length; i++) {
+      const x = side * half * st[i];
+      lead.push([x, rise[i], -S * 0.07 + sweep[i]]);
+      trail.push([x, rise[i] * 0.6, lerp(S * 0.12, S * 0.02, st[i])]);
+    }
+    membrane(B, lead, trail, memb, membB, S * 0.008);
+    chain(B, lead, S * 0.012, S * 0.004, body, dark, 5);
+    for (let k = 1; k <= 2; k++) {
+      const t = k / 3;
+      const b = [lerp(lead[3][0], trail[3][0], t * 0.9), lerp(lead[3][1], trail[3][1], t * 0.9), lerp(lead[3][2], trail[3][2], t * 0.9)];
+      chain(B, [lead[1], b], S * 0.006, S * 0.002, dark, dark, 4);
+    }
+    R.begin(side < 0 ? P_WING_L : P_WING_R, [side * S * 0.024, S * 0.010, S * 0.08]);
+    const st2 = [0.05, 0.40, 0.99], half2 = S * 0.27;
+    const lead2 = [], trail2 = [];
+    for (let i = 0; i < st2.length; i++) {
+      const x = side * half2 * st2[i];
+      lead2.push([x, S * 0.010 + S * 0.020 * Math.sin(st2[i] * 3.1), S * 0.08 - S * 0.03 * st2[i]]);
+      trail2.push([x, S * 0.006, lerp(S * 0.20, S * 0.10, st2[i])]);
+    }
+    membrane(B, lead2, trail2, membB, memb, S * 0.005);
+    chain(B, lead2, S * 0.009, S * 0.003, body, dark, 5);
+  }
+  return R.toGeometry();
+}
+
 export const CREATURES = {
   bird: { build: birdMesh, size: 0.50, axis: 'span', mode: 'flock', flap: 0.72, gait: 9.5, speed: [6, 10], glideBias: 0.18 },
   raptor: { build: raptorMesh, size: 1.60, axis: 'span', mode: 'flock', flap: 0.46, gait: 2.0, speed: [7, 12], glideBias: 0.82 },
@@ -725,7 +935,71 @@ export const CREATURES = {
       trunk: true, hump: 0.82, neck: 0.20, neckFwd: 0.26, neckR: 0.108, headR: 0.125,
       bodyR: 0.27, bodyL: 0.44, bodyY: 0.60, legR: 0.088, knee: 0.30, bob: 0.012, sway: 0.012
     }), size: 3.5, axis: 'h', mode: 'ground', flap: 0.22, gait: 1.9
-  }
+  },
+
+  /* Un lupo e basso, lungo, col muso in avanti e la coda che pende: e la
+   * postura, piu della taglia, a distinguerlo da un cervo. Trotta. */
+  wolf: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      neck: 0.13, neckFwd: 0.64, neckR: 0.064, headR: 0.062, snout: 1.1, ear: 1.25,
+      bodyY: 0.60, bodyR: 0.15, bodyL: 0.58, legR: 0.038, knee: 0.31, tail: 0.36, tailR: 0.060, tailTaper: 0.45, bob: 0.016, sway: 0.005
+    }), size: 0.90, axis: 'h', mode: 'ground', flap: 0.62, gait: 5.2, speed: [1.3, 2.3]
+  },
+  warg: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      neck: 0.10, neckFwd: 0.64, neckR: 0.084, headR: 0.078, snout: 1.2, ear: 0.9, rough: 0.16,
+      bodyY: 0.60, bodyR: 0.19, bodyL: 0.58, legR: 0.050, knee: 0.30, tail: 0.32, tailR: 0.055, tailTaper: 0.4, bob: 0.020, sway: 0.008, legDark: 0.55
+    }), size: 1.5, axis: 'h', mode: 'ground', flap: 0.58, gait: 4.2, speed: [1.3, 2.4]
+  },
+  bear: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      hump: 0.40, humpZ: -0.30, humpRx: 0.9, humpRy: 0.55, humpRz: 0.5, humpPlain: true,
+      neck: 0.05, neckFwd: 0.42, neckR: 0.105, headR: 0.078, snout: 0.9, ear: 0.55,
+      bodyY: 0.56, bodyR: 0.245, bodyL: 0.56, legR: 0.078, knee: 0.27, tail: 0.02, bob: 0.014, sway: 0.016, rough: 0.14, legDark: 0.62
+    }), size: 1.35, axis: 'h', mode: 'ground', flap: 0.42, gait: 3.4, speed: [0.7, 1.3]
+  },
+  camel: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      hump: 1.15, humpZ: 0.02, humpRx: 0.72, humpRy: 0.80, humpRz: 0.42, humpPlain: true,
+      neck: 0.36, neckFwd: 0.50, neckR: 0.062, headR: 0.052, snout: 0.9, ear: 0.6,
+      bodyY: 0.66, bodyR: 0.155, bodyL: 0.46, legR: 0.036, knee: 0.40, tail: 0.28, tailR: 0.018, bob: 0.010, sway: 0.022
+    }), size: 2.15, axis: 'h', mode: 'ground', flap: 0.50, gait: 2.6, speed: [0.9, 1.5]
+  },
+  /* Bantha: un bue lanoso alto tre metri con le corna a spirale. */
+  bantha: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      hump: 0.55, humpZ: -0.22, humpRx: 0.95, humpRy: 0.6, humpRz: 0.6, rough: 0.2, humpPlain: true,
+      neck: 0.02, neckFwd: 0.36, neckR: 0.13, headR: 0.10, snout: 0.7, ear: 0.4, horns: 'curl',
+      bodyY: 0.55, bodyR: 0.27, bodyL: 0.50, legR: 0.085, knee: 0.27, tail: 0.30, tailR: 0.03, bob: 0.010, sway: 0.014, legDark: 0.6
+    }), size: 3.0, axis: 'h', mode: 'ground', flap: 0.30, gait: 1.9, speed: [0.5, 1.0]
+  },
+  /* Dewback: un varano grosso come un cavallo, cresta sulla schiena. */
+  dewback: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      neck: -0.02, neckFwd: 0.50, neckR: 0.085, headR: 0.072, snout: 1.2, ear: 0, spines: 0.06,
+      bodyY: 0.44, bodyR: 0.20, bodyL: 0.60, legR: 0.055, knee: 0.22, tail: 0.52, tailR: 0.085, tailTaper: 0.25, bob: 0.005, sway: 0.024, rough: 0.12, legDark: 0.7
+    }), size: 1.8, axis: 'h', mode: 'ground', flap: 0.48, gait: 2.8, speed: [0.8, 1.5]
+  },
+  unicorn: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      neck: 0.40, neckFwd: 0.36, neckR: 0.070, headR: 0.058, snout: 0.9, ear: 0.9, horn: 0.30, mane: true,
+      bodyY: 0.62, bodyR: 0.165, bodyL: 0.54, legR: 0.036, knee: 0.33, tail: 0.46, tailR: 0.050, bob: 0.014, sway: 0.004, legDark: 0.85
+    }), size: 2.0, axis: 'h', mode: 'ground', flap: 0.58, gait: 4.0, speed: [0.9, 1.7]
+  },
+  /* Esapode di Pandora (il «cavallo» a sei zampe). */
+  hexapod: {
+    build: (r, t) => quadrupedMesh(r, t, {
+      legs: 6, neck: 0.34, neckFwd: 0.52, neckR: 0.075, headR: 0.06, snout: 1.3, ear: 0.5,
+      bodyY: 0.60, bodyR: 0.17, bodyL: 0.62, legR: 0.040, knee: 0.33, tail: 0.30, tailR: 0.030, bob: 0.012, sway: 0.006
+    }), size: 3.2, axis: 'h', mode: 'ground', flap: 0.55, gait: 3.2, speed: [1.2, 2.2]
+  },
+
+  banshee: { build: bansheeMesh, size: 12.0, axis: 'span', mode: 'flock', flap: 0.30, gait: 1.25, speed: [10, 16], glideBias: 0.80, sep: 30 },
+  /* Un pipistrello batte sempre e cambia rotta di continuo: jitter alto. */
+  bat: { build: batMesh, size: 0.32, axis: 'span', mode: 'flock', flap: 0.95, gait: 12.0, speed: [3.5, 6.5], glideBias: 0.05, sep: 1.2, jitter: 4 },
+  /* Trenta centimetri: piu di una fata «vera», ma a venti metri i ventiquattro
+   * di prima erano un puntino. */
+  fairy: { build: fairyMesh, size: 0.32, axis: 'h', mode: 'flutter', flap: 0.85, gait: 16.0 }
 };
 
 /* ------------------------------------------------------------------ *
@@ -754,6 +1028,9 @@ export class Fauna {
     this._e = new THREE.Euler();
     this._p = new THREE.Vector3();
     this._s = new THREE.Vector3();
+    this._fwd = new THREE.Vector3();
+    this._fx = 0; this._fz = 1;   // direzione di vista, orizzontale
+    this.night = 0;
     this._build(opts);
   }
 
@@ -936,11 +1213,20 @@ export class Fauna {
     this.uniforms.uTime.value = time;
     dt = Math.min(dt, 0.05);
     const cx = camera.position.x, cz = camera.position.z;
+    /* Dove guarda il giocatore: serve a far nascere gli animali alle sue
+     * spalle, mai davanti agli occhi. */
+    camera.getWorldDirection(this._fwd);
+    const fl = Math.hypot(this._fwd.x, this._fwd.z) || 1;
+    this._fx = this._fwd.x / fl; this._fz = this._fwd.z / fl;
     let total = 0;
 
     for (const K of this.kinds) {
       const mode = K.rule.mode || K.def.mode;
-      for (const a of K.agents) if (!a.alive) this._spawn(a, K, cx, cz, mode, waterLevel);
+      // i notturni escono al buio e se ne vanno all alba
+      const active = !K.rule.night || this.night > 0.45;
+      K.leaving = !active;
+      if (K.rule.herd && active) this._herd(K, dt, cx, cz, waterLevel);
+      if (active) for (const a of K.agents) if (!a.alive) this._spawn(a, K, cx, cz, mode, waterLevel);
       if (mode === 'flock') this._flock(K, dt, time, cx, cz);
       else for (const a of K.agents) { if (a.alive) this._simple(a, K, mode, dt, time, waterLevel); }
 
@@ -954,6 +1240,45 @@ export class Fauna {
     this.stats.agents = total;
   }
 
+  /* Branco. Il gruppo ha un centro che vaga lentamente attorno al giocatore;
+   * ogni individuo sceglie le proprie mete vicino a quel centro. Basta questo
+   * perche un branco sembri un branco e non dieci animali che si ignorano. */
+  _herd(K, dt, cx, cz, waterLevel) {
+    const R = K.rule.radius;
+    const world = this.world;
+    const wl = (waterLevel !== null && waterLevel !== undefined) ? waterLevel : -1e9;
+    const dc = K.hx === undefined ? Infinity : Math.hypot(K.hx - cx, K.hz - cz);
+    if (dc > R * 0.95) {
+      // (ri)collocazione: dietro al giocatore se possibile, mai nell acqua
+      let best = null, bestScore = -Infinity;
+      for (let i = 0; i < 12; i++) {
+        const ang = Math.random() * 6.28318, rr = (0.30 + Math.random() * 0.35) * R;
+        const x = cx + Math.cos(ang) * rr, z = cz + Math.sin(ang) * rr;
+        const h = world.height(x, z);
+        if (world.hasWater && h < wl + 0.4) continue;
+        if (world.slopeAt && world.slopeAt(x, z, 4) > 0.15) continue;
+        const dot = Math.cos(ang) * this._fx + Math.sin(ang) * this._fz;
+        const score = -dot + Math.random() * 0.3;
+        if (score > bestScore) { bestScore = score; best = [x, z]; }
+      }
+      if (!best) return;
+      K.hx = best[0]; K.hz = best[1];
+      K.htx = K.hx; K.htz = K.hz; K.htimer = 0;
+      for (const a of K.agents) a.alive = false;
+    }
+    K.htimer = (K.htimer || 0) - dt;
+    if (K.htimer <= 0) {
+      K.htimer = 30 + Math.random() * 50;
+      const ang = Math.random() * 6.28318, rr = (0.25 + Math.random() * 0.45) * R;
+      K.htx = cx + Math.cos(ang) * rr; K.htz = cz + Math.sin(ang) * rr;
+    }
+    const dx = K.htx - K.hx, dz = K.htz - K.hz, d = Math.hypot(dx, dz);
+    if (d > 1) {
+      const st = Math.min(d, (K.rule.herdSpeed || 0.35) * dt);
+      K.hx += dx / d * st; K.hz += dz / d * st;
+    }
+  }
+
   /* Boids. Tre regole e nient altro: stai lontano dai vicini, vai nella loro
    * stessa direzione, resta vicino al gruppo. La forma dello stormo, le virate
    * collettive e le code che si staccano vengono da se. */
@@ -961,13 +1286,21 @@ export class Fauna {
     const rule = K.rule, def = K.def;
     const list = K.agents;
     const spd = rule.speed || def.speed || [6, 10];
-    const sepR = rule.sep || def.size * 4.0;
+    const sepR = rule.sep || def.sep || def.size * 4.0;
     const sepR2 = sepR * sepR;
     const nearR2 = (sepR * 5) * (sepR * 5);
+    const jit = def.jitter || 1;
 
     K.wa = (K.wa || 0) + dt * 0.13;
-    const tx = camX + Math.cos(K.wa * 0.8) * rule.radius * 0.34 + Math.cos(K.wa * 2.3) * rule.radius * 0.12;
-    const tz = camZ + Math.sin(K.wa * 0.62) * rule.radius * 0.34 + Math.sin(K.wa * 1.9) * rule.radius * 0.12;
+    let tx, tz;
+    if (K.leaving) {
+      // all alba i notturni se ne vanno: la meta e lontana, dietro al giocatore
+      tx = camX - this._fx * rule.radius * 2.5;
+      tz = camZ - this._fz * rule.radius * 2.5;
+    } else {
+      tx = camX + Math.cos(K.wa * 0.8) * rule.radius * 0.34 + Math.cos(K.wa * 2.3) * rule.radius * 0.12;
+      tz = camZ + Math.sin(K.wa * 0.62) * rule.radius * 0.34 + Math.sin(K.wa * 1.9) * rule.radius * 0.12;
+    }
 
     for (const a of list) {
       if (!a.alive) continue;
@@ -993,10 +1326,10 @@ export class Fauna {
       fz += (tz - a.z) * 0.10;
       const wantY = this.world.height(a.x, a.z) + lerp(rule.y[0], rule.y[1], a.hOff);
       fy += (wantY - a.y) * 0.60;
-      // un po di capriccio, se no volano su binari
-      fx += Math.sin(time * 0.7 + a.phase) * 1.8;
-      fz += Math.cos(time * 0.53 + a.phase * 1.7) * 1.8;
-      fy += Math.sin(time * 0.9 + a.phase * 2.1) * 0.9;
+      // un po di capriccio, se no volano su binari (un pipistrello, molto)
+      fx += Math.sin(time * 0.7 * jit + a.phase) * 1.8 * jit;
+      fz += Math.cos(time * 0.53 * jit + a.phase * 1.7) * 1.8 * jit;
+      fy += Math.sin(time * 0.9 * jit + a.phase * 2.1) * 0.9 * jit;
 
       a.vx += fx * dt; a.vy += fy * dt; a.vz += fz * dt;
       const sp = Math.hypot(a.vx, a.vy, a.vz) || 1e-4;
@@ -1052,9 +1385,21 @@ export class Fauna {
         a.bank *= Math.exp(-dt * 3);
         if (a.timer <= 0) {
           a.state = 0; a.timer = 10 + Math.random() * 16;
-          const ang = Math.random() * 6.28318, rr = 10 + Math.random() * 55;
-          a.tx = a.x + Math.cos(ang) * rr;
-          a.tz = a.z + Math.sin(ang) * rr;
+          /* Fra sei mete possibili si tiene la prima che non sta su un pendio
+           * ripido: gli animali girano attorno alle pareti invece di salirci. */
+          for (let k = 0; k < 6; k++) {
+            const ang = Math.random() * 6.28318;
+            if (rule.herd && K.hx !== undefined) {
+              const rr = Math.sqrt(Math.random()) * rule.herd;
+              a.tx = K.hx + Math.cos(ang) * rr;
+              a.tz = K.hz + Math.sin(ang) * rr;
+            } else {
+              const rr = 10 + Math.random() * 55;
+              a.tx = a.x + Math.cos(ang) * rr;
+              a.tz = a.z + Math.sin(ang) * rr;
+            }
+            if (!world.slopeAt || world.slopeAt(a.tx, a.tz, 2) <= 0.20) break;
+          }
         }
       }
       const g = world.height(a.x, a.z);
@@ -1100,11 +1445,22 @@ export class Fauna {
   _spawn(a, K, cx, cz, mode, waterLevel) {
     const world = this.world;
     const R = K.rule.radius;
+    const herd = K.rule.herd && K.hx !== undefined;
     for (let att = 0; att < 24; att++) {
       const ang = Math.random() * 6.28318;
-      const rr = (mode === 'flock' || mode === 'drift') ? (0.15 + Math.random() * 0.6) * R
-        : (0.30 + Math.random() * 0.65) * R;
-      const x = cx + Math.cos(ang) * rr, z = cz + Math.sin(ang) * rr;
+      let x, z;
+      if (herd) {
+        const rr = Math.sqrt(Math.random()) * K.rule.herd * 1.1;
+        x = K.hx + Math.cos(ang) * rr; z = K.hz + Math.sin(ang) * rr;
+      } else {
+        const rr = (mode === 'flock' || mode === 'drift') ? (0.15 + Math.random() * 0.6) * R
+          : (0.30 + Math.random() * 0.65) * R;
+        x = cx + Math.cos(ang) * rr; z = cz + Math.sin(ang) * rr;
+      }
+      /* Mai davanti agli occhi: un animale che compare dal nulla a trenta
+       * metri rovina tutto. Vicino si nasce solo alle spalle del giocatore. */
+      const ddx = x - cx, ddz = z - cz, dd = Math.hypot(ddx, ddz) || 1;
+      if (dd < R * 0.75 && (ddx * this._fx + ddz * this._fz) / dd > 0.45) continue;
       const h = world.height(x, z);
       const wl = (waterLevel !== null && waterLevel !== undefined) ? waterLevel : -1e9;
 
@@ -1113,8 +1469,10 @@ export class Fauna {
         a.cx = x; a.cz = z;
         a.orbR = 4 + Math.random() * 16;
         a.orbA = Math.random() * 6.28318;
-      } else if (mode === 'ground' && world.hasWater && h < wl + 0.4) {
-        continue;
+      } else if (mode === 'ground') {
+        if (world.hasWater && h < wl + 0.4) continue;
+        // un quadrupede non nasce su una parete: ci affonderebbe con meta corpo
+        if (world.slopeAt && world.slopeAt(x, z, 2) > 0.20) continue;
       }
       if (world.blocked && world.blocked(x, z)) continue;
 
@@ -1171,6 +1529,7 @@ export class Fauna {
   }
 
   setSnow(v, color) { this.uniforms.uSnow.value = v; if (color) this.uniforms.uSnowColor.value.copy(color); }
+  setNight(v) { this.night = v || 0; }
   setWetness(v) { this.uniforms.uWetness.value = v; }
 
   dispose() {

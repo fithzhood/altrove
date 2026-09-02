@@ -11,9 +11,9 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { mulberry32 } from './noise.js?v=27';
-import { GLSL_NOISE } from './noise.js?v=27';
-import { lin } from './props.js?v=27';
+import { mulberry32 } from './noise.js?v=28';
+import { GLSL_NOISE } from './noise.js?v=28';
+import { lin } from './props.js?v=28';
 
 /* Costruttore: prismi a N lati, scatole, tetti conici e piramidali.
  * kind: 0 muro con finestre, 1 tetto, 2 pietra liscia, 3 emissivo */
