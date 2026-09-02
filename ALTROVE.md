@@ -230,6 +230,57 @@ C salva immagine · Esc liberare il mouse
 
 ---
 
+### La volta della Terra cava (build 27)
+
+Nella Terra cava sopra la testa c e l altro emisfero, e volando verso il
+sole centrale lo si raggiunge. Sta tutto in `js/volta.js`, acceso dal campo
+`volta: { height: 1200, offset: 20000 }` del bioma.
+
+- **La volta** e una griglia grossolana (113x113 vertici, 2 km di lato, che
+  segue la camera ricampionandosi 6 righe per fotogramma) del terreno di
+  un altra regione dello stesso mondo, specchiata: il punto (x, z) della
+  volta mostra `height(OFF - x, z)` appeso a quota `H - h`. Usa il
+  materiale del terreno (`terrain._makeMaterial`, stessi colori e
+  screziature) con `userData.altFlip = -1`: la curvatura ha segno opposto
+  e la volta si piega verso il basso mentre il pavimento si piega verso
+  l alto. Si incontrano a meta quota, a 848 m in orizzontale, dove
+  `farFade: 900` e la nebbia chiudono la cucitura.
+- **La curvatura ora e in spazio-mondo** (`fog.js`, `water.js`): il
+  vertice scende o sale con il quadrato della distanza ORIZZONTALE dalla
+  camera, lungo la verticale del mondo. Prima piegava lungo l asse di
+  vista e guardando in su o in giu il mondo si storceva. Vale anche per il
+  pianetino.
+- **La dissolvenza al confine e orizzontale** (`fadeHorizontal: 1` dal
+  bioma, uniform `altFadeHorizontal`): in linea d aria la volta a 1200 m
+  sarebbe gia sfumata via; in orizzontale sta a zero.
+- **Le normali della volta guardano in su** e l avvolgimento delle facce in
+  giu: la luce del sole centrale arriva alla volta da sotto, e per una
+  superficie vista dal lato opposto n·l e lo stesso di (-n)·(-l). Cosi la
+  illumina la stessa luce direzionale del pavimento, senza una seconda luce.
+- **Il sole centrale** e una sfera a meta quota nella direzione della luce
+  (`fixedSun`), radianza 140 (il disco in cielo ha ~23, ma l abbaglio in
+  cielo lo aggiunge il glare della composizione, non la radianza), con un
+  alone additivo: con la fusione normale l alone era un anello nero.
+- **L attraversamento**: oltre `H/2` si applica `controls.mirror(OFF, H)`,
+  una rotazione di 180 gradi attorno all asse parallelo a z per
+  (OFF/2, H/2): posizione (OFF - x, H - y), yaw e pitch negati, velocita
+  ribaltata, e rollio della camera a pi greco. L immagine e identica prima
+  e dopo (e per questo che non si vede), e il rollio si spegne da solo in
+  tre secondi: e la volta che diventa pavimento. Lo streaming dei chunk
+  segue la camera e in mezzo secondo il nuovo pavimento e vero, con
+  piante e animali. Il lampo bianco (`#flash`) copre lo scambio, che
+  coincide con il passaggio dentro il sole. Cooldown di 2 s, e la volta
+  si ricampiona subito, in modo sincrono, sulla nuova posizione.
+- In volo «su» e `cos(roll)`: a testa in giu chi tiene premuto per
+  salire continua ad andare dove stava andando.
+
+Trappole trovate: le sfere del sole e dell alone con radianza HDR
+paragonabile allo sfondo sembrano «non renderizzate» (beige piatto, anello
+scuro): non e un bug di rendering, e la scala HDR della scena. E il pannello
+del browser nascosto rallenta rAF a un fotogramma al secondo: il rollio
+che «non si spegneva» era il tempo che non passava, `window.__frame(220)` lo
+dimostra.
+
 ### Esposizione pesata verso il basso (build 26)
 
 La misurazione della luminanza media (`lumMat` in `engine.js`) pesa i pixel

@@ -13,9 +13,9 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { hash2i, clamp, lerp, smoothstep } from './noise.js?v=26';
-import { GLSL_NOISE } from './noise.js?v=26';
-import { GLSL_FOG_DECL } from './fog.js?v=26';
+import { hash2i, clamp, lerp, smoothstep } from './noise.js?v=27';
+import { GLSL_NOISE } from './noise.js?v=27';
+import { GLSL_FOG_DECL } from './fog.js?v=27';
 
 export class Waterfalls {
   constructor(world, fog, cfg, opts = {}) {

@@ -40,6 +40,10 @@ export class FirstPersonControls {
     this.currentEye = this.eyeHeight;
 
     this.fly = false;
+    /* Rollio della camera attorno all asse di vista. Vale zero sempre, tranne
+     * dopo l attraversamento della Terra cava: li si arriva a testa in giu
+     * (pi greco) e la camera si raddrizza da sola in qualche secondo. */
+    this.roll = 0;
     this.walkSpeed = 4.2;
     this.runMul = 3.0;
     this.crouchMul = 0.42;
@@ -283,7 +287,9 @@ export class FirstPersonControls {
 
     if (this.fly) {
       let speed = this.flySpeed * this.speedScale * (run ? 3.2 : 1) * (crouch ? 0.3 : 1);
-      const up = (jump ? 1 : 0) - (crouch ? 1 : 0);
+      /* «Su» e il su della camera: a testa in giu, dopo l attraversamento,
+       * chi tiene premuto per salire continua ad andare dove stava andando. */
+      const up = ((jump ? 1 : 0) - (crouch ? 1 : 0)) * Math.cos(this.roll);
       // in volo si guarda dove si punta: usa anche il pitch
       const cp = Math.cos(this.pitch), sp = Math.sin(this.pitch);
       const dirX = fx * cp, dirY = sp, dirZ = fz * cp;
@@ -359,6 +365,12 @@ export class FirstPersonControls {
       }
     }
 
+    // il rollio si spegne da solo: pi greco -> zero in tre secondi circa
+    if (this.roll !== 0) {
+      this.roll *= Math.exp(-dt * 1.15);
+      if (Math.abs(this.roll) < 0.002) this.roll = 0;
+    }
+
     // applica alla camera
     const bobY = Math.sin(this.bobPhase * 2) * 0.038 * this.bobAmount;
     const bobX = Math.sin(this.bobPhase) * 0.030 * this.bobAmount;
@@ -372,7 +384,22 @@ export class FirstPersonControls {
     this.camera.rotation.set(0, 0, 0);
     this.camera.rotateY(this.yaw);
     this.camera.rotateX(this.pitch);
-    this.camera.rotateZ(roll);
+    this.camera.rotateZ(roll + this.roll);
+  }
+
+  /* Specchio della Terra cava: rotazione di 180 gradi attorno all asse
+   * parallelo a z per (off/2, h/2). Posizione, direzione dello sguardo e
+   * velocita si trasformano insieme, e l immagine resta la stessa: il
+   * giocatore si ritrova a testa in giu, con il rollio a pi greco. */
+  mirror(off, h) {
+    this.pos.x = off - this.pos.x;
+    this.pos.y = h - this.pos.y;
+    this.vel.x = -this.vel.x; this.vel.y = -this.vel.y;
+    this.yaw = -this.yaw;
+    this.pitch = -this.pitch;
+    let r = this.roll + Math.PI;
+    while (r > Math.PI) r -= 2 * Math.PI;
+    this.roll = r;
   }
 
   dispose() {

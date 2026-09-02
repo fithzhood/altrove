@@ -3,8 +3,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=26';
-import { Fauna } from './fauna.js?v=26';
+import { BIOMES, BIOME_ORDER, WEATHERS, SEASONS, TIME_PRESETS, FAUNA, getBiome, getWeather, getSeason } from './biomes.js?v=27';
+import { Fauna } from './fauna.js?v=27';
 
 /* Colore dell acqua profonda per tipo, per quando il bioma non lo dichiara. */
 const WATER_DEEP = {
@@ -13,21 +13,23 @@ const WATER_DEEP = {
   emerald: [0.020, 0.075, 0.055], mirror: [0.30, 0.32, 0.36], hotspring: [0.03, 0.22, 0.26],
   reef: [0.020, 0.10, 0.14]
 };
-import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=26';
-import { SkySystem } from './sky.js?v=26';
-import { FogSystem } from './fog.js?v=26';
-import { Engine } from './engine.js?v=26';
-import { Terrain } from './terrain.js?v=26';
-import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=26';
-import { FirstPersonControls } from './controls.js?v=26';
-import { Scatter } from './scatter.js?v=26';
-import { Water } from './water.js?v=26';
-import { Precipitation } from './weather.js?v=26';
-import { City } from './city.js?v=26';
-import { Castle } from './castle.js?v=26';
-import { Waterfalls } from './waterfall.js?v=26';
-import { Library } from './library.js?v=26';
-import { clamp, lerp, saturate } from './noise.js?v=26';
+import { World, hexToSrgbArr, hexToLinear as hexToLinearArr } from './world.js?v=27';
+import { SkySystem } from './sky.js?v=27';
+import { FogSystem } from './fog.js?v=27';
+import { Engine } from './engine.js?v=27';
+import { Terrain } from './terrain.js?v=27';
+import { Volta } from './volta.js?v=27';
+let volta = null;
+import { Atmosphere, makeWeatherState, blendWeather } from './atmosphere.js?v=27';
+import { FirstPersonControls } from './controls.js?v=27';
+import { Scatter } from './scatter.js?v=27';
+import { Water } from './water.js?v=27';
+import { Precipitation } from './weather.js?v=27';
+import { City } from './city.js?v=27';
+import { Castle } from './castle.js?v=27';
+import { Waterfalls } from './waterfall.js?v=27';
+import { Library } from './library.js?v=27';
+import { clamp, lerp, saturate } from './noise.js?v=27';
 
 /* ------------------------------------------------------------------ *
  * Versione: viene dal ?v=N sul tag script, cosi la schermata iniziale
@@ -126,6 +128,7 @@ function buildWorld(opts = {}) {
   const q = QUALITY[state.quality];
 
   if (terrain) { scene.remove(terrain.group); terrain.dispose(); terrain = null; }
+  if (volta) { scene.remove(volta.group); volta.dispose(); volta = null; }
   if (scatter) { scene.remove(scatter.group); scatter.dispose(); scatter = null; }
   if (water) { scene.remove(water.group); water.dispose(); water = null; }
   if (city) { scene.remove(city.group); city.dispose(); city = null; }
@@ -140,6 +143,10 @@ function buildWorld(opts = {}) {
 
   terrain = new Terrain(world, fog, { baseSize: 64, div: 32, levels: q.levels });
   scene.add(terrain.group);
+  if (biome.volta) {
+    volta = new Volta(scene, world, terrain, fog, biome);
+    scene.add(volta.group);
+  }
 
   scatter = new Scatter(world, fog, biome, { quality: q.scatter, season: state.seasonId });
   scene.add(scatter.group);
@@ -945,6 +952,15 @@ function updateCompass(yaw) {
 let last = performance.now();
 let fpsAcc = 0, fpsCount = 0, fpsShown = 0, perfTimer = 0;
 
+/* Un lampo bianco che si spegne in un secondo: e cio che si vede passando
+ * dentro il sole della Terra cava. */
+function lampo() {
+  const f = document.getElementById('flash');
+  if (!f) return;
+  f.classList.add('on');
+  requestAnimationFrame(() => requestAnimationFrame(() => f.classList.remove('on')));
+}
+
 function frame(now) {
   requestAnimationFrame(frame);
   let dt = (now - last) / 1000;
@@ -974,6 +990,10 @@ function frame(now) {
   controls.bobAmountLimit = state.headbob ? 1 : 0;
   if (!state.headbob) controls.bobAmount = 0;
   controls.update(dt);
+
+  /* La Terra cava: oltre la meta quota si passa dall altra parte. Il sole
+   * centrale sta proprio li, e il lampo copre lo scambio. */
+  if (volta && !loadJob && volta.update(controls, atmo.sunDir, dt)) lampo();
 
   /* La messa a fuoco insegue lo sguardo invece di stare inchiodata a un
    * numero: e la differenza fra «sfoca tutto» e «sfoca quello che non stai
@@ -1006,7 +1026,7 @@ function frame(now) {
   }, dt, camera);
 
   // curvatura del mondo: zero ovunque tranne sul pianetino
-  fog.set({ curve: biome.curve || 0 });
+  fog.set({ curve: biome.curve || 0, fadeHorizontal: biome.volta ? 1 : 0 });
 
   /* Immersione. Sotto il pelo dell acqua cambia tutto: la nebbia diventa
    * l acqua stessa e si chiude in pochi metri, il colore vira, la pioggia non
@@ -1108,7 +1128,7 @@ resize();
 setWeather(state.weatherId);
 requestAnimationFrame(frame);
 
-window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, get loadJob() { return loadJob; }, get building() { return building; }, precip, atmo, THREE };
+window.__altrove = { state, engine, sky, fog, scene, camera, controls, get terrain() { return terrain; }, get volta() { return volta; }, get world() { return world; }, get scatter() { return scatter; }, get water() { return water; }, get city() { return city; }, get castle() { return castle; }, get fauna() { return fauna; }, get falls() { return falls; }, get library() { return library; }, get loadJob() { return loadJob; }, get building() { return building; }, precip, atmo, THREE };
 
 /* Agganci per lo strumento di collaudo in dev/shots.js */
 window.__rebuild = rebuildWithLoading;

@@ -17,8 +17,8 @@
  */
 
 import * as THREE from '../vendor/three.module.js';
-import { GLSL_NOISE } from './noise.js?v=26';
-import { GLSL_FOG_DECL } from './fog.js?v=26';
+import { GLSL_NOISE } from './noise.js?v=27';
+import { GLSL_FOG_DECL } from './fog.js?v=27';
 
 const DEPTH_RES = 128;
 const DEPTH_SPAN = 620;      // metri coperti dalla mappa di profondita
@@ -255,7 +255,11 @@ export class Water {
           vAltWorld = wp;
           vDist = dcam;
           vec4 mvp = viewMatrix * vec4(wp, 1.0);
-          mvp.y -= mvp.z * mvp.z * altCurve;
+          // stessa curvatura in spazio-mondo di fog.js
+          if (altCurve != 0.0) {
+            vec2 altD = wp.xz - cameraPosition.xz;
+            mvp.xyz += (viewMatrix * vec4(0.0, -dot(altD, altD) * altCurve, 0.0, 0.0)).xyz;
+          }
           gl_Position = projectionMatrix * mvp;
         }`,
       fragmentShader: /* glsl */`

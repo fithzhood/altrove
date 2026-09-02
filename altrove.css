@@ -398,3 +398,9 @@ kbd {
   #compass { width: 220px; }
   .start-row { gap: 18px; }
 }
+
+/* Lampo bianco dell attraversamento della Terra cava: acceso di colpo,
+ * spento in un secondo. */
+#flash { position: fixed; inset: 0; background: #fff6e2; opacity: 0; pointer-events: none; z-index: 60;
+         transition: opacity 1.1s ease-out; }
+#flash.on { opacity: 1; transition: none; }

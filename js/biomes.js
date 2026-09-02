@@ -1324,7 +1324,7 @@ export const BIOMES = {
   terracava: {
     id: 'terracava', label: 'La Terra cava', fantasy: true,
     waterfalls: { minDrop: 7.5, chance: 0.44, width: [2.5, 8], radius: 380 },
-    blurb: 'Dentro il pianeta. La terra si alza ai lati invece di scendere, e il sole sta appeso al centro.',
+    blurb: 'Dentro il pianeta. La terra si alza ai lati, il sole sta appeso al centro e sopra la testa, nella foschia, c e l altro emisfero: volando verso il sole ci si arriva.',
     terrain: 'hills', seed: 3525, seaLevel: 0,
     waterLevel: -24, waterKind: 'lake', startHeightOffset: 1.7,
     hills: { amp: 50, freq: 0.0016, oct: 6, medAmp: 6.0, medFreq: 0.012, microAmp: 0.9 },
@@ -1332,16 +1332,23 @@ export const BIOMES = {
     /* Curvatura negativa: il mondo si piega verso l alto e l orizzonte, invece
      * di cadere, sale. E il segno opposto del pianetino. */
     curve: -1 / (2 * 600), noShadows: true,
+    /* La volta: l altro emisfero, a 1200 m sopra la testa (una sfera di
+     * raggio 600, la stessa della curvatura). E il terreno di 20 km piu in
+     * la, specchiato; oltre la meta quota si passa di la. Vedi volta.js. */
+    volta: { height: 1200, offset: 20000 },
     fixedSun: [78, 190],
     skyTint: [1.10, 0.94, 0.72], sunTint: [1.12, 0.98, 0.76],
-    nightSky: [0.0090, 0.0072, 0.0044], ambientBoost: 1.5, farFade: 2600,
+    nightSky: [0.0090, 0.0072, 0.0044], ambientBoost: 1.5, farFade: 900,
     palette: {
       grassLow: 0x3a6a22, grassHigh: 0x6d9038, grassDry: 0x94a04a,
       dirt: 0x5a4630, rock: 0x77706a, rockDark: 0x54504a,
       sand: 0x9a8f70, snow: 0xeef3fa, underwater: 0x1e3a1c
     },
     sky: { turbidity: 5.5, rayleigh: 0.65, mie: 0.020, mieG: 0.74, groundAlbedo: [0.16, 0.22, 0.10] },
-    fog: { density: 0.0075, heightFalloff: 0.0035, tint: [1.06, 0.96, 0.78] },
+    /* Foschia calda ma non piu un muro: la volta a 1200 m deve restare
+     * visibile (un terzo di nebbia in verticale), e il pavimento deve
+     * arrivare alla cucitura a 850 m gia mezzo dissolto. */
+    fog: { density: 0.0011, heightFalloff: 0.0022, tint: [1.06, 0.96, 0.78] },
     ambience: { hemiSky: 0xd8b878, hemiGround: 0x40521e, bounce: 0.45 },
     scatter: [
       { type: 'conifer', density: 0.0060, radius: 300, slope: [0, 0.6], height: [-99, 999], moisture: [0.3, 1], scale: [0.7, 1.4], tilt: 0.04, tint: [0x24461c, 0x40682a], shadow: true },
